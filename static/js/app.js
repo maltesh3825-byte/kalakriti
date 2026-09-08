@@ -419,7 +419,25 @@ function renderAccountView(view) {
   if (view === 'profile') {
     content.innerHTML = `<div class="account-panel"><h3>${t('account_profile')}</h3><p><strong>Name:</strong> ${escapeHtml(state.currentUser.name)}</p><p><strong>Email:</strong> ${escapeHtml(state.currentUser.email)}</p><p><strong>Role:</strong> ${escapeHtml(state.currentUser.role)}</p><p><strong>Location:</strong> ${escapeHtml(state.currentUser.city || 'Not added')}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
   } else if (view === 'history') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} order(s), ${state.accountIncomingOrders.length} buyer request(s), ${state.accountRequests.length} bulk request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${state.accountIncomingOrders.length}</strong><span>Buyer requests</span></div><div><strong>${state.accountNotifications.filter(item => !item.is_read).length}</strong><span>Unread alerts</span></div></div></div>`;
+    const historyRows = [
+      ...state.accountOrders.map(order => ({
+        title: `${escapeHtml(order.product_name || 'Order')} · ${escapeHtml(order.status || 'Confirmed')}`,
+        details: `₹${escapeHtml(order.total)} · Qty ${escapeHtml(order.quantity || 1)} · ETA ${escapeHtml(order.eta || '2-4 working days')}`,
+        created_at: order.created_at || ''
+      })),
+      ...state.accountIncomingOrders.map(order => ({
+        title: `${escapeHtml(order.product_name || 'Incoming order')} · ${escapeHtml(order.status || 'Confirmed')}`,
+        details: `${escapeHtml(order.buyer_name || 'Buyer')} · Qty ${escapeHtml(order.quantity || 1)} · ₹${escapeHtml(order.total)}`,
+        created_at: order.created_at || ''
+      }))
+    ];
+
+    if (!historyRows.length) {
+      content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">No history.</p></div>`;
+      return;
+    }
+
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><div class="account-list">${historyRows.map(row => `<div class="account-row"><strong>${row.title}</strong><span>${row.details}${row.created_at ? ` · ${escapeHtml(row.created_at)}` : ''}</span></div>`).join('')}</div></div>`;
   } else if (view === 'orders') {
     renderOrdersView(content);
   } else if (view === 'requests') {
