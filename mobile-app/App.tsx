@@ -420,7 +420,7 @@ export default function App() {
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
           <View style={styles.screenImageFrame}>
-            <Image source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImage} />
+            <Image pointerEvents="none" resizeMode="cover" source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImage} />
             <View style={styles.studioContainer}>
             
             {/* Step 1 Card: Photo Capture */}
@@ -687,7 +687,7 @@ export default function App() {
           /* SCREEN 2: BUYER MARKETPLACE FEED                        */
           /* ======================================================= */
           <View style={styles.screenImageFrame}>
-            <Image source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImage} />
+            <Image pointerEvents="none" resizeMode="cover" source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImage} />
             <View style={styles.marketContainer}>
             
             {/* Marketplace Banner */}
@@ -1077,7 +1077,8 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    resizeMode: 'cover',
+    width: '100%',
+    height: '100%',
   },
   studioContainer: {
     padding: 16,
