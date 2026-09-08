@@ -625,10 +625,10 @@
       <h2 class="text-3xl font-black text-slate-900 mt-2">Sign in to your workspace</h2>
       <p class="text-sm text-slate-500 mt-2">Track orders, manage saved crafts, view requests, and update your artisan profile.</p>
       <form id="loginForm" class="mt-6 space-y-4">
-        <input id="loginEmail" type="email" required value="demo@kalakriti.in" class="institutional-input" placeholder="Email">
-        <input id="loginPassword" type="password" required value="demo123" class="institutional-input" placeholder="Password">
-        <select id="loginRole" class="institutional-input"><option value="buyer">Buyer</option><option value="artisan">Artisan / Seller</option></select>
-        <button class="w-full py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Sign in</button>
+        <input id="loginEmail" type="email" required value="demo@kalakriti.in" class="institutional-input" data-i18n-placeholder="email" placeholder="Email">
+        <input id="loginPassword" type="password" required value="demo123" class="institutional-input" data-i18n-placeholder="password" placeholder="Password">
+        <select id="loginRole" class="institutional-input"><option value="buyer" data-i18n="buyer">Buyer</option><option value="artisan" data-i18n="seller">Artisan / Seller</option></select>
+        <button data-i18n="sign_in" class="w-full py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Sign in</button>
       </form>
       <p id="loginStatus" class="hidden mt-4 text-sm font-semibold"></p>
     </div>
@@ -636,7 +636,7 @@
     <div id="accountWorkspace" class="hidden">
       <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div><p class="text-xs uppercase tracking-wider text-amber-300 font-extrabold">My KalaKriti workspace</p><h2 id="accountWelcome" class="text-2xl sm:text-3xl font-black mt-1">Welcome</h2><p id="accountMeta" class="text-sm text-slate-300 mt-1"></p></div>
-        <button id="logoutBtn" class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm font-bold">Log out</button>
+        <button id="logoutBtn" data-i18n="logout" class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm font-bold">Log out</button>
       </div>
       <div class="flex gap-2 overflow-x-auto no-scrollbar py-5">
         <button class="account-tab account-tab-active" data-account-view="profile">Profile</button>
