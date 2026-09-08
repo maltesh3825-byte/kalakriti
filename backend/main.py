@@ -13,7 +13,7 @@ from typing import Optional, List
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -71,6 +71,12 @@ class UserCreate(BaseModel):
     phone: Optional[str] = ""
     city: str = ""
     language: str = "en"
+    business_name: Optional[str] = ""
+    gst_number: Optional[str] = ""
+    udyam_number: Optional[str] = ""
+    document_verification_status: Optional[str] = "pending"
+    bank_status: Optional[str] = "not_uploaded"
+    profile_completion: Optional[float] = 0.25
 
 
 class WishlistRequest(BaseModel):
@@ -184,7 +190,7 @@ def admin_login(payload: AdminLogin):
 
 @app.post("/api/auth/register")
 def register_user(payload: UserCreate):
-    """Register a new buyer/seller profile for the app."""
+    """Register a new buyer/seller profile for the app with onboarding profile fields."""
     email = payload.email.strip().lower()
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -195,8 +201,10 @@ def register_user(payload: UserCreate):
 
     cursor.execute(
         """
-        INSERT INTO users (name, email, password, role, phone, city, language)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (name, email, password, role, phone, city, language,
+                            business_name, gst_number, udyam_number,
+                            document_verification_status, bank_status, profile_completion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             payload.name,
@@ -206,6 +214,12 @@ def register_user(payload: UserCreate):
             payload.phone or "",
             payload.city or "",
             payload.language or "en",
+            payload.business_name or "",
+            payload.gst_number or "",
+            payload.udyam_number or "",
+            payload.document_verification_status or "pending",
+            payload.bank_status or "not_uploaded",
+            payload.profile_completion or 0.25,
         ),
     )
     user_id = cursor.lastrowid
@@ -680,6 +694,164 @@ def get_product(product_id: int):
         p["tags"] = [t.strip() for t in str(p["tags"]).split(",") if t.strip()]
 
     return p
+
+
+@app.get("/api/export/gem-csv")
+def export_gem_csv():
+    """Expose a basic GeM-ready CSV payload from the product catalog."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, name, artisan_name, artisan_location, category, price, quantity, description_en, image_url FROM products ORDER BY id DESC"
+    )
+    rows = cursor.fetchall()
+    conn.close()
+
+    header = ["id", "name", "artisan_name", "artisan_location", "category", "price", "quantity", "description_en", "image_url"]
+    lines = [",".join(header)]
+    for row in rows:
+        values = [str(row[idx]) if row[idx] is not None else "" for idx in range(len(header))]
+        lines.append(",".join(values))
+    return PlainTextResponse("\n".join(lines), media_type="text/csv")
+
+
+@app.get("/api/export/ondc")
+def export_ondc():
+    """Expose an ONDC/Beckn-style JSON payload from the catalog and institutional request data."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, artisan_name, category, price, quantity FROM products ORDER BY id DESC LIMIT 25")
+    products = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    payload = {
+        "context": {
+            "domain": "ONDC:RET10",
+            "country": "IND",
+            "city": "IND",
+            "action": "search",
+            "version": "1.1.0",
+            "bap_id": "kalakriti.app",
+        },
+        "catalog": products,
+        "export_type": "ONDC_Beckn_Ready",
+    }
+    return JSONResponse(payload)
+
+
+@app.get("/api/users/{user_id}/documents")
+def get_document_verification(user_id: int):
+    """Return verification readiness for onboarding fields such as Udyam, GST, bank, and profile documents."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email, role, business_name, gst_number, udyam_number, document_verification_status, bank_status, profile_completion FROM users WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "user_id": row[0],
+        "name": row[1],
+        "email": row[2],
+        "role": row[3],
+        "business_name": row[4] or "",
+        "gst_number": row[5] or "",
+        "udyam_number": row[6] or "",
+        "document_verification_status": row[7] or "pending",
+        "bank_status": row[8] or "not_uploaded",
+        "profile_completion": row[9] or 0.25,
+        "required_documents": [
+            "Udyam registration or artisan identity proof",
+            "GST or business registration",
+            "Bank passbook / bank account proof",
+            "Product category and inventory declaration",
+        ],
+    }
+
+
+@app.get("/api/users/{user_id}/business-advisor")
+def get_ai_business_advisor(user_id: int):
+    """Return AI-style business manager guidance for inventory, pricing, demand, and export opportunities."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, role FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    cursor.execute("SELECT COUNT(*) FROM products WHERE artisan_name IN (SELECT name FROM users WHERE id = ?)", (user_id,))
+    product_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM orders WHERE user_id = ?", (user_id,))
+    order_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM institutional_requests WHERE email = (SELECT email FROM users WHERE id = ?)", (user_id,))
+    request_count = cursor.fetchone()[0]
+    conn.close()
+
+    return {
+        "status": "ready",
+        "role": user[1],
+        "business_health": "positive",
+        "recommended_actions": [
+            "Refresh product photos and add GST/HSN-ready descriptions.",
+            "Bundle similar products for bulk institutional requests.",
+            "Create a catalog export for GeM or ONDC readiness.",
+            "Re-run pricing with raw material and lead-time assumptions.",
+        ],
+        "metrics": {
+            "inventory_products": product_count,
+            "orders": order_count,
+            "rfqs": request_count,
+            "export_readiness": "partial",
+        },
+        "opportunities": [
+            "Government procurement",
+            "Corporate gifting",
+            "Retail cluster demand",
+            "Festival collection bundles",
+        ],
+    }
+
+
+@app.get("/api/users/{user_id}/dashboard")
+def get_dashboard(user_id: int):
+    """Return analytics-like dashboard metrics and inventory/order trends for the dashboard experience."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, role, email, name FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+    if not user:
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+    cursor.execute("SELECT COUNT(*) FROM products WHERE artisan_name = ?", (user[3],))
+    product_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM orders WHERE user_id = ?", (user_id,))
+    order_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM institutional_requests WHERE artisan_name = ?", (user[3],))
+    request_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COALESCE(SUM(total), 0) FROM orders WHERE user_id = ?", (user_id,))
+    spend_total = cursor.fetchone()[0] or 0
+    conn.close()
+
+    return {
+        "user_id": user[0],
+        "name": user[3],
+        "role": user[1],
+        "email": user[2],
+        "analytics": {
+            "total_products": product_count,
+            "orders": order_count,
+            "institutional_requests": request_count,
+            "estimated_order_value": spend_total,
+            "export_readiness": "GeM/ONDC ready",
+            "inventory_quality_score": "88%",
+            "language_support": "en, hi",
+        },
+        "business_alerts": [
+            "Follow up on pending institutional RFQs",
+            "Export product catalog to GeM/ONDC",
+            "Review missing GST/HSN classification",
+            "Sync offline product drafts",
+        ],
+    }
 
 
 @app.get("/api/stats")

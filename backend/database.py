@@ -58,10 +58,27 @@ def init_db():
             phone TEXT,
             city TEXT,
             language TEXT DEFAULT 'en',
+            business_name TEXT,
+            gst_number TEXT,
+            udyam_number TEXT,
+            document_verification_status TEXT DEFAULT 'pending',
+            bank_status TEXT DEFAULT 'not_uploaded',
+            profile_completion REAL DEFAULT 0.25,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
     )
+    user_columns = {row[1] for row in cursor.execute("PRAGMA table_info(users)").fetchall()}
+    for column, column_type in {
+        "business_name": "TEXT",
+        "gst_number": "TEXT",
+        "udyam_number": "TEXT",
+        "document_verification_status": "TEXT DEFAULT 'pending'",
+        "bank_status": "TEXT DEFAULT 'not_uploaded'",
+        "profile_completion": "REAL DEFAULT 0.25",
+    }.items():
+        if column not in user_columns:
+            cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {column_type}")
 
     cursor.execute(
         """
