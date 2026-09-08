@@ -707,10 +707,10 @@
         </div>
 
         <form id="institutionalRequestForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <label class="text-xs font-bold text-slate-700">Artisan / cluster name
+          <label class="text-xs font-bold text-slate-700 required-label">Artisan / cluster name
             <input id="institutionalName" required class="institutional-input" placeholder="Your name or cooperative">
           </label>
-          <label class="text-xs font-bold text-slate-700">Email for follow-up
+          <label class="text-xs font-bold text-slate-700 required-label">Email for follow-up
             <input id="institutionalEmail" type="email" required class="institutional-input" placeholder="you@example.com">
           </label>
           <label class="text-xs font-bold text-slate-700">Phone / WhatsApp
@@ -727,7 +727,7 @@
               <option value="Retail chain">Retail chain</option>
             </select>
           </label>
-          <label class="text-xs font-bold text-slate-700">Product category
+          <label class="text-xs font-bold text-slate-700 required-label">Product category
             <select id="institutionalCategory" class="institutional-input">
               <option>Handloom & Textiles</option>
               <option>Pottery & Terracotta</option>
@@ -737,13 +737,13 @@
               <option>Folk Art & Painting</option>
             </select>
           </label>
-          <label class="text-xs font-bold text-slate-700">Available quantity
+          <label class="text-xs font-bold text-slate-700 required-label">Available quantity
             <input id="institutionalQuantity" type="number" min="1" value="100" class="institutional-input">
           </label>
-          <label class="text-xs font-bold text-slate-700">Unit price / pricing expectation (₹)
+          <label class="text-xs font-bold text-slate-700 required-label">Unit price / pricing expectation (₹)
             <input id="institutionalUnitPrice" type="number" min="1" value="250" class="institutional-input">
           </label>
-          <label class="text-xs font-bold text-slate-700">Production / Dispatch lead time
+          <label class="text-xs font-bold text-slate-700 required-label">Production / Dispatch lead time
             <input id="institutionalLeadTime" class="institutional-input" placeholder="7-15 working days">
           </label>
           <label class="sm:col-span-2 text-xs font-bold text-slate-700">What should the buyer know?

@@ -119,6 +119,13 @@ body {
   opacity: 0;
 }
 
+/* Required field indicator */
+.required-label::after {
+  content: ' *';
+  color: #dc2626;
+  font-weight: 900;
+}
+
 /* Touch friendly large touch targets */
 .touch-btn {
   min-height: 48px;
