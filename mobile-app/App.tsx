@@ -405,7 +405,7 @@ export default function App() {
         <TouchableOpacity 
           style={styles.helpBtn} 
           onPress={() => toggleSpeech(lang === 'hi' ? 'नमस्ते! कलासेतु में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaSetu! Take a photo of your craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.', lang)}>
-          <Text style={styles.helpBtnText}>🔊 {lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}</Text>
+          <Text style={styles.helpBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}`}</Text>
         </TouchableOpacity>
       </View>
 
@@ -631,7 +631,7 @@ export default function App() {
                     <TouchableOpacity 
                       style={styles.speakerBtn} 
                       onPress={() => toggleSpeech(editDescEn, 'en')}>
-                      <Text style={styles.speakerBtnText}>🔊 {t.listenDesc}</Text>
+                      <Text style={styles.speakerBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${t.listenDesc}`}</Text>
                     </TouchableOpacity>
                   </View>
                   <TextInput 
@@ -649,7 +649,7 @@ export default function App() {
                     <TouchableOpacity 
                       style={styles.speakerBtn} 
                       onPress={() => toggleSpeech(editDescHi, 'hi')}>
-                      <Text style={styles.speakerBtnText}>🔊 {t.listenDesc}</Text>
+                      <Text style={styles.speakerBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${t.listenDesc}`}</Text>
                     </TouchableOpacity>
                   </View>
                   <TextInput 
