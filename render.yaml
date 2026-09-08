@@ -2,7 +2,7 @@ services:
   - type: web
     name: kalakriti-api
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
@@ -10,10 +10,6 @@ services:
       - key: DEBUG
         value: "false"
       - key: DATABASE_PATH
-        value: /data/artisan_catalog.db
+        value: /tmp/artisan_catalog.db
       - key: UPLOAD_DIR
-        value: /data/uploads
-    disk:
-      name: kalakriti-data
-      mountPath: /data
-      sizeGB: 1
+        value: /tmp/uploads

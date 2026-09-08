@@ -87,7 +87,7 @@ The standalone APK must use a public HTTPS backend URL. It cannot use `127.0.0.1
    ```
    The response should contain `{"status":"ok"}`.
 
-The included Render configuration uses a persistent disk for SQLite data and uploaded images. A paid Render plan is required for that disk; for a temporary demo, remove the `disk` block and accept that local files are ephemeral.
+The included Render configuration uses Render's free web-service plan. SQLite data and uploaded images are stored temporarily under `/tmp` and may reset when the service restarts or sleeps. This is suitable for a demo and team testing, but production should use a paid persistent database/storage service.
 
 #### Build an installable Android APK
 
