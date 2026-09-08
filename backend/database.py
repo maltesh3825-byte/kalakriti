@@ -38,10 +38,14 @@ def init_db():
             image_url TEXT NOT NULL,
             is_enhanced INTEGER DEFAULT 0,
             mosje_verified INTEGER DEFAULT 1,
+            quantity INTEGER NOT NULL DEFAULT 10,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
     )
+    product_columns = {row[1] for row in cursor.execute("PRAGMA table_info(products)").fetchall()}
+    if "quantity" not in product_columns:
+        cursor.execute("ALTER TABLE products ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1")
 
     cursor.execute(
         """
@@ -103,6 +107,20 @@ def init_db():
             status TEXT DEFAULT 'New',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+        """
+    )
+
+    # The first six catalog rows are the built-in demo products from the
+    # original database. Backfill their stock to ten, less recorded orders,
+    # when upgrading an existing deployment from the old no-inventory schema.
+    cursor.execute(
+        """
+        UPDATE products
+        SET quantity = MAX(
+            0,
+            10 - COALESCE((SELECT SUM(quantity) FROM orders WHERE orders.product_id = products.id), 0)
+        )
+        WHERE id <= 6
         """
     )
 

@@ -5,6 +5,7 @@ Ministry of Social Justice and Empowerment (MoSJE)
 """
 import json
 import uuid
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -50,6 +51,7 @@ class ProductCreate(BaseModel):
     tags: List[str]
     image_url: str
     is_enhanced: Optional[bool] = False
+    quantity: int = 1
 
 
 class UserLogin(BaseModel):
@@ -246,6 +248,25 @@ def get_orders(user_id: int):
 def create_order(payload: OrderCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
+    requested_quantity = max(1, payload.quantity)
+    cursor.execute("SELECT quantity, name, price FROM products WHERE id = ?", (payload.product_id,))
+    product_row = cursor.fetchone()
+    if not product_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Product not found")
+    available_quantity = int(product_row[0] or 0)
+    if available_quantity < requested_quantity:
+        conn.close()
+        raise HTTPException(status_code=409, detail="This product is no longer available in the requested quantity")
+
+    cursor.execute(
+        "UPDATE products SET quantity = quantity - ? WHERE id = ? AND quantity >= ?",
+        (requested_quantity, payload.product_id, requested_quantity),
+    )
+    if cursor.rowcount != 1:
+        conn.rollback()
+        conn.close()
+        raise HTTPException(status_code=409, detail="This product was just reserved by another buyer")
     cursor.execute(
         """
         INSERT INTO orders (user_id, product_id, product_name, quantity, total, status, eta)
@@ -255,8 +276,8 @@ def create_order(payload: OrderCreate):
             payload.user_id,
             payload.product_id,
             payload.product_name,
-            payload.quantity,
-            payload.total,
+            requested_quantity,
+            payload.total * requested_quantity,
             payload.status,
             payload.eta,
         ),
@@ -264,7 +285,8 @@ def create_order(payload: OrderCreate):
     order_id = cursor.lastrowid
     conn.commit()
     conn.close()
-    return {"status": "success", "order_id": order_id}
+    remaining_quantity = available_quantity - requested_quantity
+    return {"status": "success", "order_id": order_id, "remaining_quantity": remaining_quantity}
 
 
 @app.post("/api/institutional-requests")
@@ -338,8 +360,21 @@ async def analyze_product(
 @app.post("/api/products")
 def create_product(product: ProductCreate):
     """Publish a reviewed artisan listing to the marketplace."""
+    listing_quantity = product.quantity
+    if listing_quantity < 1 or listing_quantity > 10:
+        raise HTTPException(status_code=400, detail="Each listing must contain between 1 and 10 items")
+
     conn = get_db_connection()
     cursor = conn.cursor()
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    cursor.execute(
+        "SELECT COUNT(*) FROM products WHERE lower(artisan_name) = lower(?) AND substr(created_at, 1, 7) = ?",
+        (product.artisan_name.strip(), current_month),
+    )
+    monthly_listings = cursor.fetchone()[0]
+    if monthly_listings >= 3:
+        conn.close()
+        raise HTTPException(status_code=429, detail="This artisan has used all 3 marketplace listings for this month")
 
     cursor.execute(
         """
@@ -347,8 +382,8 @@ def create_product(product: ProductCreate):
             name, artisan_name, artisan_phone, artisan_location,
             category, price, suggested_price_min, suggested_price_max,
             price_justification, description_en, description_hi,
-            tags, image_url, is_enhanced, mosje_verified
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            tags, image_url, is_enhanced, mosje_verified, quantity
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             product.name,
@@ -366,6 +401,7 @@ def create_product(product: ProductCreate):
             product.image_url,
             1 if product.is_enhanced else 0,
             1,
+            listing_quantity,
         ),
     )
 
@@ -388,7 +424,7 @@ def list_products(
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    query = "SELECT * FROM products WHERE 1=1"
+    query = "SELECT * FROM products WHERE quantity > 0"
     params = []
 
     if category and category != "All":

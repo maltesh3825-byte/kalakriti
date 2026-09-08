@@ -723,6 +723,7 @@ async function publishProductToMarketplace() {
   const title = document.getElementById('editProductTitle')?.value.trim();
   const category = document.getElementById('editProductCategory')?.value;
   const price = parseInt(document.getElementById('editProductPrice')?.value, 10);
+  const quantity = parseInt(document.getElementById('editProductQuantity')?.value, 10);
   const descEn = document.getElementById('editDescEn')?.value.trim();
   const descHi = document.getElementById('editDescHi')?.value.trim();
   const artisanName = document.getElementById('artisanName')?.value.trim() || "Artisan Beneficiary";
@@ -736,6 +737,11 @@ async function publishProductToMarketplace() {
 
   if (!price || isNaN(price)) {
     alert("Please specify a valid price.");
+    return;
+  }
+
+  if (!quantity || quantity < 1 || quantity > 10) {
+    alert('Enter a quantity from 1 to 10. Each artisan can publish 3 listings per month.');
     return;
   }
 
@@ -758,7 +764,8 @@ async function publishProductToMarketplace() {
     description_hi: descHi,
     tags: currentTags.length > 0 ? currentTags : ["Handmade", "Artisan", category],
     image_url: state.uploadedImageUrl || "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
-    is_enhanced: state.isEnhanced
+    is_enhanced: state.isEnhanced,
+    quantity
   };
 
   try {
@@ -908,6 +915,10 @@ function renderProducts(products) {
               ${currentLanguage === 'hi' && p.description_hi ? p.description_hi : p.description_en}
             </p>
 
+            <p class="text-xs font-bold text-emerald-700 mt-2">
+              ${p.quantity || 0} item${(p.quantity || 0) === 1 ? '' : 's'} available
+            </p>
+
             <!-- Tags -->
             <div class="flex flex-wrap gap-1.5 mt-3">
               ${tagsList.map(t => `<span class="text-[11px] bg-sand-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">#${t}</span>`).join('')}
@@ -988,6 +999,12 @@ function openProductModal(productId) {
   document.getElementById('modalCategory').textContent = product.category;
   document.getElementById('modalArtisanName').textContent = product.artisan_name;
   document.getElementById('modalArtisanLoc').textContent = product.artisan_location;
+  const orderQuantity = document.getElementById('modalOrderQuantity');
+  if (orderQuantity) {
+    orderQuantity.max = String(Math.max(1, product.quantity || 1));
+    orderQuantity.value = '1';
+    orderQuantity.disabled = (product.quantity || 1) < 2;
+  }
   
   const descText = currentLanguage === 'hi' && product.description_hi ? product.description_hi : product.description_en;
   document.getElementById('modalDesc').textContent = descText;
@@ -1052,7 +1069,7 @@ async function placeMarketplaceOrder() {
         user_id: state.currentUser.id,
         product_id: product.id,
         product_name: product.name,
-        quantity: 1,
+        quantity: Math.max(1, parseInt(document.getElementById('modalOrderQuantity')?.value, 10) || 1),
         total: product.price,
         status: 'Requested',
         eta: 'Artisan will confirm delivery'
@@ -1060,6 +1077,7 @@ async function placeMarketplaceOrder() {
     });
     if (!response.ok) throw new Error('Order request failed');
     await loadAccountData();
+    await loadProducts();
     document.getElementById('productDetailModal')?.classList.add('hidden');
     showToast('Order request sent to the artisan');
     switchTab('account');
