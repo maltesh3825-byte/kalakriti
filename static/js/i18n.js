@@ -190,29 +190,30 @@ let currentLanguage = 'en';
 
 function setLanguage(lang) {
   currentLanguage = lang;
+  const dictionary = translations[lang] || translations.en;
   document.documentElement.lang = lang;
   
   // Update all elements with data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (translations[lang] && translations[lang][key]) {
-      el.textContent = translations[lang][key];
+    if (dictionary[key]) {
+      el.textContent = dictionary[key];
     }
   });
 
   // Update placeholders
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    if (translations[lang] && translations[lang][key]) {
-      el.setAttribute('placeholder', translations[lang][key]);
+    if (dictionary[key]) {
+      el.setAttribute('placeholder', dictionary[key]);
     }
   });
 
   // Update titles/tooltips
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');
-    if (translations[lang] && translations[lang][key]) {
-      el.setAttribute('title', translations[lang][key]);
+    if (dictionary[key]) {
+      el.setAttribute('title', dictionary[key]);
     }
   });
 
@@ -234,5 +235,5 @@ function toggleLanguage() {
 }
 
 function t(key) {
-  return (translations[currentLanguage] && translations[currentLanguage][key]) || key;
+  return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
 }

@@ -16,7 +16,11 @@ const state = {
   products: [],
   selectedProductForModal: null,
   isEnhanced: false,
-  apiConfig: null
+  apiConfig: null,
+  currentUser: null,
+  accountView: 'profile',
+  accountOrders: [],
+  accountWishlist: []
 };
 
 // Demo sample craft photos for instant jury testing
@@ -51,6 +55,15 @@ async function initApp() {
   loadProducts();
   setupEventListeners();
   setLanguage('en');
+  const savedUser = localStorage.getItem('kalakriti_user');
+  if (savedUser) {
+    try {
+      state.currentUser = JSON.parse(savedUser);
+      await loadAccountData();
+    } catch (error) {
+      localStorage.removeItem('kalakriti_user');
+    }
+  }
 }
 
 // Check Backend AI Model Status
@@ -93,6 +106,21 @@ function setupEventListeners() {
   if (langToggleBtn) {
     langToggleBtn.addEventListener('click', toggleLanguage);
   }
+
+  const languageSelect = document.getElementById('languageSelect');
+  if (languageSelect) {
+    languageSelect.addEventListener('change', (event) => setLanguage(event.target.value));
+  }
+
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.addEventListener('submit', loginAccount);
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', logoutAccount);
+
+  document.querySelectorAll('[data-account-view]').forEach(button => {
+    button.addEventListener('click', () => renderAccountView(button.dataset.accountView));
+  });
 
   // Voice recording button
   const micBtn = document.getElementById('micButton');
@@ -227,6 +255,7 @@ function switchTab(tab) {
   const studioSection = document.getElementById('studioTabSection');
   const marketSection = document.getElementById('marketplaceTabSection');
   const institutionalSection = document.getElementById('institutionalTabSection');
+  const accountSection = document.getElementById('accountTabSection');
 
   document.querySelectorAll('[data-tab-target]').forEach(btn => {
     const isTarget = btn.getAttribute('data-tab-target') === tab;
@@ -243,15 +272,101 @@ function switchTab(tab) {
     studioSection.classList.remove('hidden');
     marketSection.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
+    accountSection?.classList.add('hidden');
   } else if (tab === 'institutional') {
     studioSection.classList.add('hidden');
     marketSection.classList.add('hidden');
     institutionalSection?.classList.remove('hidden');
+    accountSection?.classList.add('hidden');
+  } else if (tab === 'account') {
+    studioSection.classList.add('hidden');
+    marketSection.classList.add('hidden');
+    institutionalSection?.classList.add('hidden');
+    accountSection?.classList.remove('hidden');
+    renderAccountShell();
   } else {
     studioSection.classList.add('hidden');
     marketSection.classList.remove('hidden');
     institutionalSection?.classList.add('hidden');
+    accountSection?.classList.add('hidden');
     loadProducts();
+  }
+}
+
+function renderAccountShell() {
+  const loginView = document.getElementById('accountLoginView');
+  const workspace = document.getElementById('accountWorkspace');
+  if (!loginView || !workspace) return;
+  loginView.classList.toggle('hidden', Boolean(state.currentUser));
+  workspace.classList.toggle('hidden', !state.currentUser);
+  if (state.currentUser) renderAccountView(state.accountView);
+}
+
+async function loginAccount(event) {
+  event.preventDefault();
+  const status = document.getElementById('loginStatus');
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const role = document.getElementById('loginRole').value;
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, role })
+    });
+    if (!response.ok) throw new Error('Invalid email or password');
+    const data = await response.json();
+    state.currentUser = data.user;
+    localStorage.setItem('kalakriti_user', JSON.stringify(state.currentUser));
+    await loadAccountData();
+    renderAccountShell();
+  } catch (error) {
+    status.textContent = 'Sign in failed. Demo buyer: demo@kalakriti.in / demo123';
+    status.className = 'mt-4 text-sm font-semibold text-red-700';
+    status.classList.remove('hidden');
+  }
+}
+
+function logoutAccount() {
+  state.currentUser = null;
+  state.accountOrders = [];
+  state.accountWishlist = [];
+  localStorage.removeItem('kalakriti_user');
+  renderAccountShell();
+}
+
+async function loadAccountData() {
+  if (!state.currentUser) return;
+  const [ordersResponse, wishlistResponse] = await Promise.all([
+    fetch(`/api/orders/${state.currentUser.id}`),
+    fetch(`/api/wishlist/${state.currentUser.id}`)
+  ]);
+  const orders = ordersResponse.ok ? await ordersResponse.json() : { orders: [] };
+  const wishlist = wishlistResponse.ok ? await wishlistResponse.json() : { wishlist: [] };
+  state.accountOrders = orders.orders || [];
+  state.accountWishlist = wishlist.wishlist || [];
+}
+
+function renderAccountView(view) {
+  if (!state.currentUser) return;
+  state.accountView = view;
+  document.querySelectorAll('[data-account-view]').forEach(button => {
+    button.classList.toggle('account-tab-active', button.dataset.accountView === view);
+  });
+  document.getElementById('accountWelcome').textContent = `Welcome, ${state.currentUser.name}`;
+  document.getElementById('accountMeta').textContent = `${state.currentUser.email} · ${state.currentUser.role} · ${state.currentUser.city || 'India'}`;
+  const content = document.getElementById('accountContent');
+  const requests = JSON.parse(localStorage.getItem('kalakriti_requests') || '[]');
+  if (view === 'profile') {
+    content.innerHTML = `<div class="account-panel"><h3>Profile</h3><p><strong>Name:</strong> ${state.currentUser.name}</p><p><strong>Email:</strong> ${state.currentUser.email}</p><p><strong>Role:</strong> ${state.currentUser.role}</p><p><strong>Location:</strong> ${state.currentUser.city || 'Not added'}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
+  } else if (view === 'history') {
+    content.innerHTML = `<div class="account-panel"><h3>Activity history</h3><p class="account-muted">${state.accountOrders.length} purchase request(s), ${requests.length} institutional request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>Orders</span></div><div><strong>${requests.length}</strong><span>Bulk requests</span></div><div><strong>${state.accountWishlist.length}</strong><span>Wishlist</span></div></div></div>`;
+  } else if (view === 'orders') {
+    content.innerHTML = `<div class="account-panel"><h3>Orders</h3>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders yet. Use the marketplace to request one.</p>'}</div>`;
+  } else if (view === 'requests') {
+    content.innerHTML = `<div class="account-panel"><h3>Institutional requests</h3>${requests.length ? requests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'Submitted'}</span></div>`).join('') : '<p class="account-muted">No bulk requests yet. Open Bulk & Institutions to prepare an RFQ.</p>'}</div>`;
+  } else {
+    const saved = state.products.filter(product => state.accountWishlist.includes(product.id));
+    content.innerHTML = `<div class="account-panel"><h3>Wishlist</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
   }
 }
 
@@ -286,6 +401,9 @@ async function submitInstitutionalRequest(event) {
     status.textContent = 'Request saved. Our team can follow up for buyer introductions and procurement guidance.';
     status.className = 'mt-4 rounded-xl p-3 text-sm font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
     showToast('Bulk request submitted successfully');
+    const savedRequests = JSON.parse(localStorage.getItem('kalakriti_requests') || '[]');
+    savedRequests.unshift({ ...payload, status: 'Submitted', created_at: new Date().toISOString() });
+    localStorage.setItem('kalakriti_requests', JSON.stringify(savedRequests));
   } catch (error) {
     console.error('Institutional request error:', error);
     status.textContent = 'The server could not save the request. Your email app will open so the team still receives it.';
@@ -794,6 +912,10 @@ function renderProducts(products) {
               ${t('btn_view_details')}
             </button>
 
+            <button onclick="toggleWishlist(${p.id})"
+                    class="p-2 rounded-xl ${state.accountWishlist.includes(p.id) ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'} hover:bg-rose-100 hover:text-rose-600 transition-colors"
+                    title="Save to wishlist">♥</button>
+
             <a href="https://wa.me/${(p.artisan_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${p.artisan_name}, I am interested in buying your handcrafted '${p.name}' listed on KalaKriti marketplace for ₹${p.price}.`)}"
                target="_blank" rel="noopener noreferrer"
                class="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
@@ -805,6 +927,26 @@ function renderProducts(products) {
       </div>
     `;
   }).join('');
+}
+
+async function toggleWishlist(productId) {
+  if (!state.currentUser) {
+    switchTab('account');
+    showToast('Sign in to save crafts to your wishlist');
+    return;
+  }
+  const saved = state.accountWishlist.includes(productId);
+  const url = saved ? `/api/wishlist/${state.currentUser.id}/${productId}` : `/api/wishlist/${state.currentUser.id}`;
+  const response = await fetch(url, {
+    method: saved ? 'DELETE' : 'POST',
+    headers: saved ? undefined : { 'Content-Type': 'application/json' },
+    body: saved ? undefined : JSON.stringify({ product_id: productId })
+  });
+  if (response.ok) {
+    state.accountWishlist = saved ? state.accountWishlist.filter(id => id !== productId) : [...state.accountWishlist, productId];
+    showToast(saved ? 'Removed from wishlist' : 'Saved to wishlist');
+    renderProducts(state.products);
+  }
 }
 
 // Category filter button handler
