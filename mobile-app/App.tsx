@@ -19,7 +19,8 @@ import {
   Linking,
   Platform,
   Switch,
-  ImageStyle
+  ImageStyle,
+  ImageBackground
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
@@ -91,6 +92,9 @@ export default function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const t = i18n[lang];
+
+  const HOME_BACKGROUND_IMAGE = 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1800&q=80';
+  const STUDIO_BACKGROUND_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1800&q=80';
 
   useEffect(() => {
     loadProducts();
@@ -416,6 +420,7 @@ export default function App() {
           /* ======================================================= */
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
+          <ImageBackground source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImageBackground} imageStyle={styles.screenImageStretch}>
           <View style={styles.studioContainer}>
             
             {/* Step 1 Card: Photo Capture */}
@@ -676,10 +681,12 @@ export default function App() {
             )}
 
           </View>
+          </ImageBackground>
         ) : activeTab === 'market' ? (
           /* ======================================================= */
           /* SCREEN 2: BUYER MARKETPLACE FEED                        */
           /* ======================================================= */
+          <ImageBackground source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImageBackground} imageStyle={styles.screenImageStretch}>
           <View style={styles.marketContainer}>
             
             {/* Marketplace Banner */}
@@ -773,6 +780,7 @@ export default function App() {
             </View>
 
           </View>
+          </ImageBackground>
         ) : activeTab === 'wishlist' ? (
           <View style={styles.marketContainer}>
             <Text style={styles.marketHeroTitle}>{t.wishlistTitle}</Text>
@@ -1055,6 +1063,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 80,
+  },
+  screenImageBackground: {
+    width: '100%',
+    minHeight: 420,
+  },
+  screenImageStretch: {
+    resizeMode: 'cover',
   },
   studioContainer: {
     padding: 16,
