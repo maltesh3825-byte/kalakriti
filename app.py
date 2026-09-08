@@ -1,5 +1,5 @@
 """
-KalaKriti - Main Application Runner
+KalaSetu - Main Application Runner
 Smart India Hackathon 2026 - SIH26090
 """
 import sys
@@ -8,7 +8,7 @@ from backend.config import HOST, PORT
 
 if __name__ == "__main__":
     print("=" * 65)
-    print("  KalaKriti - AI Smart Cataloging & Market Linkage")
+    print("  KalaSetu - AI Smart Cataloging & Market Linkage")
     print("  Smart India Hackathon 2026 (SIH26090)")
     print("  Ministry of Social Justice & Empowerment (MoSJE)")
     print("=" * 65)

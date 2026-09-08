@@ -1,5 +1,5 @@
 /**
- * KalaKriti - Cross-Platform Mobile Application
+ * KalaSetu - Cross-Platform Mobile Application
  * Smart India Hackathon 2026 - Problem Statement SIH26090
  * Ministry of Social Justice and Empowerment (MoSJE)
  */
@@ -152,9 +152,9 @@ export default function App() {
   };
 
   const handleBulkSupport = () => {
-    const subject = encodeURIComponent('KalaKriti Bulk & Institutional Linkage Request');
+    const subject = encodeURIComponent('KalaSetu Bulk & Institutional Linkage Request');
     const body = encodeURIComponent(
-      `Hello KalaKriti team,\n\nI want to connect with bulk buyers / institutional buyers for my craft.\n\nName: ${currentUser?.name || authName}\nEmail: ${currentUser?.email || authEmail}\nCity: ${currentUser?.city || artisanLocation}\nRequirement: ${bulkNeed || 'Need help connecting to institutional buyers and government e-marketplaces'}\nBuyer type: ${bulkBuyerType}\n\nPlease help me with bulk opportunities and procurement support.`
+      `Hello KalaSetu team,\n\nI want to connect with bulk buyers / institutional buyers for my craft.\n\nName: ${currentUser?.name || authName}\nEmail: ${currentUser?.email || authEmail}\nCity: ${currentUser?.city || artisanLocation}\nRequirement: ${bulkNeed || 'Need help connecting to institutional buyers and government e-marketplaces'}\nBuyer type: ${bulkBuyerType}\n\nPlease help me with bulk opportunities and procurement support.`
     );
     Linking.openURL(`mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`);
   };
@@ -322,7 +322,7 @@ export default function App() {
   // Open WhatsApp Link directly from phone
   const openWhatsApp = (phone: string, productName: string, price: number) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(`Hello! I saw your handcrafted '${productName}' on KalaKriti marketplace for ₹${price}. I would like to buy it directly from you.`);
+    const message = encodeURIComponent(`Hello! I saw your handcrafted '${productName}' on KalaSetu marketplace for ₹${price}. I would like to buy it directly from you.`);
     const url = `whatsapp://send?phone=${cleanPhone}&text=${message}`;
     const webFallback = `https://wa.me/${cleanPhone}?text=${message}`;
 
@@ -376,7 +376,7 @@ export default function App() {
 
         <TouchableOpacity 
           style={styles.helpBtn} 
-          onPress={() => toggleSpeech(lang === 'hi' ? 'नमस्ते! कलाकृति में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaKriti! Take a photo of your craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.', lang)}>
+          onPress={() => toggleSpeech(lang === 'hi' ? 'नमस्ते! कलासेतु में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaSetu! Take a photo of your craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.', lang)}>
           <Text style={styles.helpBtnText}>🔊 {lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}</Text>
         </TouchableOpacity>
       </View>
@@ -849,7 +849,7 @@ export default function App() {
                   <Text style={styles.secondaryActionText}>Log out</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.supportButton} onPress={() => Linking.openURL('mailto:kalasetu24824.9@gmail.com?subject=KalaKriti%20Support')}>
+                <TouchableOpacity style={styles.supportButton} onPress={() => Linking.openURL('mailto:kalasetu24824.9@gmail.com?subject=KalaSetu%20Support')}>
                   <Text style={styles.supportButtonText}>Help & Support: kalasetu24824.9@gmail.com</Text>
                 </TouchableOpacity>
               </View>

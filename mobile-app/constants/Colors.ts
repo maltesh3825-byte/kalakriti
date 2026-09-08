@@ -1,5 +1,5 @@
 /**
- * KalaKriti Color Palette
+ * KalaSetu Color Palette
  * Heritage Indian colors: Deep Terracotta, Government Indigo, Warm Sandstone
  */
 export const Colors = {

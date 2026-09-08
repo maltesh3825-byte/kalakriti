@@ -1,11 +1,11 @@
 /**
- * Bilingual and multilingual translations for KalaKriti mobile flows.
+ * Bilingual and multilingual translations for KalaSetu mobile flows.
  */
 export type Language = 'en' | 'hi' | 'ta' | 'kn';
 
 export const i18n = {
   en: {
-    appTitle: 'KalaKriti',
+    appTitle: 'KalaSetu',
     appSubtitle: 'AI Studio & Market Linkage',
     tabStudio: 'Artisan Studio',
     tabMarket: 'Marketplace',

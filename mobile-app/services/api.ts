@@ -1,5 +1,5 @@
 /**
- * API Service for KalaKriti Mobile App
+ * API Service for KalaSetu Mobile App
  * Connects to FastAPI Backend with Automatic Heuristic Fallback
  */
 import Constants from 'expo-constants';

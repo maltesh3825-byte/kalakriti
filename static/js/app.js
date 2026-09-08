@@ -443,7 +443,7 @@ async function submitInstitutionalRequest(event) {
     requirements: document.getElementById('institutionalRequirements')?.value.trim()
   };
   const status = document.getElementById('institutionalRequestStatus');
-  const subject = encodeURIComponent(`KalaKriti bulk request - ${payload.product_category}`);
+  const subject = encodeURIComponent(`KalaSetu bulk request - ${payload.product_category}`);
   const body = encodeURIComponent(
     `Name: ${payload.artisan_name}\nEmail: ${payload.email}\nPhone: ${payload.phone}\nLocation: ${payload.location}\nBuyer type: ${payload.buyer_type}\nCategory: ${payload.product_category}\nQuantity: ${payload.quantity}\nTarget: ${payload.target_market}\nRequirements: ${payload.requirements}`
   );
@@ -985,7 +985,7 @@ function renderProducts(products) {
                     class="p-2 rounded-xl ${state.accountWishlist.includes(p.id) ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'} hover:bg-rose-100 hover:text-rose-600 transition-colors"
                     title="Save to wishlist">♥</button>
 
-            <a href="https://wa.me/${(p.artisan_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${p.artisan_name}, I am interested in buying your handcrafted '${p.name}' listed on KalaKriti marketplace for ₹${p.price}.`)}"
+            <a href="https://wa.me/${(p.artisan_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${p.artisan_name}, I am interested in buying your handcrafted '${p.name}' listed on KalaSetu marketplace for ₹${p.price}.`)}"
                target="_blank" rel="noopener noreferrer"
                class="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
                title="WhatsApp Inquiry">
@@ -1087,7 +1087,7 @@ function openProductModal(productId) {
   const waBtn = document.getElementById('modalWhatsAppBtn');
   if (waBtn) {
     const cleanPhone = (product.artisan_phone || '').replace(/[^0-9]/g, '');
-    const msg = `Namaste ${product.artisan_name}, I saw your handcrafted '${product.name}' on KalaKriti marketplace for ₹${product.price}. I would like to order directly from you.`;
+    const msg = `Namaste ${product.artisan_name}, I saw your handcrafted '${product.name}' on KalaSetu marketplace for ₹${product.price}. I would like to order directly from you.`;
     waBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
   }
 

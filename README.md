@@ -1,4 +1,4 @@
-# 🎨 KalaKriti: AI-Driven Market Linkage & Smart Cataloging for Marginalized Artisans
+# 🎨 KalaSetu: AI-Driven Market Linkage & Smart Cataloging for Marginalized Artisans
 
 **Smart India Hackathon 2026** | **Problem Statement ID: SIH26090**  
 **Organization**: Ministry of Social Justice and Empowerment (MoSJE)  
@@ -10,7 +10,7 @@
 
 Rural and marginalized micro-entrepreneurs, weavers, and traditional artisans in India face severe digital divide challenges: low digital literacy, language barriers, and lack of technical skills required to professionally photograph, price, and catalog products for modern e-commerce.
 
-**KalaKriti** acts as an intuitive **AI Virtual Business Manager** on mobile and web:
+**KalaSetu** acts as an intuitive **AI Virtual Business Manager** on mobile and web:
 1. **Low-Barrier Artisan Studio**: Designed for zero-tech users with large visual touch targets, one-tap camera capture, and Web Speech voice recognition in Hindi (`hi-IN`) and English.
 2. **Multimodal AI Vision Model (Google Gemini)**: Instantly identifies craft category (Handloom, Terracotta, Dhokra Brass, Cane/Bamboo, Woodcraft, etc.), crafts 3–5 high-converting SEO tags, and drafts compelling product descriptions in both **English and Hindi**.
 3. **AI Dynamic Pricing Assistant**: Recommends an optimal, fair-trade selling price range with clear justification based on estimated craftsmanship complexity, raw material value, and fair living wages.
@@ -33,7 +33,7 @@ GEMINI_API_KEY=AIzaSyYourActualGoogleGeminiKeyHere
 
 > [!NOTE]
 > **Get a Free Gemini API Key**: Visit [Google AI Studio](https://aistudio.google.com/app/apikey). Do not commit API keys to source control; use `.env` or an environment variable.
-> **Demo Resilience**: If no key is configured or if network quota is exceeded during a live hackathon presentation, KalaKriti automatically switches to its built-in **Smart Cataloging Heuristic Engine**, ensuring your demo NEVER crashes in front of judges!
+> **Demo Resilience**: If no key is configured or if network quota is exceeded during a live hackathon presentation, KalaSetu automatically switches to its built-in **Smart Cataloging Heuristic Engine**, ensuring your demo NEVER crashes in front of judges!
 
 ---
 
@@ -45,7 +45,7 @@ GEMINI_API_KEY=AIzaSyYourActualGoogleGeminiKeyHere
 
 ### Option A: Run the Competition Mobile App (Recommended)
 
-KalaKriti's primary competition deliverable is the React Native mobile app in `mobile-app/`.
+KalaSetu's primary competition deliverable is the React Native mobile app in `mobile-app/`.
 
 1. Start the backend and Expo together on Windows:
    ```powershell
@@ -200,7 +200,7 @@ artisan-market-linkage/
 
 ## 🏛️ Alignment with Ministry of Social Justice & Empowerment (MoSJE) Goals
 
-| MoSJE Impact Goal | How KalaKriti Solves It |
+| MoSJE Impact Goal | How KalaSetu Solves It |
 | :--- | :--- |
 | **Year-Round Digital Sales** | Replaces dependence on once-a-year physical fairs (Surajkund, Shilp Samagam) with a 24/7 digital storefront. |
 | **Overcoming Low Literacy** | Voice-to-text dictation, one-click camera capture, and audio narration (TTS). |

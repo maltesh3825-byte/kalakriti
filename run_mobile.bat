@@ -1,9 +1,9 @@
 @echo off
 setlocal
-title KalaKriti Mobile - Expo Go
+title KalaSetu Mobile - Expo Go
 set "PATH=%AppData%\npm;%PATH%"
 echo ==========================================================
-echo  Starting KalaKriti Mobile Application (React Native/Expo)
+echo  Starting KalaSetu Mobile Application (React Native/Expo)
 echo  Smart India Hackathon 2026 - Problem Statement SIH26090
 echo ==========================================================
 cd /d "%~dp0mobile-app"
@@ -42,8 +42,8 @@ if errorlevel 1 (
 	pause
 	exit /b 1
 )
-echo Starting KalaKriti API in a separate window...
-start "KalaKriti API" cmd /k "cd /d ""%~dp0"" && python app.py"
+echo Starting KalaSetu API in a separate window...
+start "KalaSetu API" cmd /k "cd /d ""%~dp0"" && python app.py"
 echo Installing mobile dependencies...
 cd /d "%~dp0mobile-app"
 call npm install --no-audit --no-fund

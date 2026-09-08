@@ -6,7 +6,7 @@
 
 const translations = {
   en: {
-    app_title: "KalaKriti",
+    app_title: "KalaSetu",
     app_subtitle: "AI Studio & Market Linkage for Artisans",
     nav_studio: "Artisan Studio",
     nav_market: "Buyer Marketplace",

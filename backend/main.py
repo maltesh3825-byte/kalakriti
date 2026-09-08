@@ -22,7 +22,7 @@ from backend.database import get_db_connection, init_db
 init_db()
 
 app = FastAPI(
-    title="KalaKriti - AI Smart Cataloging & Market Linkage",
+    title="KalaSetu - AI Smart Cataloging & Market Linkage",
     description="SIH 2026 (SIH26090) AI-driven platform for marginalized artisans and weavers.",
     version="1.0.0",
 )
@@ -350,7 +350,7 @@ def create_order(payload: OrderCreate):
 
 @app.post("/api/institutional-requests")
 def create_institutional_request(payload: InstitutionalRequestCreate):
-    """Store a bulk linkage/RFQ request for follow-up by the KalaKriti team."""
+    """Store a bulk linkage/RFQ request for follow-up by the KalaSetu team."""
     if not payload.artisan_name.strip() or not payload.email.strip():
         raise HTTPException(status_code=400, detail="Name and email are required")
 
@@ -622,5 +622,5 @@ def serve_index():
 if __name__ == "__main__":
     import uvicorn
 
-    print(f"🚀 Starting KalaKriti Artisan App on http://{HOST}:{PORT}")
+    print(f"🚀 Starting KalaSetu Artisan App on http://{HOST}:{PORT}")
     uvicorn.run("backend.main:app", host=HOST, port=PORT, reload=True)

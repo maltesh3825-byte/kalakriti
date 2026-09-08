@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "KalaKriti",
+    "name": "KalaSetu",
     "slug": "kalakriti-artisan-ai",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,8 +9,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "KalaKriti needs camera access to capture product photos for AI cataloging.",
-        "NSPhotoLibraryUsageDescription": "KalaKriti needs photo gallery access to select craft photos."
+        "NSCameraUsageDescription": "KalaSetu needs camera access to capture product photos for AI cataloging.",
+        "NSPhotoLibraryUsageDescription": "KalaSetu needs photo gallery access to select craft photos."
       }
     },
     "android": {
