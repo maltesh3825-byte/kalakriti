@@ -476,6 +476,9 @@ def get_stats():
     }
 
 
+# Mount uploads separately because hosted deployments may place them outside
+# STATIC_DIR (for example /tmp/uploads on Render's free tier).
+app.mount("/static/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

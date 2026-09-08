@@ -45,6 +45,12 @@ const SAMPLE_PRESETS = [
   }
 ];
 
+function resolveImageUrl(imageUrl) {
+  if (!imageUrl) return '';
+  if (/^(https?:|data:|blob:)/i.test(imageUrl)) return imageUrl;
+  return new URL(imageUrl, window.location.origin).href;
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
@@ -602,7 +608,7 @@ async function triggerAiAnalysis() {
 function populateReviewCard(data) {
   const reviewImg = document.getElementById('reviewCardImage');
   if (reviewImg && state.uploadedImageUrl) {
-    reviewImg.src = state.uploadedImageUrl;
+    reviewImg.src = resolveImageUrl(state.uploadedImageUrl);
   }
 
   // Suggested Title
@@ -866,7 +872,7 @@ function renderProducts(products) {
       <div class="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 hover:border-terracotta-300 hover:shadow-xl transition-all duration-300 flex flex-col">
         <!-- Image Container -->
         <div class="relative aspect-square overflow-hidden bg-slate-100">
-          <img src="${p.image_url}" alt="${p.name}" 
+          <img src="${resolveImageUrl(p.image_url)}" alt="${p.name}"
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${imageClass}">
           
           <!-- Category Pill -->
@@ -976,7 +982,7 @@ function openProductModal(productId) {
   const modal = document.getElementById('productDetailModal');
   if (!modal) return;
 
-  document.getElementById('modalImage').src = product.image_url;
+  document.getElementById('modalImage').src = resolveImageUrl(product.image_url);
   document.getElementById('modalTitle').textContent = product.name;
   document.getElementById('modalPrice').textContent = `₹${product.price.toLocaleString('en-IN')}`;
   document.getElementById('modalCategory').textContent = product.category;
