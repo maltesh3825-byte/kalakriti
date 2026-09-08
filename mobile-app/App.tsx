@@ -19,8 +19,7 @@ import {
   Linking,
   Platform,
   Switch,
-  ImageStyle,
-  ImageBackground
+  ImageStyle
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
@@ -420,8 +419,9 @@ export default function App() {
           /* ======================================================= */
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
-          <ImageBackground source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImageBackground} imageStyle={styles.screenImageStretch}>
-          <View style={styles.studioContainer}>
+          <View style={styles.screenImageFrame}>
+            <Image source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImage} />
+            <View style={styles.studioContainer}>
             
             {/* Step 1 Card: Photo Capture */}
             <View style={styles.card}>
@@ -680,14 +680,15 @@ export default function App() {
               </View>
             )}
 
+            </View>
           </View>
-          </ImageBackground>
         ) : activeTab === 'market' ? (
           /* ======================================================= */
           /* SCREEN 2: BUYER MARKETPLACE FEED                        */
           /* ======================================================= */
-          <ImageBackground source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImageBackground} imageStyle={styles.screenImageStretch}>
-          <View style={styles.marketContainer}>
+          <View style={styles.screenImageFrame}>
+            <Image source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImage} />
+            <View style={styles.marketContainer}>
             
             {/* Marketplace Banner */}
             <View style={styles.marketHero}>
@@ -779,8 +780,8 @@ export default function App() {
               ))}
             </View>
 
+            </View>
           </View>
-          </ImageBackground>
         ) : activeTab === 'wishlist' ? (
           <View style={styles.marketContainer}>
             <Text style={styles.marketHeroTitle}>{t.wishlistTitle}</Text>
@@ -1064,11 +1065,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 80,
   },
-  screenImageBackground: {
+  screenImageFrame: {
     width: '100%',
     minHeight: 420,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  screenImageStretch: {
+  screenImage: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     resizeMode: 'cover',
   },
   studioContainer: {
