@@ -56,5 +56,5 @@ configured_port = os.getenv("PORT")
 PORT = int(configured_port) if configured_port else find_available_port(8000, HOST)
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(BASE_DIR / "artisan_catalog.db")))
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@kalasetu.in").strip().lower()
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "kalasetu123.4@gmail.com").strip().lower()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "K123@nm")

@@ -6,7 +6,7 @@
 
 // Application State
 const state = {
-  currentTab: 'studio', // 'studio' | 'marketplace'
+  currentTab: 'home',
   selectedFile: null,
   uploadedImageUrl: null,
   aiResult: null,
@@ -71,11 +71,15 @@ async function initApp() {
   loadProducts();
   setupEventListeners();
   setLanguage(localStorage.getItem('kalakriti_language') || 'en');
+  switchTab('home');
+
   const savedUser = localStorage.getItem('kalakriti_user');
   if (savedUser) {
     try {
       state.currentUser = JSON.parse(savedUser);
       await loadAccountData();
+      const userName = state.currentUser?.name || state.currentUser?.email || 'user';
+      showToast(`Logged in as ${userName}`);
     } catch (error) {
       localStorage.removeItem('kalakriti_user');
     }
@@ -275,7 +279,6 @@ function switchTab(tab) {
   const studioSection = document.getElementById('studioTabSection');
   const marketSection = document.getElementById('marketplaceTabSection');
   const institutionalSection = document.getElementById('institutionalTabSection');
-  const aboutSection = document.getElementById('aboutProjectSection');
   const accountSection = document.getElementById('accountTabSection');
 
   document.querySelectorAll('[data-tab-target]').forEach(btn => {
@@ -294,35 +297,24 @@ function switchTab(tab) {
     studioSection?.classList.add('hidden');
     marketSection?.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
-    aboutSection?.classList.remove('hidden');
     accountSection?.classList.add('hidden');
   } else if (tab === 'studio') {
     homeSection?.classList.add('hidden');
     studioSection?.classList.remove('hidden');
     marketSection?.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
-    aboutSection?.classList.add('hidden');
     accountSection?.classList.add('hidden');
   } else if (tab === 'institutional') {
     homeSection?.classList.add('hidden');
     studioSection?.classList.add('hidden');
     marketSection?.classList.add('hidden');
     institutionalSection?.classList.remove('hidden');
-    aboutSection?.classList.add('hidden');
-    accountSection?.classList.add('hidden');
-  } else if (tab === 'about') {
-    homeSection?.classList.remove('hidden');
-    studioSection?.classList.add('hidden');
-    marketSection?.classList.add('hidden');
-    institutionalSection?.classList.add('hidden');
-    aboutSection?.classList.remove('hidden');
     accountSection?.classList.add('hidden');
   } else if (tab === 'account') {
     homeSection?.classList.add('hidden');
     studioSection?.classList.add('hidden');
     marketSection?.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
-    aboutSection?.classList.add('hidden');
     accountSection?.classList.remove('hidden');
     renderAccountShell();
   } else {
@@ -330,7 +322,6 @@ function switchTab(tab) {
     studioSection?.classList.add('hidden');
     marketSection?.classList.remove('hidden');
     institutionalSection?.classList.add('hidden');
-    aboutSection?.classList.add('hidden');
     accountSection?.classList.add('hidden');
     loadProducts();
   }
@@ -361,7 +352,9 @@ async function loginAccount(event) {
     state.currentUser = data.user;
     localStorage.setItem('kalakriti_user', JSON.stringify(state.currentUser));
     await loadAccountData();
-    renderAccountShell();
+    switchTab('home');
+    const userName = state.currentUser?.name || email || 'user';
+    showToast(`Logged in as ${userName}`);
   } catch (error) {
     status.textContent = 'Sign in failed. Demo buyer: demo@kalakriti.in / demo123';
     status.className = 'mt-4 text-sm font-semibold text-red-700';
@@ -569,8 +562,8 @@ function renderAdminView(content) {
       <h3>Admin Review</h3>
       <p class="account-muted">Use the configured admin credentials to review institutional buyer requests.</p>
       <form id="adminLoginForm" class="mt-4 space-y-3">
-        <input id="adminEmail" type="email" class="institutional-input" placeholder="Admin email" value="admin@kalasetu.in" required>
-        <input id="adminPassword" type="password" class="institutional-input" placeholder="Admin password" value="admin123" required>
+        <input id="adminEmail" type="email" class="institutional-input" placeholder="Admin email" required>
+        <input id="adminPassword" type="password" class="institutional-input" placeholder="Admin password" required>
         <button type="submit" class="account-small-action">Sign in as admin</button>
       </form>
       <p id="adminLoginStatus" class="hidden mt-3 text-sm font-semibold"></p>
