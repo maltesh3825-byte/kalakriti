@@ -81,7 +81,7 @@ const translations = {
     sort_price_low: "Price: Low to High",
     sort_price_high: "Price: High to Low",
     mosje_verified: "MoSJE Verified Artisan",
-    btn_view_details: "View & Inquire",
+    btn_view_details: "View & Place Order",
     btn_whatsapp_inquire: "Contact Artisan on WhatsApp",
     artisan_direct: "100% Proceeds to Artisan",
 
@@ -171,7 +171,7 @@ const translations = {
     sort_price_low: "कम से अधिक कीमत",
     sort_price_high: "अधिक से कम कीमत",
     mosje_verified: "मंत्रालय प्रमाणित कारीगर",
-    btn_view_details: "देखें और संपर्क करें",
+    btn_view_details: "देखें और ऑर्डर करें",
     btn_whatsapp_inquire: "कारीगर से व्हाट्सएप पर बात करें",
     artisan_direct: "100% कमाई सीधे कारीगर को",
 
@@ -186,11 +186,23 @@ const translations = {
   }
 };
 
+const coreTranslations = {
+  en: { nav_studio: 'Artisan Studio', nav_market: 'Buyer Marketplace', nav_bulk: 'Bulk & Institutions', nav_account: 'Account', account_profile: 'Profile', account_history: 'History', account_orders: 'Orders', account_requests: 'Requests', account_wishlist: 'Wishlist', btn_place_order: 'Place order request', btn_whatsapp_inquire: 'Contact Artisan on WhatsApp', order_sent: 'Order request sent to the artisan' },
+  hi: { nav_studio: 'कारीगर स्टूडियो', nav_market: 'खरीदार बाज़ार', nav_bulk: 'थोक और संस्थान', nav_account: 'खाता', account_profile: 'प्रोफ़ाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'अनुरोध', account_wishlist: 'पसंदीदा', btn_place_order: 'ऑर्डर अनुरोध भेजें', btn_whatsapp_inquire: 'व्हाट्सएप पर कारीगर से संपर्क करें', order_sent: 'कारीगर को ऑर्डर अनुरोध भेज दिया गया' },
+  ta: { nav_studio: 'கைவினை ஸ்டூடியோ', nav_market: 'வாங்குபவர் சந்தை', nav_bulk: 'மொத்த விற்பனை மற்றும் நிறுவனங்கள்', nav_account: 'கணக்கு', account_profile: 'சுயவிவரம்', account_history: 'வரலாறு', account_orders: 'ஆர்டர்கள்', account_requests: 'கோரிக்கைகள்', account_wishlist: 'விருப்பங்கள்', btn_place_order: 'ஆர்டர் கோரிக்கை', btn_whatsapp_inquire: 'வாட்ஸ்அப்பில் கைவினைஞரை தொடர்பு கொள்ளுங்கள்', order_sent: 'ஆர்டர் கோரிக்கை அனுப்பப்பட்டது' },
+  kn: { nav_studio: 'ಕುಶಲಕರ್ಮಿ ಸ್ಟುಡಿಯೋ', nav_market: 'ಖರೀದಿದಾರರ ಮಾರುಕಟ್ಟೆ', nav_bulk: 'ಸಗಟು ಮತ್ತು ಸಂಸ್ಥೆಗಳು', nav_account: 'ಖಾತೆ', account_profile: 'ಪ್ರೊಫೈಲ್', account_history: 'ಇತಿಹಾಸ', account_orders: 'ಆರ್ಡರ್‌ಗಳು', account_requests: 'ವಿನಂತಿಗಳು', account_wishlist: 'ಇಷ್ಟಪಟ್ಟವು', btn_place_order: 'ಆರ್ಡರ್ ವಿನಂತಿ', btn_whatsapp_inquire: 'ವಾಟ್ಸಪ್‌ನಲ್ಲಿ ಕಲೆಗಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ', order_sent: 'ಆರ್ಡರ್ ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ' },
+  te: { nav_studio: 'కళాకారుల స్టూడియో', nav_market: 'కొనుగోలుదారుల మార్కెట్', nav_bulk: 'బల్క్ మరియు సంస్థలు', nav_account: 'ఖాతా', account_profile: 'ప్రొఫైల్', account_history: 'చరిత్ర', account_orders: 'ఆర్డర్లు', account_requests: 'అభ్యర్థనలు', account_wishlist: 'ఇష్టమైనవి', btn_place_order: 'ఆర్డర్ అభ్యర్థన', btn_whatsapp_inquire: 'వాట్సాప్‌లో కళాకారుడిని సంప్రదించండి', order_sent: 'ఆర్డర్ అభ్యర్థన పంపబడింది' },
+  bn: { nav_studio: 'কারিগর স্টুডিও', nav_market: 'ক্রেতা বাজার', nav_bulk: 'বাল্ক ও প্রতিষ্ঠান', nav_account: 'অ্যাকাউন্ট', account_profile: 'প্রোফাইল', account_history: 'ইতিহাস', account_orders: 'অর্ডার', account_requests: 'অনুরোধ', account_wishlist: 'উইশলিস্ট', btn_place_order: 'অর্ডার অনুরোধ', btn_whatsapp_inquire: 'হোয়াটসঅ্যাপে কারিগরের সঙ্গে যোগাযোগ করুন', order_sent: 'অর্ডার অনুরোধ পাঠানো হয়েছে' },
+  mr: { nav_studio: 'कारागीर स्टुडिओ', nav_market: 'खरेदीदार बाजार', nav_bulk: 'घाऊक आणि संस्था', nav_account: 'खाते', account_profile: 'प्रोफाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'विनंत्या', account_wishlist: 'यादी', btn_place_order: 'ऑर्डर विनंती पाठवा', btn_whatsapp_inquire: 'व्हॉट्सॲपवर कारागिराशी संपर्क करा', order_sent: 'ऑर्डर विनंती पाठवली' },
+  gu: { nav_studio: 'કારીગર સ્ટુડિયો', nav_market: 'ખરીદદાર બજાર', nav_bulk: 'જથ્થાબંધ અને સંસ્થાઓ', nav_account: 'એકાઉન્ટ', account_profile: 'પ્રોફાઇલ', account_history: 'ઇતિહાસ', account_orders: 'ઓર્ડર', account_requests: 'વિનંતીઓ', account_wishlist: 'વિશલિસ્ટ', btn_place_order: 'ઓર્ડર વિનંતી', btn_whatsapp_inquire: 'વોટ્સએપ પર કારીગરનો સંપર્ક કરો', order_sent: 'ઓર્ડર વિનંતી મોકલાઈ' }
+};
+
 let currentLanguage = 'en';
 
 function setLanguage(lang) {
   currentLanguage = lang;
-  const dictionary = translations[lang] || translations.en;
+  const dictionary = { ...translations.en, ...(translations[lang] || {}), ...(coreTranslations[lang] || {}) };
+  localStorage.setItem('kalakriti_language', lang);
   document.documentElement.lang = lang;
   
   // Update all elements with data-i18n
@@ -217,11 +229,22 @@ function setLanguage(lang) {
     }
   });
 
-  // Toggle button text
-  const toggleBtn = document.getElementById('langToggleBtn');
-  if (toggleBtn) {
-    toggleBtn.textContent = lang === 'en' ? 'हिंदी' : 'English';
-  }
+  const languageSelect = document.getElementById('languageSelect');
+  if (languageSelect) languageSelect.value = lang;
+
+  const navLabels = {
+    studio: dictionary.nav_studio,
+    marketplace: dictionary.nav_market,
+    institutional: dictionary.nav_bulk,
+    account: dictionary.nav_account
+  };
+  Object.entries(navLabels).forEach(([tab, label]) => {
+    document.querySelectorAll(`[data-tab-target="${tab}"] span:last-child`).forEach(el => { el.textContent = label; });
+  });
+  document.querySelectorAll('[data-account-view]').forEach(button => {
+    const key = `account_${button.dataset.accountView}`;
+    if (dictionary[key]) button.textContent = dictionary[key];
+  });
 
   // Update dynamic badges if needed
   if (window.onLanguageChanged) {
@@ -235,5 +258,5 @@ function toggleLanguage() {
 }
 
 function t(key) {
-  return (translations[currentLanguage] && translations[currentLanguage][key]) || translations.en[key] || key;
+  return coreTranslations[currentLanguage]?.[key] || translations[currentLanguage]?.[key] || translations.en[key] || key;
 }

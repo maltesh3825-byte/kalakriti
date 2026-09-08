@@ -54,7 +54,7 @@ async function initApp() {
   checkApiConfig();
   loadProducts();
   setupEventListeners();
-  setLanguage('en');
+  setLanguage(localStorage.getItem('kalakriti_language') || 'en');
   const savedUser = localStorage.getItem('kalakriti_user');
   if (savedUser) {
     try {
@@ -247,6 +247,9 @@ function setupEventListeners() {
       }
     });
   }
+
+  const placeOrderBtn = document.getElementById('modalPlaceOrderBtn');
+  if (placeOrderBtn) placeOrderBtn.addEventListener('click', placeMarketplaceOrder);
 }
 
 // Switch between Studio and Marketplace tabs
@@ -357,16 +360,16 @@ function renderAccountView(view) {
   const content = document.getElementById('accountContent');
   const requests = JSON.parse(localStorage.getItem('kalakriti_requests') || '[]');
   if (view === 'profile') {
-    content.innerHTML = `<div class="account-panel"><h3>Profile</h3><p><strong>Name:</strong> ${state.currentUser.name}</p><p><strong>Email:</strong> ${state.currentUser.email}</p><p><strong>Role:</strong> ${state.currentUser.role}</p><p><strong>Location:</strong> ${state.currentUser.city || 'Not added'}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_profile')}</h3><p><strong>Name:</strong> ${state.currentUser.name}</p><p><strong>Email:</strong> ${state.currentUser.email}</p><p><strong>Role:</strong> ${state.currentUser.role}</p><p><strong>Location:</strong> ${state.currentUser.city || 'Not added'}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
   } else if (view === 'history') {
-    content.innerHTML = `<div class="account-panel"><h3>Activity history</h3><p class="account-muted">${state.accountOrders.length} purchase request(s), ${requests.length} institutional request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>Orders</span></div><div><strong>${requests.length}</strong><span>Bulk requests</span></div><div><strong>${state.accountWishlist.length}</strong><span>Wishlist</span></div></div></div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} purchase request(s), ${requests.length} institutional request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${requests.length}</strong><span>${t('account_requests')}</span></div><div><strong>${state.accountWishlist.length}</strong><span>${t('account_wishlist')}</span></div></div></div>`;
   } else if (view === 'orders') {
-    content.innerHTML = `<div class="account-panel"><h3>Orders</h3>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders yet. Use the marketplace to request one.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders yet. Use the marketplace to request one.</p>'}</div>`;
   } else if (view === 'requests') {
-    content.innerHTML = `<div class="account-panel"><h3>Institutional requests</h3>${requests.length ? requests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'Submitted'}</span></div>`).join('') : '<p class="account-muted">No bulk requests yet. Open Bulk & Institutions to prepare an RFQ.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${requests.length ? requests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'Submitted'}</span></div>`).join('') : '<p class="account-muted">No bulk requests yet. Open Bulk & Institutions to prepare an RFQ.</p>'}</div>`;
   } else {
     const saved = state.products.filter(product => state.accountWishlist.includes(product.id));
-    content.innerHTML = `<div class="account-panel"><h3>Wishlist</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_wishlist')}</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
   }
 }
 
@@ -1019,6 +1022,53 @@ function openProductModal(productId) {
   modal.classList.remove('hidden');
 }
 
+async function placeMarketplaceOrder() {
+  const product = state.selectedProductForModal;
+  if (!product) return;
+  if (!state.currentUser) {
+    document.getElementById('productDetailModal')?.classList.add('hidden');
+    switchTab('account');
+    showToast('Sign in before placing an order request');
+    return;
+  }
+
+  const button = document.getElementById('modalPlaceOrderBtn');
+  if (button) {
+    button.disabled = true;
+    button.querySelector('span:last-child').textContent = 'Sending request...';
+  }
+
+  try {
+    const response = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: state.currentUser.id,
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+        total: product.price,
+        status: 'Requested',
+        eta: 'Artisan will confirm delivery'
+      })
+    });
+    if (!response.ok) throw new Error('Order request failed');
+    await loadAccountData();
+    document.getElementById('productDetailModal')?.classList.add('hidden');
+    showToast('Order request sent to the artisan');
+    switchTab('account');
+    renderAccountView('orders');
+  } catch (error) {
+    console.error('Order request error:', error);
+    showToast('Could not place the order request');
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.querySelector('span:last-child').textContent = t('btn_place_order');
+    }
+  }
+}
+
 // Toast notification helper
 function showToast(message) {
   const toast = document.getElementById('toastNotification');
@@ -1040,4 +1090,9 @@ window.onLanguageChanged = (lang) => {
   if (state.products.length > 0) {
     renderProducts(state.products);
   }
+  if (state.currentUser) {
+    renderAccountShell();
+  }
+  const orderButton = document.querySelector('#modalPlaceOrderBtn span:last-child');
+  if (orderButton) orderButton.textContent = t('btn_place_order');
 };
