@@ -244,12 +244,55 @@ def get_orders(user_id: int):
     return {"orders": [dict(r) for r in rows]}
 
 
+@app.get("/api/orders/{user_id}/incoming")
+def get_incoming_orders(user_id: int):
+    """Orders placed by buyers for products belonging to this artisan."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT orders.*, users.name AS buyer_name, users.email AS buyer_email
+        FROM orders
+        JOIN products ON products.id = orders.product_id
+        LEFT JOIN users ON users.id = orders.user_id
+        WHERE lower(products.artisan_name) = lower((SELECT name FROM users WHERE id = ?))
+        ORDER BY orders.id DESC
+        """,
+        (user_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return {"orders": [dict(row) for row in rows]}
+
+
+@app.get("/api/notifications/{user_id}")
+def get_notifications(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM notifications WHERE user_id = ? ORDER BY id DESC LIMIT 100",
+        (user_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return {"notifications": [dict(row) for row in rows]}
+
+
+@app.post("/api/notifications/{user_id}/read")
+def mark_notifications_read(user_id: int):
+    conn = get_db_connection()
+    conn.execute("UPDATE notifications SET is_read = 1 WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+
 @app.post("/api/orders")
 def create_order(payload: OrderCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
     requested_quantity = max(1, payload.quantity)
-    cursor.execute("SELECT quantity, name, price FROM products WHERE id = ?", (payload.product_id,))
+    cursor.execute("SELECT quantity, artisan_name, name, price FROM products WHERE id = ?", (payload.product_id,))
     product_row = cursor.fetchone()
     if not product_row:
         conn.close()
@@ -283,6 +326,22 @@ def create_order(payload: OrderCreate):
         ),
     )
     order_id = cursor.lastrowid
+    cursor.execute(
+        "SELECT id FROM users WHERE lower(name) = lower(?) AND role = 'artisan' LIMIT 1",
+        (product_row[1],),
+    )
+    artisan_row = cursor.fetchone()
+    if artisan_row:
+        cursor.execute(
+            "INSERT INTO notifications (user_id, kind, title, message, related_id) VALUES (?, ?, ?, ?, ?)",
+            (
+                artisan_row[0],
+                "buyer_order",
+                "New buyer order request",
+                f"A buyer requested {requested_quantity} unit(s) of {payload.product_name}.",
+                order_id,
+            ),
+        )
     conn.commit()
     conn.close()
     remaining_quantity = available_quantity - requested_quantity
@@ -317,9 +376,45 @@ def create_institutional_request(payload: InstitutionalRequestCreate):
         ),
     )
     request_id = cursor.lastrowid
+    cursor.execute(
+        "SELECT id FROM users WHERE lower(name) = lower(?) LIMIT 1",
+        (payload.artisan_name.strip(),),
+    )
+    owner_row = cursor.fetchone()
+    if owner_row:
+        cursor.execute(
+            "INSERT INTO notifications (user_id, kind, title, message, related_id) VALUES (?, ?, ?, ?, ?)",
+            (
+                owner_row[0],
+                "bulk_request",
+                "Bulk request submitted",
+                f"Your {payload.target_market} request for {max(1, payload.quantity)} unit(s) is pending review.",
+                request_id,
+            ),
+        )
     conn.commit()
     conn.close()
     return {"status": "success", "request_id": request_id}
+
+
+@app.get("/api/institutional-requests/{user_id}")
+def get_institutional_requests(user_id: int):
+    """Return bulk requests submitted for the signed-in artisan."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT institutional_requests.*
+        FROM institutional_requests
+        JOIN users ON lower(users.name) = lower(institutional_requests.artisan_name)
+        WHERE users.id = ?
+        ORDER BY institutional_requests.id DESC
+        """,
+        (user_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    return {"requests": [dict(row) for row in rows]}
 
 
 @app.post("/api/analyze-product")

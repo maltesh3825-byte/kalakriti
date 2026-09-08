@@ -20,6 +20,9 @@ const state = {
   currentUser: null,
   accountView: 'profile',
   accountOrders: [],
+  accountIncomingOrders: [],
+  accountRequests: [],
+  accountNotifications: [],
   accountWishlist: []
 };
 
@@ -345,14 +348,30 @@ function logoutAccount() {
 
 async function loadAccountData() {
   if (!state.currentUser) return;
-  const [ordersResponse, wishlistResponse] = await Promise.all([
+  const [ordersResponse, incomingResponse, requestsResponse, notificationsResponse, wishlistResponse] = await Promise.all([
     fetch(`/api/orders/${state.currentUser.id}`),
+    fetch(`/api/orders/${state.currentUser.id}/incoming`),
+    fetch(`/api/institutional-requests/${state.currentUser.id}`),
+    fetch(`/api/notifications/${state.currentUser.id}`),
     fetch(`/api/wishlist/${state.currentUser.id}`)
   ]);
   const orders = ordersResponse.ok ? await ordersResponse.json() : { orders: [] };
+  const incoming = incomingResponse.ok ? await incomingResponse.json() : { orders: [] };
+  const requests = requestsResponse.ok ? await requestsResponse.json() : { requests: [] };
+  const notifications = notificationsResponse.ok ? await notificationsResponse.json() : { notifications: [] };
   const wishlist = wishlistResponse.ok ? await wishlistResponse.json() : { wishlist: [] };
   state.accountOrders = orders.orders || [];
+  state.accountIncomingOrders = incoming.orders || [];
+  state.accountRequests = requests.requests || [];
+  state.accountNotifications = notifications.notifications || [];
   state.accountWishlist = wishlist.wishlist || [];
+}
+
+async function markNotificationsRead() {
+  if (!state.currentUser) return;
+  await fetch(`/api/notifications/${state.currentUser.id}/read`, { method: 'POST' });
+  await loadAccountData();
+  renderAccountView('notifications');
 }
 
 function renderAccountView(view) {
@@ -364,15 +383,17 @@ function renderAccountView(view) {
   document.getElementById('accountWelcome').textContent = `Welcome, ${state.currentUser.name}`;
   document.getElementById('accountMeta').textContent = `${state.currentUser.email} · ${state.currentUser.role} · ${state.currentUser.city || 'India'}`;
   const content = document.getElementById('accountContent');
-  const requests = JSON.parse(localStorage.getItem('kalakriti_requests') || '[]');
   if (view === 'profile') {
     content.innerHTML = `<div class="account-panel"><h3>${t('account_profile')}</h3><p><strong>Name:</strong> ${state.currentUser.name}</p><p><strong>Email:</strong> ${state.currentUser.email}</p><p><strong>Role:</strong> ${state.currentUser.role}</p><p><strong>Location:</strong> ${state.currentUser.city || 'Not added'}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
   } else if (view === 'history') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} purchase request(s), ${requests.length} institutional request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${requests.length}</strong><span>${t('account_requests')}</span></div><div><strong>${state.accountWishlist.length}</strong><span>${t('account_wishlist')}</span></div></div></div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} order(s), ${state.accountIncomingOrders.length} buyer request(s), ${state.accountRequests.length} bulk request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${state.accountIncomingOrders.length}</strong><span>Buyer requests</span></div><div><strong>${state.accountNotifications.filter(item => !item.is_read).length}</strong><span>Unread alerts</span></div></div></div>`;
   } else if (view === 'orders') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders yet. Use the marketplace to request one.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><h4 class="account-subheading">Requested by me</h4>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders requested by you yet.</p>'}<h4 class="account-subheading">Requests from other buyers</h4>${state.accountIncomingOrders.length ? state.accountIncomingOrders.map(order => `<div class="account-row incoming-order"><strong>${order.product_name}</strong><span>${order.buyer_name || 'Buyer'} · ${order.quantity} unit(s) · ₹${order.total} · ${order.status}</span></div>`).join('') : '<p class="account-muted">No buyer requests for your products yet.</p>'}</div>`;
   } else if (view === 'requests') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${requests.length ? requests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'Submitted'}</span></div>`).join('') : '<p class="account-muted">No bulk requests yet. Open Bulk & Institutions to prepare an RFQ.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${state.accountRequests.length ? state.accountRequests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'New'} · ${request.email}</span></div>`).join('') : '<p class="account-muted">No pending bulk requests yet.</p>'}</div>`;
+  } else if (view === 'notifications') {
+    content.innerHTML = `<div class="account-panel"><div class="account-panel-heading"><h3>Notifications</h3><button id="markNotificationsReadBtn" class="account-small-action">Mark all read</button></div>${state.accountNotifications.length ? state.accountNotifications.map(item => `<div class="account-row ${item.is_read ? '' : 'notification-unread'}"><strong>${item.title}</strong><span>${item.message} · ${item.created_at}</span></div>`).join('') : '<p class="account-muted">No notifications yet.</p>'}</div>`;
+    document.getElementById('markNotificationsReadBtn')?.addEventListener('click', markNotificationsRead);
   } else {
     const saved = state.products.filter(product => state.accountWishlist.includes(product.id));
     content.innerHTML = `<div class="account-panel"><h3>${t('account_wishlist')}</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
