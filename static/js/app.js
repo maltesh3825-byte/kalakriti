@@ -19,6 +19,7 @@ const state = {
   apiConfig: null,
   currentUser: null,
   accountView: 'profile',
+  orderView: 'mine',
   accountOrders: [],
   accountIncomingOrders: [],
   accountRequests: [],
@@ -365,6 +366,15 @@ async function loadAccountData() {
   state.accountRequests = requests.requests || [];
   state.accountNotifications = notifications.notifications || [];
   state.accountWishlist = wishlist.wishlist || [];
+  updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+  const badge = document.getElementById('notificationCountBadge');
+  if (!badge) return;
+  const unreadCount = state.accountNotifications.filter(item => !item.is_read).length;
+  badge.textContent = String(unreadCount);
+  badge.classList.toggle('hidden', unreadCount === 0);
 }
 
 async function markNotificationsRead() {
@@ -388,7 +398,7 @@ function renderAccountView(view) {
   } else if (view === 'history') {
     content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} order(s), ${state.accountIncomingOrders.length} buyer request(s), ${state.accountRequests.length} bulk request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${state.accountIncomingOrders.length}</strong><span>Buyer requests</span></div><div><strong>${state.accountNotifications.filter(item => !item.is_read).length}</strong><span>Unread alerts</span></div></div></div>`;
   } else if (view === 'orders') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><h4 class="account-subheading">Requested by me</h4>${state.accountOrders.length ? state.accountOrders.map(order => `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`).join('') : '<p class="account-muted">No orders requested by you yet.</p>'}<h4 class="account-subheading">Requests from other buyers</h4>${state.accountIncomingOrders.length ? state.accountIncomingOrders.map(order => `<div class="account-row incoming-order"><strong>${order.product_name}</strong><span>${order.buyer_name || 'Buyer'} · ${order.quantity} unit(s) · ₹${order.total} · ${order.status}</span></div>`).join('') : '<p class="account-muted">No buyer requests for your products yet.</p>'}</div>`;
+    renderOrdersView(content);
   } else if (view === 'requests') {
     content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${state.accountRequests.length ? state.accountRequests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'New'} · ${request.email}</span></div>`).join('') : '<p class="account-muted">No pending bulk requests yet.</p>'}</div>`;
   } else if (view === 'notifications') {
@@ -398,6 +408,24 @@ function renderAccountView(view) {
     const saved = state.products.filter(product => state.accountWishlist.includes(product.id));
     content.innerHTML = `<div class="account-panel"><h3>${t('account_wishlist')}</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
   }
+}
+
+function renderOrdersView(content) {
+  const isMine = state.orderView === 'mine';
+  const rows = isMine ? state.accountOrders : state.accountIncomingOrders;
+  const emptyMessage = isMine ? 'No orders requested by you yet.' : 'No buyer requests for your products yet.';
+  const rowsMarkup = rows.length
+    ? rows.map(order => isMine
+      ? `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`
+      : `<div class="account-row incoming-order"><strong>${order.product_name}</strong><span>${order.buyer_name || 'Buyer'} · ${order.quantity} unit(s) · ₹${order.total} · ${order.status}</span></div>`).join('')
+    : `<p class="account-muted">${emptyMessage}</p>`;
+  content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><div class="order-switcher"><button class="order-switch ${isMine ? 'order-switch-active' : ''}" data-order-view="mine">Requested by me</button><button class="order-switch ${!isMine ? 'order-switch-active' : ''}" data-order-view="incoming">Requests from other buyers</button></div><div class="order-view-content">${rowsMarkup}</div></div>`;
+  content.querySelectorAll('[data-order-view]').forEach(button => {
+    button.addEventListener('click', () => {
+      state.orderView = button.dataset.orderView;
+      renderOrdersView(content);
+    });
+  });
 }
 
 async function submitInstitutionalRequest(event) {

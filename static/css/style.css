@@ -172,6 +172,53 @@ body {
   color: #fff;
 }
 
+.order-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.35rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+}
+
+.order-switch {
+  min-height: 44px;
+  padding: 0.7rem 0.75rem;
+  border-radius: 0.65rem;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.order-switch-active {
+  background: var(--terracotta-600);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(176, 70, 27, 0.18);
+}
+
+.notification-count-badge {
+  display: inline-flex;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.3rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+@media (max-width: 520px) {
+  .order-switch {
+    font-size: 0.68rem;
+  }
+}
+
 .account-panel {
   background: #fff;
   border: 1px solid #e2e8f0;
