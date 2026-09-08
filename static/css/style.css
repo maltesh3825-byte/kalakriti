@@ -80,6 +80,10 @@ body {
 .wave-bar-2 { animation: wave-bar 0.9s infinite ease-in-out 0.2s; }
 .wave-bar-3 { animation: wave-bar 0.6s infinite ease-in-out 0.4s; }
 
+body {
+  cursor: default;
+}
+
 /* Custom scrollbars */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

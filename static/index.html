@@ -43,7 +43,7 @@
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-[#faf8f5] text-slate-800 antialiased min-h-screen flex flex-col pb-20 sm:pb-8">
+<body class="bg-[#faf8f5] text-slate-800 antialiased min-h-screen flex flex-col pb-20 sm:pb-8" contenteditable="false" spellcheck="false">
 
   <!-- Top Government & Hackathon Announcement Strip -->
   <header class="bg-indigoGov-900 text-white text-xs py-2 px-4 shadow-sm border-b border-indigo-950">
@@ -103,7 +103,7 @@
           <button data-tab-target="home" 
                   class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
             <span>🏠</span>
-            <span>Home</span>
+            <span data-i18n="nav_home">Home</span>
           </button>
           <button data-tab-target="studio" 
                   class="px-5 py-2 rounded-xl text-sm font-bold text-terracotta-600 bg-terracotta-50/80 border border-terracotta-200 transition-all flex items-center gap-2">
@@ -118,12 +118,12 @@
           <button data-tab-target="institutional"
                   class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
             <span>🏛️</span>
-            <span>Bulk & Institutions</span>
+            <span data-i18n="nav_bulk">Bulk & Institutions</span>
           </button>
           <button data-tab-target="account"
                   class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
             <span>👤</span>
-            <span>Account</span>
+            <span data-i18n="nav_account">Account</span>
           </button>
         </div>
 
@@ -861,13 +861,13 @@
         <button id="logoutBtn" data-i18n="logout" class="px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-sm font-bold">Log out</button>
       </div>
       <div class="flex gap-2 overflow-x-auto no-scrollbar py-5">
-        <button class="account-tab account-tab-active" data-account-view="profile">Profile</button>
-        <button class="account-tab" data-account-view="history">History</button>
-        <button class="account-tab" data-account-view="orders">Orders</button>
-        <button class="account-tab" data-account-view="requests">Requests</button>
-        <button class="account-tab" data-account-view="wishlist">Wishlist</button>
-        <button class="account-tab" data-account-view="admin">Admin Review</button>
-        <button class="account-tab account-notification-tab" data-account-view="notifications">Notifications <span id="notificationCountBadge" class="notification-count-badge hidden">0</span></button>
+        <button class="account-tab account-tab-active" data-account-view="profile" data-i18n="account_profile">Profile</button>
+        <button class="account-tab" data-account-view="history" data-i18n="account_history">History</button>
+        <button class="account-tab" data-account-view="orders" data-i18n="account_orders">Orders</button>
+        <button class="account-tab" data-account-view="requests" data-i18n="account_requests">Requests</button>
+        <button class="account-tab" data-account-view="wishlist" data-i18n="account_wishlist">Wishlist</button>
+        <button class="account-tab" data-account-view="admin" data-i18n="admin_review">Admin Review</button>
+        <button class="account-tab account-notification-tab" data-account-view="notifications" data-i18n="account_notifications">Notifications <span id="notificationCountBadge" class="notification-count-badge hidden">0</span></button>
       </div>
       <div id="accountContent"></div>
     </div>

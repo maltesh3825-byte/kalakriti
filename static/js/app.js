@@ -460,22 +460,6 @@ function setupEventListeners() {
     });
   }
 
-  // Close modal
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const modalBackdrop = document.getElementById('productDetailModal');
-  if (closeModalBtn && modalBackdrop) {
-    closeModalBtn.addEventListener('click', () => {
-      stopSpeaking();
-      modalBackdrop.classList.add('hidden');
-    });
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) {
-        stopSpeaking();
-        modalBackdrop.classList.add('hidden');
-      }
-    });
-  }
-
   const placeOrderBtn = document.getElementById('modalPlaceOrderBtn');
   if (placeOrderBtn) placeOrderBtn.addEventListener('click', placeMarketplaceOrder);
 }
@@ -558,14 +542,22 @@ async function loginAccount(event) {
     const data = await response.json();
     state.currentUser = data.user;
     localStorage.setItem('kalakriti_user', JSON.stringify(state.currentUser));
-    await loadAccountData();
+
+    try {
+      await loadAccountData();
+    } catch (loadErr) {
+      console.warn('Account data load skipped after login:', loadErr);
+    }
+
     switchTab('home');
-    const userName = state.currentUser?.name || email || 'user';
+    const userName = state.currentUser?.name || state.currentUser?.email || email || 'user';
     showToast(`Logged in as ${userName}`);
   } catch (error) {
-    status.textContent = 'Sign in failed. Demo buyer: demo@kalakriti.in / demo123';
-    status.className = 'mt-4 text-sm font-semibold text-red-700';
-    status.classList.remove('hidden');
+    if (status) {
+      status.textContent = 'Sign in failed. Demo buyer: demo@kalakriti.in / demo123';
+      status.className = 'mt-4 text-sm font-semibold text-red-700';
+      status.classList.remove('hidden');
+    }
   }
 }
 
@@ -579,18 +571,34 @@ function logoutAccount() {
 
 async function loadAccountData() {
   if (!state.currentUser) return;
-  const [ordersResponse, incomingResponse, requestsResponse, notificationsResponse, wishlistResponse] = await Promise.all([
+
+  const [ordersResult, incomingResult, requestsResult, notificationsResult, wishlistResult] = await Promise.allSettled([
     fetch(`/api/orders/${state.currentUser.id}`),
     fetch(`/api/orders/${state.currentUser.id}/incoming`),
     fetch(`/api/institutional-requests/${state.currentUser.id}`),
     fetch(`/api/notifications/${state.currentUser.id}`),
     fetch(`/api/wishlist/${state.currentUser.id}`)
   ]);
-  const orders = ordersResponse.ok ? await ordersResponse.json() : { orders: [] };
-  const incoming = incomingResponse.ok ? await incomingResponse.json() : { orders: [] };
-  const requests = requestsResponse.ok ? await requestsResponse.json() : { requests: [] };
-  const notifications = notificationsResponse.ok ? await notificationsResponse.json() : { notifications: [] };
-  const wishlist = wishlistResponse.ok ? await wishlistResponse.json() : { wishlist: [] };
+
+  const parseCollection = async (result, fallbackKey) => {
+    if (result.status === 'rejected') return { [fallbackKey]: [] };
+    if (!result.value || !result.value.ok) return { [fallbackKey]: [] };
+    try {
+      const data = await result.value.json();
+      return data && typeof data === 'object' ? data : { [fallbackKey]: [] };
+    } catch (error) {
+      return { [fallbackKey]: [] };
+    }
+  };
+
+  const [orders, incoming, requests, notifications, wishlist] = await Promise.all([
+    parseCollection(ordersResult, 'orders'),
+    parseCollection(incomingResult, 'orders'),
+    parseCollection(requestsResult, 'requests'),
+    parseCollection(notificationsResult, 'notifications'),
+    parseCollection(wishlistResult, 'wishlist')
+  ]);
+
   state.accountOrders = orders.orders || [];
   state.accountIncomingOrders = incoming.orders || [];
   state.accountRequests = requests.requests || [];
@@ -1663,14 +1671,18 @@ function showToast(message) {
   const toastMsg = document.getElementById('toastMessage');
   if (!toast || !toastMsg) return;
 
-  toastMsg.textContent = message;
-  toast.classList.add('toast-visible');
+  toastMsg.textContent = String(message || '');
   toast.classList.remove('toast-hidden');
+  toast.classList.add('toast-visible');
+  toast.style.opacity = '1';
+  toast.style.transform = 'translate(-50%, 0)';
 
   clearTimeout(toast._toastTimer);
   toast._toastTimer = setTimeout(() => {
     toast.classList.add('toast-hidden');
     toast.classList.remove('toast-visible');
+    toast.style.opacity = '0';
+    toast.style.transform = 'translate(-50%, -20px)';
   }, 4000);
 }
 

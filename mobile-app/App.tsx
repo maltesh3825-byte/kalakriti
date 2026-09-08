@@ -674,10 +674,7 @@ export default function App() {
 
               </View>
             )}
-
-            </View>
-          </View>
-        ) : activeTab === 'market' ? (
+          ) : activeTab === 'market' ? (
           /* ======================================================= */
           /* SCREEN 2: BUYER MARKETPLACE FEED                        */
           /* ======================================================= */

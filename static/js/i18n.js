@@ -18,6 +18,9 @@ const translations = {
     sih_badge: "SIH 2026 | SIH26090",
     gemini_live: "Gemini Vision Active",
     gemini_sim: "Smart AI Mode",
+    nav_home: "Home",
+    nav_bulk: "Bulk & Institutions",
+    nav_account: "Account",
 
     // Artisan Studio
     studio_step1_title: "1. Capture or Upload Craft Photo",
@@ -108,6 +111,9 @@ const translations = {
     sih_badge: "स्मार्ट इंडिया हैकथॉन 2026",
     gemini_live: "जेमिनी एआई सक्रिय",
     gemini_sim: "स्मार्ट एआई मोड",
+    nav_home: "होम",
+    nav_bulk: "थोक और संस्थान",
+    nav_account: "खाता",
 
     // Artisan Studio
     studio_step1_title: "१. हस्तशिल्प उत्पाद की फोटो खींचें / अपलोड करें",
@@ -187,14 +193,14 @@ const translations = {
 };
 
 const coreTranslations = {
-  en: { nav_studio: 'Artisan Studio', nav_market: 'Buyer Marketplace', nav_bulk: 'Bulk & Institutions', nav_account: 'Account', account_profile: 'Profile', account_history: 'History', account_orders: 'Orders', account_requests: 'Requests', account_wishlist: 'Wishlist', account_notifications: 'Notifications', btn_place_order: 'Place order request', btn_whatsapp_inquire: 'Contact Artisan on WhatsApp', order_sent: 'Order request sent to the artisan', sign_in: 'Sign in', logout: 'Log out', email: 'Email', password: 'Password', buyer: 'Buyer', seller: 'Artisan / Seller', save: 'Save', submit: 'Submit', close: 'Close', search: 'Search', loading: 'Loading', no_orders: 'No orders yet', no_requests: 'No requests yet', no_saved: 'Nothing saved yet' },
-  hi: { nav_studio: 'कारीगर स्टूडियो', nav_market: 'खरीदार बाज़ार', nav_bulk: 'थोक और संस्थान', nav_account: 'खाता', account_profile: 'प्रोफ़ाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'अनुरोध', account_wishlist: 'पसंदीदा', account_notifications: 'सूचनाएं', btn_place_order: 'ऑर्डर अनुरोध भेजें', btn_whatsapp_inquire: 'व्हाट्सएप पर कारीगर से संपर्क करें', order_sent: 'कारीगर को ऑर्डर अनुरोध भेज दिया गया', sign_in: 'साइन इन', logout: 'लॉग आउट', email: 'ईमेल', password: 'पासवर्ड', buyer: 'खरीदार', seller: 'कारीगर / विक्रेता', save: 'सेव करें', submit: 'जमा करें', close: 'बंद करें', search: 'खोजें', loading: 'लोड हो रहा है', no_orders: 'अभी कोई ऑर्डर नहीं', no_requests: 'अभी कोई अनुरोध नहीं', no_saved: 'अभी कुछ सेव नहीं है' },
-  ta: { nav_studio: 'கைவினை ஸ்டூடியோ', nav_market: 'வாங்குபவர் சந்தை', nav_bulk: 'மொத்த விற்பனை மற்றும் நிறுவனங்கள்', nav_account: 'கணக்கு', account_profile: 'சுயவிவரம்', account_history: 'வரலாறு', account_orders: 'ஆர்டர்கள்', account_requests: 'கோரிக்கைகள்', account_wishlist: 'விருப்பங்கள்', btn_place_order: 'ஆர்டர் கோரிக்கை', btn_whatsapp_inquire: 'வாட்ஸ்அப்பில் கைவினைஞரை தொடர்பு கொள்ளுங்கள்', order_sent: 'ஆர்டர் கோரிக்கை அனுப்பப்பட்டது', sign_in: 'உள்நுழை', logout: 'வெளியேறு', email: 'மின்னஞ்சல்', password: 'கடவுச்சொல்', buyer: 'வாங்குபவர்', seller: 'கைவினைஞர் / விற்பனையாளர்', save: 'சேமி', submit: 'சமர்ப்பி', close: 'மூடு', search: 'தேடு', loading: 'ஏற்றப்படுகிறது', no_orders: 'ஆர்டர்கள் இல்லை', no_requests: 'கோரிக்கைகள் இல்லை', no_saved: 'சேமிப்புகள் இல்லை' },
-  kn: { nav_studio: 'ಕುಶಲಕರ್ಮಿ ಸ್ಟುಡಿಯೋ', nav_market: 'ಖರೀದಿದಾರರ ಮಾರುಕಟ್ಟೆ', nav_bulk: 'ಸಗಟು ಮತ್ತು ಸಂಸ್ಥೆಗಳು', nav_account: 'ಖಾತೆ', account_profile: 'ಪ್ರೊಫೈಲ್', account_history: 'ಇತಿಹಾಸ', account_orders: 'ಆರ್ಡರ್‌ಗಳು', account_requests: 'ವಿನಂತಿಗಳು', account_wishlist: 'ಇಷ್ಟಪಟ್ಟವು', btn_place_order: 'ಆರ್ಡರ್ ವಿನಂತಿ', btn_whatsapp_inquire: 'ವಾಟ್ಸಪ್‌ನಲ್ಲಿ ಕಲೆಗಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ', order_sent: 'ಆರ್ಡರ್ ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ', sign_in: 'ಸೈನ್ ಇನ್', logout: 'ಲಾಗ್ ಔಟ್', email: 'ಇಮೇಲ್', password: 'ಪಾಸ್‌ವರ್ಡ್', buyer: 'ಖರೀದಿದಾರ', seller: 'ಕಲೆಗಾರ / ಮಾರಾಟಗಾರ', save: 'ಉಳಿಸಿ', submit: 'ಸಲ್ಲಿಸಿ', close: 'ಮುಚ್ಚಿ', search: 'ಹುಡುಕಿ', loading: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ', no_orders: 'ಆರ್ಡರ್‌ಗಳಿಲ್ಲ', no_requests: 'ವಿನಂತಿಗಳಿಲ್ಲ', no_saved: 'ಉಳಿಸಿದವುಗಳಿಲ್ಲ' },
-  te: { nav_studio: 'కళాకారుల స్టూడియో', nav_market: 'కొనుగోలుదారుల మార్కెట్', nav_bulk: 'బల్క్ మరియు సంస్థలు', nav_account: 'ఖాతా', account_profile: 'ప్రొఫైల్', account_history: 'చరిత్ర', account_orders: 'ఆర్డర్లు', account_requests: 'అభ్యర్థనలు', account_wishlist: 'ఇష్టమైనవి', btn_place_order: 'ఆర్డర్ అభ్యర్థన', btn_whatsapp_inquire: 'వాట్సాప్‌లో కళాకారుడిని సంప్రదించండి', order_sent: 'ఆర్డర్ అభ్యర్థన పంపబడింది', sign_in: 'సైన్ ఇన్', logout: 'లాగ్ అవుట్', email: 'ఇమెయిల్', password: 'పాస్‌వర్డ్', buyer: 'కొనుగోలుదారు', seller: 'కళాకారుడు / విక్రేత', save: 'సేవ్ చేయండి', submit: 'సమర్పించండి', close: 'మూసివేయండి', search: 'వెతకండి', loading: 'లోడ్ అవుతోంది', no_orders: 'ఆర్డర్లు లేవు', no_requests: 'అభ్యర్థనలు లేవు', no_saved: 'సేవ్ చేసినవి లేవు' },
-  bn: { nav_studio: 'কারিগর স্টুডিও', nav_market: 'ক্রেতা বাজার', nav_bulk: 'বাল্ক ও প্রতিষ্ঠান', nav_account: 'অ্যাকাউন্ট', account_profile: 'প্রোফাইল', account_history: 'ইতিহাস', account_orders: 'অর্ডার', account_requests: 'অনুরোধ', account_wishlist: 'উইশলিস্ট', btn_place_order: 'অর্ডার অনুরোধ', btn_whatsapp_inquire: 'হোয়াটসঅ্যাপে কারিগরের সঙ্গে যোগাযোগ করুন', order_sent: 'অর্ডার অনুরোধ পাঠানো হয়েছে', sign_in: 'সাইন ইন', logout: 'লগ আউট', email: 'ইমেল', password: 'পাসওয়ার্ড', buyer: 'ক্রেতা', seller: 'কারিগর / বিক্রেতা', save: 'সংরক্ষণ', submit: 'জমা দিন', close: 'বন্ধ করুন', search: 'খুঁজুন', loading: 'লোড হচ্ছে', no_orders: 'কোনও অর্ডার নেই', no_requests: 'কোনও অনুরোধ নেই', no_saved: 'কিছু সংরক্ষিত নেই' },
-  mr: { nav_studio: 'कारागीर स्टुडिओ', nav_market: 'खरेदीदार बाजार', nav_bulk: 'घाऊक आणि संस्था', nav_account: 'खाते', account_profile: 'प्रोफाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'विनंत्या', account_wishlist: 'यादी', btn_place_order: 'ऑर्डर विनंती पाठवा', btn_whatsapp_inquire: 'व्हॉट्सॲपवर कारागिराशी संपर्क करा', order_sent: 'ऑर्डर विनंती पाठवली', sign_in: 'साइन इन', logout: 'लॉग आउट', email: 'ईमेल', password: 'पासवर्ड', buyer: 'खरेदीदार', seller: 'कारागीर / विक्रेता', save: 'जतन करा', submit: 'सबमिट करा', close: 'बंद करा', search: 'शोधा', loading: 'लोड होत आहे', no_orders: 'ऑर्डर नाहीत', no_requests: 'विनंत्या नाहीत', no_saved: 'काहीही जतन केलेले नाही' },
-  gu: { nav_studio: 'કારીગર સ્ટુડિયો', nav_market: 'ખરીદદાર બજાર', nav_bulk: 'જથ્થાબંધ અને સંસ્થાઓ', nav_account: 'એકાઉન્ટ', account_profile: 'પ્રોફાઇલ', account_history: 'ઇતિહાસ', account_orders: 'ઓર્ડર', account_requests: 'વિનંતીઓ', account_wishlist: 'વિશલિસ્ટ', btn_place_order: 'ઓર્ડર વિનંતી', btn_whatsapp_inquire: 'વોટ્સએપ પર કારીગરનો સંપર્ક કરો', order_sent: 'ઓર્ડર વિનંતી મોકલાઈ', sign_in: 'સાઇન ઇન', logout: 'લૉગ આઉટ', email: 'ઇમેઇલ', password: 'પાસવર્ડ', buyer: 'ખરીદદાર', seller: 'કારીગર / વેચનાર', save: 'સાચવો', submit: 'સબમિટ કરો', close: 'બંધ કરો', search: 'શોધો', loading: 'લોડ થઈ રહ્યું છે', no_orders: 'કોઈ ઓર્ડર નથી', no_requests: 'કોઈ વિનંતી નથી', no_saved: 'કંઈ સાચવેલું નથી' }
+  en: { nav_studio: 'Artisan Studio', nav_market: 'Buyer Marketplace', nav_bulk: 'Bulk & Institutions', nav_account: 'Account', account_profile: 'Profile', account_history: 'History', account_orders: 'Orders', account_requests: 'Requests', account_wishlist: 'Wishlist', account_notifications: 'Notifications', admin_review: 'Admin Review', btn_place_order: 'Place order request', btn_whatsapp_inquire: 'Contact Artisan on WhatsApp', order_sent: 'Order request sent to the artisan', sign_in: 'Sign in', logout: 'Log out', email: 'Email', password: 'Password', buyer: 'Buyer', seller: 'Artisan / Seller', save: 'Save', submit: 'Submit', close: 'Close', search: 'Search', loading: 'Loading', no_orders: 'No orders yet', no_requests: 'No requests yet', no_saved: 'Nothing saved yet' },
+  hi: { nav_studio: 'कारीगर स्टूडियो', nav_market: 'खरीदार बाज़ार', nav_bulk: 'थोक और संस्थान', nav_account: 'खाता', account_profile: 'प्रोफ़ाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'अनुरोध', account_wishlist: 'पसंदीदा', account_notifications: 'सूचनाएं', admin_review: 'एडमिन रिव्यू', btn_place_order: 'ऑर्डर अनुरोध भेजें', btn_whatsapp_inquire: 'व्हाट्सएप पर कारीगर से संपर्क करें', order_sent: 'कारीगर को ऑर्डर अनुरोध भेज दिया गया', sign_in: 'साइन इन', logout: 'लॉग आउट', email: 'ईमेल', password: 'पासवर्ड', buyer: 'खरीदार', seller: 'कारीगर / विक्रेता', save: 'सेव करें', submit: 'जमा करें', close: 'बंद करें', search: 'खोजें', loading: 'लोड हो रहा है', no_orders: 'अभी कोई ऑर्डर नहीं', no_requests: 'अभी कोई अनुरोध नहीं', no_saved: 'अभी कुछ सेव नहीं है' },
+  ta: { nav_studio: 'கைவினை ஸ்டூடியோ', nav_market: 'வாங்குபவர் சந்தை', nav_bulk: 'மொத்த விற்பனை மற்றும் நிறுவனங்கள்', nav_account: 'கணக்கு', account_profile: 'சுயவிவரம்', account_history: 'வரலாறு', account_orders: 'ஆர்டர்கள்', account_requests: 'கோரிக்கைகள்', account_wishlist: 'விருப்பங்கள்', account_notifications: 'அறிவிப்புகள்', admin_review: 'நிர்வாக மறுஆய்வு', btn_place_order: 'ஆர்டர் கோரிக்கை', btn_whatsapp_inquire: 'வாட்ஸ்அப்பில் கைவினைஞரை தொடர்பு கொள்ளுங்கள்', order_sent: 'ஆர்டர் கோரிக்கை அனுப்பப்பட்டது', sign_in: 'உள்நுழை', logout: 'வெளியேறு', email: 'மின்னஞ்சல்', password: 'கடவுச்சொல்', buyer: 'வாங்குபவர்', seller: 'கைவினைஞர் / விற்பனையாளர்', save: 'சேமி', submit: 'சமர்ப்பி', close: 'மூடு', search: 'தேடு', loading: 'ஏற்றப்படுகிறது', no_orders: 'ஆர்டர்கள் இல்லை', no_requests: 'கோரிக்கைகள் இல்லை', no_saved: 'சேமிப்புகள் இல்லை' },
+kn: { nav_studio: 'ಕುಶಲಕರ್ಮಿ ಸ್ಟುಡಿಯೋ', nav_market: 'ಖರೀದಿದಾರರ ಮಾರುಕಟ್ಟೆ', nav_bulk: 'ಸಗಟು ಮತ್ತು ಸಂಸ್ಥೆಗಳು', nav_account: 'ಖಾತೆ', account_profile: 'ಪ್ರೊಫೈಲ್', account_history: 'ಇತಿಹಾಸ', account_orders: 'ಆರ್ಡರ್‌ಗಳು', account_requests: 'ವಿನಂತಿಗಳು', account_wishlist: 'ಇಷ್ಟಪಟ್ಟವು', account_notifications: 'ಅಧಿಕೃತ ಮಾಹಿತಿ', admin_review: 'ಅಡ್ಮಿನ್ ರಿವ್ಯೂ', btn_place_order: 'ಆರ್ಡರ್ ವಿನಂತಿ', btn_whatsapp_inquire: 'ವಾಟ್ಸಪ್‌ನಲ್ಲಿ ಕಲೆಗಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ', order_sent: 'ಆರ್ಡರ್ ವಿನಂತಿ ಕಳುಹಿಸಲಾಗಿದೆ', sign_in: 'ಸೈನ್ ಇನ್', logout: 'ಲಾಗ್ ಔಟ್', email: 'ಇಮೇಲ್', password: 'ಪಾಸ್‌ವರ್ಡ್', buyer: 'ಖರೀದಿದಾರ', seller: 'ಕಲೆಗಾರ / ಮಾರಾಟಗಾರ', save: 'ಉಳಿಸಿ', submit: 'ಸಲ್ಲಿಸಿ', close: 'ಮುಚ್ಚಿ', search: 'ಹುಡುಕಿ', loading: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ', no_orders: 'ಆರ್ಡರ್‌ಗಳಿಲ್ಲ', no_requests: 'ವಿನಂತಿಗಳಿಲ್ಲ', no_saved: 'ಉಳಿದವುಗಳಿಲ್ಲ' },
+  te: { nav_studio: 'కళాకారుల స్టూడియో', nav_market: 'కొనుగోలుదారుల మార్కెట్', nav_bulk: 'బల్క్ మరియు సంస్థలు', nav_account: 'ఖాతా', account_profile: 'ప్రొఫైల్', account_history: 'చరిత్ర', account_orders: 'ఆర్డర్లు', account_requests: 'అభ్యర్థనలు', account_wishlist: 'ఇష్టమైనవి', account_notifications: 'నోటిఫికేషన్‌లు', admin_review: 'అడ్మిన్ రివ్యూ', btn_place_order: 'ఆర్డర్ అభ్యర్థన', btn_whatsapp_inquire: 'వాట్సాప్‌లో కళాకారుడిని సంప్రదించండి', order_sent: 'ఆర్డర్ అభ్యర్థన పంపబడింది', sign_in: 'సైన్ ఇన్', logout: 'లాగ్ అవుట్', email: 'ఇమెయిల్', password: 'పాస్‌వర్డ్', buyer: 'కొనుగోలుదారు', seller: 'కళాకారుడు / విక్రేత', save: 'సేవ్ చేయండి', submit: 'సమర్పించండి', close: 'మూసివేయండి', search: 'వెతకండి', loading: 'లోడ్ అవుతోంది', no_orders: 'ఆర్డర్లు లేవు', no_requests: 'అభ్యర్థనలు లేవు', no_saved: 'సేవ్ చేసినవి లేవు' },
+  bn: { nav_studio: 'কারিগর স্টুডিও', nav_market: 'ক্রেতা বাজার', nav_bulk: 'বাল্ক ও প্রতিষ্ঠান', nav_account: 'অ্যাকাউন্ট', account_profile: 'প্রোফাইল', account_history: 'ইতিহাস', account_orders: 'অর্ডার', account_requests: 'অনুরোধ', account_wishlist: 'উইশলিস্ট', account_notifications: 'নোটিফিকেশন', admin_review: 'অ্যাডমিন রিভিউ', btn_place_order: 'অর্ডার অনুর请求', btn_whatsapp_inquire: 'হোয়াটসঅ্যাপে কারিগরের সঙ্গে যোগাযোগ করুন', order_sent: 'অর্ডার অনুরোধ পাঠানো হয়েছে', sign_in: 'সাইন ইন', logout: 'লগ আউট', email: 'ইমেল', password: 'পাসওয়ার্ড', buyer: 'ক্রেতা', seller: 'কারিগর / বিক্রেতা', save: 'সংরক্ষণ', submit: 'জমা দিন', close: 'বন্ধ করুন', search: 'খুঁজুন', loading: 'লোড হচ্ছে', no_orders: 'কোনও অর্ডার নেই', no_requests: 'কোনও অনুরোধ নেই', no_saved: 'কিছু সংরক্ষিত নেই' },
+  mr: { nav_studio: 'कारागीर स्टुडिओ', nav_market: 'खरेदीदार बाजार', nav_bulk: 'घाऊक आणि संस्था', nav_account: 'खाते', account_profile: 'प्रोफाइल', account_history: 'इतिहास', account_orders: 'ऑर्डर', account_requests: 'विनंत्या', account_wishlist: 'यादी', account_notifications: 'सूचना', admin_review: 'अॅडमिन रिव्ह्यू', btn_place_order: 'ऑर्डर विनंती पाठवा', btn_whatsapp_inquire: 'व्हॉट्सॲपवर कारागिराशी संपर्क करा', order_sent: 'ऑर्डर विनंती पाठवली', sign_in: 'साइन इन', logout: 'लॉग आउट', email: 'ईमेल', password: 'पासवर्ड', buyer: 'खरेदीदार', seller: 'कारागीर / विक्रेता', save: 'जतन करा', submit: 'सबमिट करा', close: 'बंद करा', search: 'शोधा', loading: 'लोड होत आहे', no_orders: 'ऑर्डर नाहीत', no_requests: 'विनंत्या नाहीत', no_saved: 'काहीही जतन केलेले नाही' },
+gu: { nav_studio: 'कारीગર સ્ટુડિયો', nav_market: 'ખરીદદાર બજાર', nav_bulk: 'જથ્થાબંધ અને સંસ્થાઓ', nav_account: 'એકાઉન્ટ', account_profile: 'પ્રોફાઇલ', account_history: 'ઇતિહાસ', account_orders: 'ઓર્ડર', account_requests: 'વિનંતીઓ', account_wishlist: 'વિશલિસ્ટ', account_notifications: 'નોટિફિકેશન', admin_review: 'એડમિન રિવ્યુ', btn_place_order: 'ઓર્ડર વિનંતી', btn_whatsapp_inquire: 'વોટ્સએપ પર કારીગરનો સંપર્ક કરો', order_sent: 'ઓર્ડર વિનંતી મોકલાઈ', sign_in: 'સાઇન ઇન', logout: 'લૉગ આઉટ', email: 'ઇમેઇલ', password: 'પાસવર્ડ', buyer: 'ખરીદદાર', seller: 'कारीગર / વેચનાર', save: 'સાચવો', submit: 'સબમિટ કરો', close: 'બંધ કરો', search: 'શોધો', loading: 'લોડ થઈ રહ્યું છે', no_orders: 'કોઈ ઓર્ડર નથી', no_requests: 'કોઈ વિનંતી નથી', no_saved: 'કંઈ સાચવેલું નથી' }
 };
 
 let currentLanguage = 'en';
@@ -233,17 +239,32 @@ function setLanguage(lang) {
   if (languageSelect) languageSelect.value = lang;
 
   const navLabels = {
+    home: dictionary.nav_home || 'Home',
     studio: dictionary.nav_studio,
     marketplace: dictionary.nav_market,
     institutional: dictionary.nav_bulk,
     account: dictionary.nav_account
   };
   Object.entries(navLabels).forEach(([tab, label]) => {
-    document.querySelectorAll(`[data-tab-target="${tab}"] span:last-child`).forEach(el => { el.textContent = label; });
+    const selector = `[data-tab-target="${tab}"] span:last-child`;
+    document.querySelectorAll(selector).forEach(el => { el.textContent = label; });
   });
   document.querySelectorAll('[data-account-view]').forEach(button => {
     const key = `account_${button.dataset.accountView}`;
-    if (dictionary[key]) button.textContent = dictionary[key];
+    if (dictionary[key]) {
+      if (button.dataset.accountView === 'notifications') {
+        const badge = button.querySelector('#notificationCountBadge');
+        const label = dictionary[key];
+        button.childNodes.forEach(node => {
+          if (node.nodeType === 3 && node.textContent.trim()) {
+            node.textContent = label;
+          }
+        });
+        if (badge) button.appendChild(badge);
+      } else {
+        button.textContent = dictionary[key];
+      }
+    }
   });
 
   // Update dynamic badges if needed
