@@ -111,6 +111,10 @@ class AdminRequestUpdate(BaseModel):
     admin_notes: str = ""
 
 
+class OfflineSyncRequest(BaseModel):
+    drafts: List[InstitutionalRequestCreate] = []
+
+
 def normalize_user_row(row):
     user = dict(row)
     user.pop("password", None)
@@ -381,9 +385,8 @@ def create_order(payload: OrderCreate):
     return {"status": "success", "order_id": order_id, "remaining_quantity": remaining_quantity}
 
 
-@app.post("/api/institutional-requests")
-def create_institutional_request(payload: InstitutionalRequestCreate):
-    """Store a bulk linkage/RFQ request for follow-up by the KalaSetu team."""
+def persist_institutional_request(payload: InstitutionalRequestCreate):
+    """Shared DB persistence for institutional RFQ payloads, including offline queue replay."""
     if not payload.artisan_name.strip() or not payload.email.strip():
         raise HTTPException(status_code=400, detail="Name and email are required")
 
@@ -447,6 +450,25 @@ def create_institutional_request(payload: InstitutionalRequestCreate):
     conn.commit()
     conn.close()
     return {"status": "success", "request_id": request_id, "quality_flags": quality_flags}
+
+
+@app.post("/api/institutional-requests")
+def create_institutional_request(payload: InstitutionalRequestCreate):
+    """Store a bulk linkage/RFQ request for follow-up by the KalaSetu team."""
+    return persist_institutional_request(payload)
+
+
+@app.post("/api/offline/sync")
+def sync_offline_drafts(payload: OfflineSyncRequest):
+    """Accept a lightweight local queue of offline RFQ drafts and persist them through the same path as online requests."""
+    saved = []
+    for draft in payload.drafts:
+        try:
+            result = persist_institutional_request(draft)
+            saved.append(result)
+        except HTTPException as exc:
+            saved.append({"status": "error", "detail": str(exc.detail)})
+    return {"status": "success", "synced": len(saved), "drafts": saved}
 
 
 @app.get("/api/admin/institutional-requests")

@@ -231,6 +231,11 @@ function setupEventListeners() {
     institutionalForm.addEventListener('submit', submitInstitutionalRequest);
   }
 
+  const syncOfflineBtn = document.getElementById('syncOfflineQueueBtn');
+  if (syncOfflineBtn) {
+    syncOfflineBtn.addEventListener('click', syncOfflineQueue);
+  }
+
   // Search & Filter
   const searchInput = document.getElementById('catalogSearchInput');
   if (searchInput) {
@@ -616,6 +621,58 @@ function renderAdminView(content) {
   });
 }
 
+function updateOfflineDraftCounter() {
+  const counter = document.getElementById('offlineDraftCount');
+  if (!counter) return;
+  const queue = readOfflineQueue();
+  counter.textContent = String(queue.length);
+}
+
+function readOfflineQueue() {
+  try {
+    return JSON.parse(localStorage.getItem('kalakriti_offline_queue') || '[]');
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveOfflineQueue(queue) {
+  localStorage.setItem('kalakriti_offline_queue', JSON.stringify(queue));
+  updateOfflineDraftCounter();
+}
+
+function queueOfflineDraft(payload) {
+  const queue = readOfflineQueue();
+  queue.push({ ...payload, queued_at: new Date().toISOString() });
+  saveOfflineQueue(queue);
+}
+
+async function syncOfflineQueue() {
+  const queue = readOfflineQueue();
+  if (!queue.length) {
+    showToast('No offline drafts pending');
+    updateOfflineDraftCounter();
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/offline/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ drafts: queue })
+    });
+    if (!response.ok) throw new Error('Queue sync failed');
+    const data = await response.json();
+    if (data.synced >= queue.length) {
+      saveOfflineQueue([]);
+      showToast('Offline drafts synced');
+    }
+  } catch (error) {
+    console.warn('Offline sync failed:', error);
+    showToast('Sync queued locally');
+  }
+}
+
 async function submitInstitutionalRequest(event) {
   event.preventDefault();
 
@@ -654,8 +711,12 @@ async function submitInstitutionalRequest(event) {
     localStorage.setItem('kalakriti_requests', JSON.stringify(savedRequests));
   } catch (error) {
     console.error('Institutional request error:', error);
-    status.textContent = 'The server could not save the request. Your email app will open so the team still receives it.';
+    queueOfflineDraft(payload);
+    const queue = readOfflineQueue();
+    status.textContent = `Offline Mode Active — Drafts Saved Locally. Sync Now (${queue.length} Draft${queue.length === 1 ? '' : 's'} Pending)`;
     status.className = 'mt-4 rounded-xl p-3 text-sm font-semibold bg-amber-50 text-amber-900 border border-amber-200';
+    updateOfflineDraftCounter();
+    showToast('Offline draft queued locally');
   }
 
   window.location.href = `mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`;
