@@ -341,11 +341,10 @@ async function loginAccount(event) {
   const status = document.getElementById('loginStatus');
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  const role = document.getElementById('loginRole').value;
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, role })
+      body: JSON.stringify({ email, password })
     });
     if (!response.ok) throw new Error('Invalid email or password');
     const data = await response.json();
@@ -1340,12 +1339,13 @@ function showToast(message) {
   if (!toast || !toastMsg) return;
 
   toastMsg.textContent = message;
-  toast.classList.remove('translate-y-24', 'opacity-0');
-  toast.classList.add('translate-y-0', 'opacity-100');
+  toast.classList.add('toast-visible');
+  toast.classList.remove('toast-hidden');
 
-  setTimeout(() => {
-    toast.classList.remove('translate-y-0', 'opacity-100');
-    toast.classList.add('translate-y-24', 'opacity-0');
+  clearTimeout(toast._toastTimer);
+  toast._toastTimer = setTimeout(() => {
+    toast.classList.add('toast-hidden');
+    toast.classList.remove('toast-visible');
   }, 4000);
 }
 

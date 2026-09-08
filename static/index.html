@@ -794,7 +794,6 @@
       <form id="loginForm" class="mt-6 space-y-4">
         <input id="loginEmail" type="email" required value="demo@kalakriti.in" class="institutional-input" data-i18n-placeholder="email" placeholder="Email">
         <input id="loginPassword" type="password" required value="demo123" class="institutional-input" data-i18n-placeholder="password" placeholder="Password">
-        <select id="loginRole" class="institutional-input"><option value="buyer" data-i18n="buyer">Buyer</option><option value="artisan" data-i18n="seller">Artisan / Seller</option></select>
         <button data-i18n="sign_in" class="w-full py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Sign in</button>
       </form>
       <p id="loginStatus" class="hidden mt-4 text-sm font-semibold"></p>
@@ -1014,7 +1013,7 @@
 
   <!-- Toast Notification -->
   <div id="toastNotification" 
-       class="fixed bottom-24 sm:bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
+       class="fixed top-4 left-1/2 z-50 -translate-x-1/2 -translate-y-10 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
     <span class="text-xl">🎉</span>
     <p id="toastMessage" class="text-xs font-semibold">Message</p>
   </div>

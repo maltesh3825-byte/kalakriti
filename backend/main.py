@@ -60,7 +60,7 @@ class ProductCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
-    role: str = "buyer"
+    role: Optional[str] = None
 
 
 class UserCreate(BaseModel):

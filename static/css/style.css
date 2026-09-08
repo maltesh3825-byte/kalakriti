@@ -102,6 +102,23 @@ body {
   color: #ffffff;
 }
 
+/* Toast notification helper */
+#toastNotification {
+  transform: translate(-50%, -20px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toastNotification.toast-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+#toastNotification.toast-hidden {
+  transform: translate(-50%, -20px);
+  opacity: 0;
+}
+
 /* Touch friendly large touch targets */
 .touch-btn {
   min-height: 48px;
