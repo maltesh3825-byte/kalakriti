@@ -751,9 +751,9 @@
           </label>
           <div class="sm:col-span-2 flex flex-wrap gap-3 pt-2">
             <button type="submit" class="touch-btn flex-1 py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Submit RFQ for follow-up</button>
-            <button type="button" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">📦 Export GeM-Compliant CSV</button>
-            <button type="button" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">⚡ Generate ONDC Beckn JSON</button>
-            <button type="button" class="speech-btn py-3 px-5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-slate-800 font-black text-sm text-center border border-amber-300">🔊 Listen / विवरण सुनें</button>
+            <button type="button" id="exportGemCsvBtn" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">📦 Export GeM-Compliant CSV</button>
+            <button type="button" id="generateOndcJsonBtn" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">⚡ Generate ONDC Beckn JSON</button>
+            <button type="button" id="listenBtn" class="speech-btn py-3 px-5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-slate-800 font-black text-sm text-center border border-amber-300">🔊 Listen / विवरण सुनें</button>
             <a href="mailto:kalasetu24824.9@gmail.com?subject=KalaSetu%20Bulk%20Buyer%20Support" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">Email support</a>
           </div>
         </form>
@@ -763,10 +763,10 @@
             <span class="text-xs font-black px-2 py-1 rounded-full bg-emerald-100 text-emerald-800">AI Live</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-            <button type="button" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">🏷️ AI HSN & Tax Classifier</button>
-            <button type="button" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">📊 Bulk Pricing Calculator</button>
-            <button type="button" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">📸 OCR Udyam / Bank Readiness</button>
-            <button type="button" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">✉️ Auto-generate RFQ Pitch</button>
+            <button type="button" id="aiHsnTaxBtn" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">🏷️ AI HSN & Tax Classifier</button>
+            <button type="button" id="aiBulkPricingBtn" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">📊 Bulk Pricing Calculator</button>
+            <button type="button" id="aiOcrBtn" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">📸 OCR Udyam / Bank Readiness</button>
+            <button type="button" id="aiRfqPitchBtn" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-black bg-white hover:bg-slate-50">✉️ Auto-generate RFQ Pitch</button>
           </div>
         </div>
         <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">

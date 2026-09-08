@@ -61,6 +61,110 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function downloadBlob(blobContent, filename, mimeType) {
+  const blob = blobContent instanceof Blob ? blobContent : new Blob([blobContent], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
+async function exportGemCsv() {
+  try {
+    const res = await fetch('/api/export/gem-csv');
+    if (!res.ok) throw new Error('CSV export failed');
+    const csv = await res.text();
+    downloadBlob(csv, 'kalakriti-gem-catalog.csv', 'text/csv;charset=utf-8');
+    showToast('GeM CSV exported');
+  } catch (error) {
+    console.error(error);
+    showToast('GeM CSV export unavailable');
+  }
+}
+
+async function generateOndcJson() {
+  try {
+    const res = await fetch('/api/export/ondc');
+    if (!res.ok) throw new Error('ONDC export failed');
+    const data = await res.json();
+    downloadBlob(JSON.stringify(data, null, 2), 'kalakriti-ondc-beckn.json', 'application/json;charset=utf-8');
+    showToast('ONDC JSON generated');
+  } catch (error) {
+    console.error(error);
+    showToast('ONDC JSON unavailable');
+  }
+}
+
+function getInstitutionalPayloadText() {
+  const payload = {
+    product_category: document.getElementById('institutionalCategory')?.value || 'Handloom & Textiles',
+    quantity: document.getElementById('institutionalQuantity')?.value || '1',
+    unit_price: document.getElementById('institutionalUnitPrice')?.value || '0',
+    lead_time: document.getElementById('institutionalLeadTime')?.value || '7-15 working days',
+    target_buyer: document.getElementById('institutionalTargetBuyer')?.value || 'Open to all',
+    requirements: document.getElementById('institutionalRequirements')?.value || 'No extra requirements'
+  };
+
+  return `Bulk RFQ request. Product category: ${payload.product_category}. Quantity: ${payload.quantity}. Unit price expectation: ${payload.unit_price}. Lead time: ${payload.lead_time}. Preferred bulk outlet: ${payload.target_buyer}. Requirements: ${payload.requirements}.`;
+}
+
+function listenInstitutionalRequest() {
+  const detailText = getInstitutionalPayloadText();
+  if (typeof speakText === 'function') {
+    speakText(detailText, currentLanguage === 'hi' ? 'hi-IN' : 'en-IN');
+    showToast('Listening to RFQ details');
+  } else {
+    showToast('Speech playback not available');
+  }
+}
+
+async function handleBusinessManagerTool(tool) {
+  const userId = state.currentUser?.id || 1;
+  try {
+    if (tool === 'hsn') {
+      const res = await fetch(`/api/users/${userId}/business-advisor`);
+      if (!res.ok) throw new Error('Advisor unavailable');
+      const advisor = await res.json();
+      showToast(`AI HSN classifier: ${advisor.recommended_actions?.[0] || 'Classification ready'}`);
+      return;
+    }
+
+    if (tool === 'pricing') {
+      const dashboardRes = await fetch(`/api/users/${userId}/dashboard`);
+      if (!dashboardRes.ok) throw new Error('Dashboard unavailable');
+      const dashboard = await dashboardRes.json();
+      const total = dashboard.analytics?.estimated_order_value || 0;
+      showToast(`Bulk pricing calculator: ${dashboard.analytics?.export_readiness || 'Ready'} · value ₹${total}`);
+      return;
+    }
+
+    if (tool === 'ocr') {
+      const res = await fetch(`/api/users/${userId}/documents`);
+      if (!res.ok) throw new Error('Document route unavailable');
+      const docs = await res.json();
+      showToast(`OCR readiness: ${docs.document_verification_status || 'pending'} · ${docs.required_documents.length} docs`);
+      return;
+    }
+
+    if (tool === 'rfq') {
+      const advisorRes = await fetch(`/api/users/${userId}/business-advisor`);
+      if (!advisorRes.ok) throw new Error('RFQ pitch unavailable');
+      const advisor = await advisorRes.json();
+      const pitch = `Bulk RFQ pitch ready. ${advisor.recommended_actions?.join(' ')} ${advisor.opportunities?.join(' ')}`;
+      downloadBlob(pitch, 'kalakriti-rfq-pitch.txt', 'text/plain;charset=utf-8');
+      showToast('RFQ pitch generated');
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    showToast('Business manager tool is not ready');
+  }
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
@@ -134,6 +238,27 @@ function setupEventListeners() {
 
   const loginForm = document.getElementById('loginForm');
   if (loginForm) loginForm.addEventListener('submit', loginAccount);
+
+  const exportGemCsvBtn = document.getElementById('exportGemCsvBtn');
+  if (exportGemCsvBtn) exportGemCsvBtn.addEventListener('click', exportGemCsv);
+
+  const generateOndcJsonBtn = document.getElementById('generateOndcJsonBtn');
+  if (generateOndcJsonBtn) generateOndcJsonBtn.addEventListener('click', generateOndcJson);
+
+  const listenBtn = document.getElementById('listenBtn');
+  if (listenBtn) listenBtn.addEventListener('click', listenInstitutionalRequest);
+
+  const aiHsnTaxBtn = document.getElementById('aiHsnTaxBtn');
+  if (aiHsnTaxBtn) aiHsnTaxBtn.addEventListener('click', () => handleBusinessManagerTool('hsn'));
+
+  const aiBulkPricingBtn = document.getElementById('aiBulkPricingBtn');
+  if (aiBulkPricingBtn) aiBulkPricingBtn.addEventListener('click', () => handleBusinessManagerTool('pricing'));
+
+  const aiOcrBtn = document.getElementById('aiOcrBtn');
+  if (aiOcrBtn) aiOcrBtn.addEventListener('click', () => handleBusinessManagerTool('ocr'));
+
+  const aiRfqPitchBtn = document.getElementById('aiRfqPitchBtn');
+  if (aiRfqPitchBtn) aiRfqPitchBtn.addEventListener('click', () => handleBusinessManagerTool('rfq'));
 
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', logoutAccount);
