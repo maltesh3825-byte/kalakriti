@@ -45,7 +45,7 @@ import {
 
 export default function App() {
   // Navigation & Language State
-  const [activeTab, setActiveTab] = useState<'studio' | 'market' | 'wishlist' | 'orders' | 'profile'>('studio');
+  const [activeTab, setActiveTab] = useState<'studio' | 'market' | 'wishlist' | 'orders' | 'profile'>('market');
   const [lang, setLang] = useState<Language>('en');
 
   // Unified user account state
@@ -91,9 +91,6 @@ export default function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const t = i18n[lang];
-
-  const HOME_BACKGROUND_IMAGE = 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1800&q=80';
-  const STUDIO_BACKGROUND_IMAGE = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1800&q=80';
 
   useEffect(() => {
     loadProducts();
@@ -419,9 +416,7 @@ export default function App() {
           /* ======================================================= */
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
-          <View style={styles.screenImageFrame}>
-            <Image pointerEvents="none" resizeMode="cover" source={{ uri: STUDIO_BACKGROUND_IMAGE }} style={styles.screenImage} />
-            <View style={styles.studioContainer}>
+          <View style={styles.studioContainer}>
             
             {/* Step 1 Card: Photo Capture */}
             <View style={styles.card}>
@@ -686,9 +681,7 @@ export default function App() {
           /* ======================================================= */
           /* SCREEN 2: BUYER MARKETPLACE FEED                        */
           /* ======================================================= */
-          <View style={styles.screenImageFrame}>
-            <Image pointerEvents="none" resizeMode="cover" source={{ uri: HOME_BACKGROUND_IMAGE }} style={styles.screenImage} />
-            <View style={styles.marketContainer}>
+          <View style={styles.marketContainer}>
             
             {/* Marketplace Banner */}
             <View style={styles.marketHero}>
@@ -1064,21 +1057,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 80,
-  },
-  screenImageFrame: {
-    width: '100%',
-    minHeight: 420,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  screenImage: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
   },
   studioContainer: {
     padding: 16,
