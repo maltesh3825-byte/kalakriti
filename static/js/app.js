@@ -177,6 +177,12 @@ function setupEventListeners() {
     publishBtn.addEventListener('click', publishProductToMarketplace);
   }
 
+  // Bulk and institutional RFQ form
+  const institutionalForm = document.getElementById('institutionalRequestForm');
+  if (institutionalForm) {
+    institutionalForm.addEventListener('submit', submitInstitutionalRequest);
+  }
+
   // Search & Filter
   const searchInput = document.getElementById('catalogSearchInput');
   if (searchInput) {
@@ -220,6 +226,7 @@ function switchTab(tab) {
   state.currentTab = tab;
   const studioSection = document.getElementById('studioTabSection');
   const marketSection = document.getElementById('marketplaceTabSection');
+  const institutionalSection = document.getElementById('institutionalTabSection');
 
   document.querySelectorAll('[data-tab-target]').forEach(btn => {
     const isTarget = btn.getAttribute('data-tab-target') === tab;
@@ -235,11 +242,57 @@ function switchTab(tab) {
   if (tab === 'studio') {
     studioSection.classList.remove('hidden');
     marketSection.classList.add('hidden');
+    institutionalSection?.classList.add('hidden');
+  } else if (tab === 'institutional') {
+    studioSection.classList.add('hidden');
+    marketSection.classList.add('hidden');
+    institutionalSection?.classList.remove('hidden');
   } else {
     studioSection.classList.add('hidden');
     marketSection.classList.remove('hidden');
+    institutionalSection?.classList.add('hidden');
     loadProducts();
   }
+}
+
+async function submitInstitutionalRequest(event) {
+  event.preventDefault();
+
+  const payload = {
+    artisan_name: document.getElementById('institutionalName')?.value.trim(),
+    email: document.getElementById('institutionalEmail')?.value.trim(),
+    phone: document.getElementById('institutionalPhone')?.value.trim(),
+    location: document.getElementById('institutionalLocation')?.value.trim(),
+    buyer_type: document.getElementById('institutionalBuyerType')?.value,
+    product_category: document.getElementById('institutionalCategory')?.value,
+    quantity: Number(document.getElementById('institutionalQuantity')?.value || 1),
+    target_market: document.getElementById('institutionalTarget')?.value,
+    requirements: document.getElementById('institutionalRequirements')?.value.trim()
+  };
+  const status = document.getElementById('institutionalRequestStatus');
+  const subject = encodeURIComponent(`KalaKriti bulk request - ${payload.product_category}`);
+  const body = encodeURIComponent(
+    `Name: ${payload.artisan_name}\nEmail: ${payload.email}\nPhone: ${payload.phone}\nLocation: ${payload.location}\nBuyer type: ${payload.buyer_type}\nCategory: ${payload.product_category}\nQuantity: ${payload.quantity}\nTarget: ${payload.target_market}\nRequirements: ${payload.requirements}`
+  );
+
+  try {
+    const response = await fetch('/api/institutional-requests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error('Request could not be saved');
+
+    status.textContent = 'Request saved. Our team can follow up for buyer introductions and procurement guidance.';
+    status.className = 'mt-4 rounded-xl p-3 text-sm font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+    showToast('Bulk request submitted successfully');
+  } catch (error) {
+    console.error('Institutional request error:', error);
+    status.textContent = 'The server could not save the request. Your email app will open so the team still receives it.';
+    status.className = 'mt-4 rounded-xl p-3 text-sm font-semibold bg-amber-50 text-amber-900 border border-amber-200';
+  }
+
+  window.location.href = `mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`;
 }
 
 // Handle Photo Selection

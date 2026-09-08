@@ -82,6 +82,18 @@ class OrderCreate(BaseModel):
     eta: str = "2-4 working days"
 
 
+class InstitutionalRequestCreate(BaseModel):
+    artisan_name: str
+    email: str
+    phone: str = ""
+    location: str = ""
+    buyer_type: str = ""
+    product_category: str = ""
+    quantity: int = 1
+    target_market: str = ""
+    requirements: str = ""
+
+
 def normalize_user_row(row):
     user = dict(row)
     user.pop("password", None)
@@ -253,6 +265,39 @@ def create_order(payload: OrderCreate):
     conn.commit()
     conn.close()
     return {"status": "success", "order_id": order_id}
+
+
+@app.post("/api/institutional-requests")
+def create_institutional_request(payload: InstitutionalRequestCreate):
+    """Store a bulk linkage/RFQ request for follow-up by the KalaKriti team."""
+    if not payload.artisan_name.strip() or not payload.email.strip():
+        raise HTTPException(status_code=400, detail="Name and email are required")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO institutional_requests (
+            artisan_name, email, phone, location, buyer_type,
+            product_category, quantity, target_market, requirements
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            payload.artisan_name.strip(),
+            payload.email.strip().lower(),
+            payload.phone.strip(),
+            payload.location.strip(),
+            payload.buyer_type.strip(),
+            payload.product_category.strip(),
+            max(1, payload.quantity),
+            payload.target_market.strip(),
+            payload.requirements.strip(),
+        ),
+    )
+    request_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return {"status": "success", "request_id": request_id}
 
 
 @app.post("/api/analyze-product")

@@ -87,6 +87,25 @@ def init_db():
         """
     )
 
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS institutional_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            artisan_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT,
+            location TEXT,
+            buyer_type TEXT,
+            product_category TEXT,
+            quantity INTEGER DEFAULT 1,
+            target_market TEXT,
+            requirements TEXT,
+            status TEXT DEFAULT 'New',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+
     cursor.execute("SELECT COUNT(*) FROM products")
     if cursor.fetchone()[0] == 0:
         seed_sample_products(cursor)

@@ -104,6 +104,11 @@
             <span>🛍️</span>
             <span data-i18n="nav_market">Buyer Marketplace</span>
           </button>
+          <button data-tab-target="institutional"
+                  class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <span>🏛️</span>
+            <span>Bulk & Institutions</span>
+          </button>
         </div>
 
         <!-- Direct Artisan Help / Audio Guide -->
@@ -497,6 +502,110 @@
   </main>
 
   <!-- ===================================================================== -->
+  <!-- TAB 2: BULK & INSTITUTIONAL LINKAGE WORKSPACE                         -->
+  <!-- ===================================================================== -->
+  <section id="institutionalTabSection" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div class="institutional-hero rounded-3xl p-6 sm:p-10 mb-8 text-white shadow-lg">
+      <div class="max-w-3xl">
+        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-300 text-slate-900 text-xs font-extrabold uppercase tracking-wider mb-4">🏛️ Institutional Market Linkage</span>
+        <h2 class="text-3xl sm:text-4xl font-black tracking-tight">Turn your craft inventory into bulk opportunities.</h2>
+        <p class="mt-3 text-slate-200 text-sm sm:text-base leading-relaxed">Prepare a buyer-ready RFQ, share your catalog with larger institutions, and get guidance for government procurement channels without needing advanced technical skills.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-terracotta-600">Step 1</p>
+            <h3 class="text-2xl font-black text-slate-900">Create a bulk buyer request</h3>
+            <p class="text-sm text-slate-500 mt-1">Our team can follow up with buyer introductions and procurement guidance.</p>
+          </div>
+          <span class="text-3xl">📋</span>
+        </div>
+
+        <form id="institutionalRequestForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <label class="text-xs font-bold text-slate-700">Artisan / cluster name
+            <input id="institutionalName" required class="institutional-input" placeholder="Your name or cooperative">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Email for follow-up
+            <input id="institutionalEmail" type="email" required class="institutional-input" placeholder="you@example.com">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Phone / WhatsApp
+            <input id="institutionalPhone" class="institutional-input" placeholder="+91 98765 43210">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Village / state
+            <input id="institutionalLocation" class="institutional-input" placeholder="Madhubani, Bihar">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Buyer type
+            <select id="institutionalBuyerType" class="institutional-input">
+              <option>Government department</option>
+              <option>Corporate gifting buyer</option>
+              <option>Hotel / retail chain</option>
+              <option>NGO / institutional buyer</option>
+              <option>Exporter / distributor</option>
+            </select>
+          </label>
+          <label class="text-xs font-bold text-slate-700">Product category
+            <select id="institutionalCategory" class="institutional-input">
+              <option>Handloom & Textiles</option>
+              <option>Pottery & Terracotta</option>
+              <option>Brass & Metalcraft</option>
+              <option>Cane & Bamboo</option>
+              <option>Woodcraft</option>
+              <option>Folk Art & Painting</option>
+            </select>
+          </label>
+          <label class="text-xs font-bold text-slate-700">Available quantity
+            <input id="institutionalQuantity" type="number" min="1" value="100" class="institutional-input">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Target channel
+            <select id="institutionalTarget" class="institutional-input">
+              <option>GeM government procurement</option>
+              <option>Corporate / institutional bulk order</option>
+              <option>TRIFED / tribal market linkage</option>
+              <option>ONDC seller network</option>
+              <option>Need guidance choosing a channel</option>
+            </select>
+          </label>
+          <label class="sm:col-span-2 text-xs font-bold text-slate-700">What should the buyer know?
+            <textarea id="institutionalRequirements" rows="4" class="institutional-input" placeholder="Mention lead time, customization, price range, delivery capacity, certifications, or packaging needs."></textarea>
+          </label>
+          <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
+            <button type="submit" class="touch-btn flex-1 py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Submit RFQ for follow-up</button>
+            <a href="mailto:kalasetu24824.9@gmail.com?subject=KalaKriti%20Bulk%20Buyer%20Support" class="py-3 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm text-center">Email support</a>
+          </div>
+        </form>
+        <p id="institutionalRequestStatus" class="hidden mt-4 rounded-xl p-3 text-sm font-semibold"></p>
+      </div>
+
+      <aside class="space-y-6">
+        <div class="bg-slate-900 text-white rounded-3xl p-6 shadow-sm">
+          <p class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Step 2</p>
+          <h3 class="text-xl font-black mt-1">Procurement-ready checklist</h3>
+          <ul class="mt-4 space-y-3 text-sm text-slate-300">
+            <li>✓ AI-generated product title, photos, tags, and description</li>
+            <li>✓ Consistent bulk quantity and fair price range</li>
+            <li>✓ Artisan phone, location, and dispatch lead time</li>
+            <li>✓ GST / Udyam / bank details where a buyer requires them</li>
+            <li>✓ Packaging, customization, and quality samples</li>
+          </ul>
+        </div>
+        <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+          <p class="text-xs font-extrabold uppercase tracking-wider text-terracotta-600">Step 3</p>
+          <h3 class="text-xl font-black text-slate-900 mt-1">Official channels</h3>
+          <p class="text-xs text-slate-500 mt-2">KalaKriti prepares and guides your request. These links open the official platforms where registration or buyer approval may be required.</p>
+          <div class="mt-4 grid gap-2">
+            <a href="https://gem.gov.in/" target="_blank" rel="noopener" class="official-link"><span>GeM</span><span>Government e-marketplace ↗</span></a>
+            <a href="https://ondc.org/" target="_blank" rel="noopener" class="official-link"><span>ONDC</span><span>Open digital commerce ↗</span></a>
+            <a href="https://trifed.tribal.gov.in/" target="_blank" rel="noopener" class="official-link"><span>TRIFED</span><span>Tribal artisan linkage ↗</span></a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
   <!-- TAB 2: PUBLIC BUYER MARKETPLACE (Catalog & Market Linkage)           -->
   <!-- ===================================================================== -->
   <section id="marketplaceTabSection" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -699,6 +808,10 @@
             class="flex flex-col items-center gap-1 text-slate-500 font-semibold text-xs">
       <span class="text-lg">🛍️</span>
       <span data-i18n="nav_market">Market</span>
+    </button>
+    <button data-tab-target="institutional" class="flex flex-col items-center gap-1 text-slate-500 font-semibold text-xs">
+      <span class="text-lg">🏛️</span>
+      <span>Bulk</span>
     </button>
   </div>
 
