@@ -138,6 +138,14 @@ def init_db():
         WHERE id <= 6
         """
     )
+    cursor.execute(
+        """
+        UPDATE products
+        SET image_url = 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80'
+        WHERE name = 'Authentic Bastar Dhokra Bell Metal Elephant'
+          AND image_url LIKE '%photo-1610444583715-46884024b33a%'
+        """
+    )
 
     cursor.execute("SELECT COUNT(*) FROM products")
     if cursor.fetchone()[0] == 0:
@@ -213,7 +221,7 @@ def seed_sample_products(cursor):
             "Authentic Dhokra bell-metal elephant figurine handcrafted by Bastar tribal artisans using the ancient lost-wax casting technique. Perfect as a heritage centerpiece and symbol of auspicious strength.",
             "प्राचीन लॉस्ट-वैक्स तकनीक का उपयोग करके बस्तर के जनजातीय कारीगरों द्वारा हस्तनिर्मित प्रामाणिक ढोकरा बेल-मेटल हाथी। भारतीय सांस्कृतिक धरोहर का अनूठा प्रतीक।",
             json.dumps(["Dhokra Art", "Bastar Craft", "Brass Metal", "Tribal Art", "Heritage", "Lost Wax"]),
-            "https://images.unsplash.com/photo-1610444583715-46884024b33a?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80",
             1,
             1,
         ),

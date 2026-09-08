@@ -39,7 +39,7 @@ const SAMPLE_PRESETS = [
     name: "Dhokra Brass Bell-Metal Figurine",
     notes: "Lost wax cast brass metal craft by tribal artisans in Bastar",
     price: 1800,
-    imageUrl: "https://images.unsplash.com/photo-1610444583715-46884024b33a?auto=format&fit=crop&w=800&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80"
   },
   {
     name: "Kutch Hand Embroidered Textile",

@@ -202,7 +202,7 @@ export default function App() {
       setArtisanNotes("Red clay pot made on village wheel with floral engravings");
       setPriceIdea("600");
     } else if (presetIndex === 1) {
-      setImageUri("https://images.unsplash.com/photo-1610444583715-46884024b33a?auto=format&fit=crop&w=800&q=80");
+      setImageUri("https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80");
       setArtisanNotes("Lost wax bell metal craft by Bastar tribal artisans");
       setPriceIdea("1800");
     } else {

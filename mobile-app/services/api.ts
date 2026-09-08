@@ -103,7 +103,7 @@ export const SEED_PRODUCTS: CraftProduct[] = [
     description_en: "Authentic Dhokra bell-metal elephant figurine handcrafted by Bastar tribal artisans using the ancient lost-wax casting technique. Auspicious heritage centerpiece.",
     description_hi: "प्राचीन लॉस्ट-वैक्स तकनीक का उपयोग करके बस्तर के जनजातीय कारीगरों द्वारा हस्तनिर्मित प्रामाणिक ढोकरा बेल-मेटल हाथी।",
     tags: ["Dhokra Art", "Bastar Craft", "Brass Metal", "Tribal Art"],
-    image_url: "https://images.unsplash.com/photo-1610444583715-46884024b33a?auto=format&fit=crop&w=800&q=80",
+    image_url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80",
     mosje_verified: true
   },
   {
