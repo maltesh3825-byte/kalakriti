@@ -5,17 +5,20 @@ Ministry of Social Justice and Empowerment (MoSJE)
 """
 import json
 import uuid
+import hashlib
+import hmac
+import os
 from datetime import datetime, timezone
 from typing import Optional, List
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend.ai_service import analyze_craft_image_with_gemini, CATEGORIES
-from backend.config import STATIC_DIR, UPLOAD_DIR, GEMINI_API_KEY, HOST, PORT
+from backend.config import STATIC_DIR, UPLOAD_DIR, GEMINI_API_KEY, HOST, PORT, ADMIN_EMAIL, ADMIN_PASSWORD
 from backend.database import get_db_connection, init_db
 
 # Initialize DB on start
@@ -89,17 +92,40 @@ class InstitutionalRequestCreate(BaseModel):
     email: str
     phone: str = ""
     location: str = ""
-    buyer_type: str = ""
     product_category: str = ""
     quantity: int = 1
-    target_market: str = ""
+    unit_price: float = 0
+    lead_time: str = ""
+    target_buyer: str = "Open to all"
+    target_market: str = "Open to all"
     requirements: str = ""
+
+
+class AdminLogin(BaseModel):
+    email: str
+    password: str
+
+
+class AdminRequestUpdate(BaseModel):
+    status: str
+    admin_notes: str = ""
 
 
 def normalize_user_row(row):
     user = dict(row)
     user.pop("password", None)
     return user
+
+
+def create_admin_token(email: str) -> str:
+    secret = os.getenv("ADMIN_TOKEN_SECRET", ADMIN_PASSWORD)
+    return hmac.new(secret.encode(), email.encode(), hashlib.sha256).hexdigest()
+
+
+def require_admin(token: Optional[str]):
+    expected = create_admin_token(ADMIN_EMAIL)
+    if not token or not hmac.compare_digest(token, expected):
+        raise HTTPException(status_code=401, detail="Admin authentication required")
 
 
 @app.get("/api/config-status")
@@ -143,6 +169,13 @@ def login_user(payload: UserLogin):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     return {"status": "success", "user": normalize_user_row(row)}
+
+
+@app.post("/api/admin/login")
+def admin_login(payload: AdminLogin):
+    if payload.email.strip().lower() != ADMIN_EMAIL or not hmac.compare_digest(payload.password, ADMIN_PASSWORD):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+    return {"status": "success", "admin": {"email": ADMIN_EMAIL}, "admin_token": create_admin_token(ADMIN_EMAIL)}
 
 
 @app.post("/api/auth/register")
@@ -354,25 +387,44 @@ def create_institutional_request(payload: InstitutionalRequestCreate):
     if not payload.artisan_name.strip() or not payload.email.strip():
         raise HTTPException(status_code=400, detail="Name and email are required")
 
+    quality_flags = []
+    if not payload.phone.strip():
+        quality_flags.append("Missing phone or WhatsApp number")
+    if not payload.location.strip():
+        quality_flags.append("Missing artisan location")
+    if not payload.product_category.strip():
+        quality_flags.append("Missing product category")
+    if not payload.requirements.strip() or len(payload.requirements.strip()) < 12:
+        quality_flags.append("Requirements are too vague")
+    if payload.quantity < 1:
+        quality_flags.append("Quantity must be at least 1")
+
+    target_buyer = payload.target_buyer.strip() or payload.target_market.strip() or "Open to all"
+    target_market = payload.target_market.strip() or target_buyer
+
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
         """
         INSERT INTO institutional_requests (
-            artisan_name, email, phone, location, buyer_type,
-            product_category, quantity, target_market, requirements
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            artisan_name, email, phone, location,
+            product_category, quantity, unit_price, lead_time,
+            target_buyer, target_market, requirements, quality_flags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             payload.artisan_name.strip(),
             payload.email.strip().lower(),
             payload.phone.strip(),
             payload.location.strip(),
-            payload.buyer_type.strip(),
             payload.product_category.strip(),
             max(1, payload.quantity),
-            payload.target_market.strip(),
+            payload.unit_price,
+            payload.lead_time.strip(),
+            target_buyer,
+            target_market,
             payload.requirements.strip(),
+            "; ".join(quality_flags),
         ),
     )
     request_id = cursor.lastrowid
@@ -388,10 +440,36 @@ def create_institutional_request(payload: InstitutionalRequestCreate):
                 owner_row[0],
                 "bulk_request",
                 "Bulk request submitted",
-                f"Your {payload.target_market} request for {max(1, payload.quantity)} unit(s) is pending review.",
+                f"Your {target_market} request for {max(1, payload.quantity)} unit(s) is pending review.",
                 request_id,
             ),
         )
+    conn.commit()
+    conn.close()
+    return {"status": "success", "request_id": request_id, "quality_flags": quality_flags}
+
+
+@app.get("/api/admin/institutional-requests")
+def admin_list_institutional_requests(x_admin_token: Optional[str] = Header(None)):
+    require_admin(x_admin_token)
+    conn = get_db_connection()
+    rows = conn.execute("SELECT * FROM institutional_requests ORDER BY id DESC").fetchall()
+    conn.close()
+    return {"requests": [dict(row) for row in rows]}
+
+
+@app.patch("/api/admin/institutional-requests/{request_id}")
+def admin_update_institutional_request(request_id: int, payload: AdminRequestUpdate, x_admin_token: Optional[str] = Header(None)):
+    require_admin(x_admin_token)
+    allowed_statuses = {"New", "In Review", "Approved", "Rejected"}
+    if payload.status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail="Invalid moderation status")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE institutional_requests SET status = ?, admin_notes = ? WHERE id = ?", (payload.status, payload.admin_notes.strip(), request_id))
+    if cursor.rowcount != 1:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Request not found")
     conn.commit()
     conn.close()
     return {"status": "success", "request_id": request_id}

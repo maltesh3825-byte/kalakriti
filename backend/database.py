@@ -102,13 +102,35 @@ def init_db():
             buyer_type TEXT,
             product_category TEXT,
             quantity INTEGER DEFAULT 1,
+            unit_price REAL DEFAULT 0,
+            lead_time TEXT,
+            target_buyer TEXT DEFAULT 'Open to all',
             target_market TEXT,
             requirements TEXT,
             status TEXT DEFAULT 'New',
+            quality_flags TEXT DEFAULT '',
+            admin_notes TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
     )
+    request_columns = {row[1] for row in cursor.execute("PRAGMA table_info(institutional_requests)").fetchall()}
+    if "quality_flags" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN quality_flags TEXT DEFAULT ''")
+    if "admin_notes" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN admin_notes TEXT DEFAULT ''")
+    if "unit_price" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN unit_price REAL DEFAULT 0")
+    if "lead_time" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN lead_time TEXT")
+    if "target_buyer" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN target_buyer TEXT DEFAULT 'Open to all'")
+    if "unit_price" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN unit_price REAL DEFAULT 0")
+    if "lead_time" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN lead_time TEXT")
+    if "target_buyer" not in request_columns:
+        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN target_buyer TEXT DEFAULT 'Open to all'")
 
     cursor.execute(
         """

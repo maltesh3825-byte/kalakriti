@@ -24,7 +24,9 @@ const state = {
   accountIncomingOrders: [],
   accountRequests: [],
   accountNotifications: [],
-  accountWishlist: []
+  accountWishlist: [],
+  accountAdminRequests: [],
+  adminToken: localStorage.getItem('kalakriti_admin_token') || ''
 };
 
 // Demo sample craft photos for instant jury testing
@@ -53,6 +55,10 @@ function resolveImageUrl(imageUrl) {
   if (!imageUrl) return '';
   if (/^(https?:|data:|blob:)/i.test(imageUrl)) return imageUrl;
   return new URL(imageUrl, window.location.origin).href;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // Initialize on DOM ready
@@ -265,9 +271,11 @@ function setupEventListeners() {
 // Switch between Studio and Marketplace tabs
 function switchTab(tab) {
   state.currentTab = tab;
+  const homeSection = document.getElementById('homeTabSection');
   const studioSection = document.getElementById('studioTabSection');
   const marketSection = document.getElementById('marketplaceTabSection');
   const institutionalSection = document.getElementById('institutionalTabSection');
+  const aboutSection = document.getElementById('aboutProjectSection');
   const accountSection = document.getElementById('accountTabSection');
 
   document.querySelectorAll('[data-tab-target]').forEach(btn => {
@@ -281,26 +289,48 @@ function switchTab(tab) {
     }
   });
 
-  if (tab === 'studio') {
-    studioSection.classList.remove('hidden');
-    marketSection.classList.add('hidden');
+  if (tab === 'home') {
+    homeSection?.classList.remove('hidden');
+    studioSection?.classList.add('hidden');
+    marketSection?.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
+    aboutSection?.classList.remove('hidden');
+    accountSection?.classList.add('hidden');
+  } else if (tab === 'studio') {
+    homeSection?.classList.add('hidden');
+    studioSection?.classList.remove('hidden');
+    marketSection?.classList.add('hidden');
+    institutionalSection?.classList.add('hidden');
+    aboutSection?.classList.add('hidden');
     accountSection?.classList.add('hidden');
   } else if (tab === 'institutional') {
-    studioSection.classList.add('hidden');
-    marketSection.classList.add('hidden');
+    homeSection?.classList.add('hidden');
+    studioSection?.classList.add('hidden');
+    marketSection?.classList.add('hidden');
     institutionalSection?.classList.remove('hidden');
+    aboutSection?.classList.add('hidden');
+    accountSection?.classList.add('hidden');
+  } else if (tab === 'about') {
+    homeSection?.classList.remove('hidden');
+    studioSection?.classList.add('hidden');
+    marketSection?.classList.add('hidden');
+    institutionalSection?.classList.add('hidden');
+    aboutSection?.classList.remove('hidden');
     accountSection?.classList.add('hidden');
   } else if (tab === 'account') {
-    studioSection.classList.add('hidden');
-    marketSection.classList.add('hidden');
+    homeSection?.classList.add('hidden');
+    studioSection?.classList.add('hidden');
+    marketSection?.classList.add('hidden');
     institutionalSection?.classList.add('hidden');
+    aboutSection?.classList.add('hidden');
     accountSection?.classList.remove('hidden');
     renderAccountShell();
   } else {
-    studioSection.classList.add('hidden');
-    marketSection.classList.remove('hidden');
+    homeSection?.classList.add('hidden');
+    studioSection?.classList.add('hidden');
+    marketSection?.classList.remove('hidden');
     institutionalSection?.classList.add('hidden');
+    aboutSection?.classList.add('hidden');
     accountSection?.classList.add('hidden');
     loadProducts();
   }
@@ -394,19 +424,21 @@ function renderAccountView(view) {
   document.getElementById('accountMeta').textContent = `${state.currentUser.email} · ${state.currentUser.role} · ${state.currentUser.city || 'India'}`;
   const content = document.getElementById('accountContent');
   if (view === 'profile') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_profile')}</h3><p><strong>Name:</strong> ${state.currentUser.name}</p><p><strong>Email:</strong> ${state.currentUser.email}</p><p><strong>Role:</strong> ${state.currentUser.role}</p><p><strong>Location:</strong> ${state.currentUser.city || 'Not added'}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_profile')}</h3><p><strong>Name:</strong> ${escapeHtml(state.currentUser.name)}</p><p><strong>Email:</strong> ${escapeHtml(state.currentUser.email)}</p><p><strong>Role:</strong> ${escapeHtml(state.currentUser.role)}</p><p><strong>Location:</strong> ${escapeHtml(state.currentUser.city || 'Not added')}</p><p class="account-muted">The same account can buy products, publish inventory, and submit institutional requests.</p></div>`;
   } else if (view === 'history') {
     content.innerHTML = `<div class="account-panel"><h3>${t('account_history')}</h3><p class="account-muted">${state.accountOrders.length} order(s), ${state.accountIncomingOrders.length} buyer request(s), ${state.accountRequests.length} bulk request(s), and ${state.accountWishlist.length} saved craft(s).</p><div class="account-stat-grid"><div><strong>${state.accountOrders.length}</strong><span>${t('account_orders')}</span></div><div><strong>${state.accountIncomingOrders.length}</strong><span>Buyer requests</span></div><div><strong>${state.accountNotifications.filter(item => !item.is_read).length}</strong><span>Unread alerts</span></div></div></div>`;
   } else if (view === 'orders') {
     renderOrdersView(content);
   } else if (view === 'requests') {
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${state.accountRequests.length ? state.accountRequests.map(request => `<div class="account-row"><strong>${request.product_category} · ${request.quantity} units</strong><span>${request.target_market} · ${request.status || 'New'} · ${request.email}</span></div>`).join('') : '<p class="account-muted">No pending bulk requests yet.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_requests')}</h3>${state.accountRequests.length ? state.accountRequests.map(request => `<div class="account-row"><strong>${escapeHtml(request.product_category)} · ${escapeHtml(request.quantity)} units</strong><span>${escapeHtml(request.target_market)} · ${escapeHtml(request.status || 'New')} · ${escapeHtml(request.email)}</span></div>`).join('') : '<p class="account-muted">No pending bulk requests yet.</p>'}</div>`;
+  } else if (view === 'admin') {
+    renderAdminView(content);
   } else if (view === 'notifications') {
-    content.innerHTML = `<div class="account-panel"><div class="account-panel-heading"><h3>Notifications</h3><button id="markNotificationsReadBtn" class="account-small-action">Mark all read</button></div>${state.accountNotifications.length ? state.accountNotifications.map(item => `<div class="account-row ${item.is_read ? '' : 'notification-unread'}"><strong>${item.title}</strong><span>${item.message} · ${item.created_at}</span></div>`).join('') : '<p class="account-muted">No notifications yet.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><div class="account-panel-heading"><h3>Notifications</h3><button id="markNotificationsReadBtn" class="account-small-action">Mark all read</button></div>${state.accountNotifications.length ? state.accountNotifications.map(item => `<div class="account-row ${item.is_read ? '' : 'notification-unread'}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.message)} · ${escapeHtml(item.created_at)}</span></div>`).join('') : '<p class="account-muted">No notifications yet.</p>'}</div>`;
     document.getElementById('markNotificationsReadBtn')?.addEventListener('click', markNotificationsRead);
   } else {
     const saved = state.products.filter(product => state.accountWishlist.includes(product.id));
-    content.innerHTML = `<div class="account-panel"><h3>${t('account_wishlist')}</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${product.name}</strong><span>₹${product.price} · ${product.artisan_name}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
+    content.innerHTML = `<div class="account-panel"><h3>${t('account_wishlist')}</h3>${saved.length ? saved.map(product => `<div class="account-row"><strong>${escapeHtml(product.name)}</strong><span>₹${escapeHtml(product.price)} · ${escapeHtml(product.artisan_name)}</span></div>`).join('') : '<p class="account-muted">Your saved crafts will appear here.</p>'}</div>`;
   }
 }
 
@@ -428,6 +460,152 @@ function renderOrdersView(content) {
   });
 }
 
+async function submitAdminLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('adminEmail')?.value.trim();
+  const password = document.getElementById('adminPassword')?.value;
+  const status = document.getElementById('adminLoginStatus');
+  if (!email || !password) {
+    if (status) {
+      status.textContent = 'Enter admin email and password.';
+      status.className = 'mt-3 text-sm font-semibold text-red-700';
+    }
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    if (!response.ok) throw new Error('Invalid admin credentials');
+    const data = await response.json();
+    state.adminToken = data.admin_token;
+    localStorage.setItem('kalakriti_admin_token', data.admin_token);
+    renderAccountView('admin');
+  } catch (error) {
+    if (status) {
+      status.textContent = 'Admin sign-in failed. Use the configured admin credentials.';
+      status.className = 'mt-3 text-sm font-semibold text-red-700';
+    }
+  }
+}
+
+async function loadAdminQueue() {
+  const content = document.getElementById('accountContent');
+  const target = document.getElementById('adminQueue');
+  const adminRefresh = document.getElementById('adminRefreshBtn');
+  if (!state.adminToken || !target) return;
+
+  if (adminRefresh) adminRefresh.disabled = true;
+  try {
+    const response = await fetch('/api/admin/institutional-requests', {
+      method: 'GET',
+      headers: { 'X-Admin-Token': state.adminToken }
+    });
+    if (!response.ok) {
+      localStorage.removeItem('kalakriti_admin_token');
+      state.adminToken = '';
+      renderAccountView('admin');
+      return;
+    }
+    const data = await response.json();
+    state.accountAdminRequests = data.requests || [];
+    target.innerHTML = state.accountAdminRequests.length
+      ? state.accountAdminRequests.map(req => `
+        <div class="account-row admin-request-card">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <strong>${escapeHtml(req.artisan_name)} · ${escapeHtml(req.product_category || 'Craft request')}</strong>
+              <span class="block text-xs mt-1 text-slate-500">${escapeHtml(req.email)} · ${escapeHtml(req.location || 'India')} · qty ${escapeHtml(req.quantity || 1)} · ${escapeHtml(req.target_market || 'Bulk')}</span>
+              <span class="block text-xs mt-1 text-slate-500">Quality flags: ${escapeHtml(req.quality_flags || 'None')}</span>
+              <span class="block text-xs mt-1 text-slate-500">Requirements: ${escapeHtml(req.requirements || 'No requirements')}</span>
+            </div>
+            <div class="min-w-[260px]">
+              <label class="text-xs font-bold text-slate-500 block mb-1">Review status</label>
+              <select data-admin-status="${req.id}" class="institutional-input mb-2">
+                ${['New', 'In Review', 'Approved', 'Rejected'].map(status => `<option value="${status}" ${status === (req.status || 'New') ? 'selected' : ''}>${status}</option>`).join('')}
+              </select>
+              <label class="text-xs font-bold text-slate-500 block mb-1">Moderator notes</label>
+              <textarea data-admin-notes="${req.id}" class="institutional-input mb-2" rows="2">${escapeHtml(req.admin_notes || '')}</textarea>
+              <button type="button" class="account-small-action" data-admin-update="${req.id}">Save review</button>
+            </div>
+          </div>
+        </div>
+      `).join('')
+      : '<p class="account-muted">No institutional requests yet.</p>';
+  } catch (error) {
+    target.innerHTML = '<p class="account-muted">Unable to load admin review queue.</p>';
+  } finally {
+    if (adminRefresh) adminRefresh.disabled = false;
+  }
+}
+
+async function updateAdminRequest(requestId) {
+  const status = document.querySelector(`[data-admin-status="${requestId}"]`)?.value || 'New';
+  const notes = document.querySelector(`[data-admin-notes="${requestId}"]`)?.value || '';
+  const response = await fetch(`/api/admin/institutional-requests/${requestId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Token': state.adminToken
+    },
+    body: JSON.stringify({ status, admin_notes: notes })
+  });
+
+  if (!response.ok) {
+    showToast('Unable to update review status');
+    return;
+  }
+
+  showToast('Review status saved');
+  await loadAdminQueue();
+}
+
+function renderAdminView(content) {
+  if (!state.adminToken) {
+    content.innerHTML = `<div class="account-panel">
+      <h3>Admin Review</h3>
+      <p class="account-muted">Use the configured admin credentials to review institutional buyer requests.</p>
+      <form id="adminLoginForm" class="mt-4 space-y-3">
+        <input id="adminEmail" type="email" class="institutional-input" placeholder="Admin email" value="admin@kalasetu.in" required>
+        <input id="adminPassword" type="password" class="institutional-input" placeholder="Admin password" value="admin123" required>
+        <button type="submit" class="account-small-action">Sign in as admin</button>
+      </form>
+      <p id="adminLoginStatus" class="hidden mt-3 text-sm font-semibold"></p>
+    </div>`;
+
+    const loginForm = document.getElementById('adminLoginForm');
+    if (loginForm) loginForm.addEventListener('submit', submitAdminLogin);
+    return;
+  }
+
+  content.innerHTML = `<div class="account-panel">
+    <div class="account-panel-heading">
+      <h3>Admin Review Queue</h3>
+      <button id="adminRefreshBtn" class="account-small-action">Refresh</button>
+    </div>
+    <div id="adminQueue" class="mt-4"></div>
+  </div>`;
+
+  const refresh = document.getElementById('adminRefreshBtn');
+  if (refresh) refresh.addEventListener('click', loadAdminQueue);
+
+  const queueContainer = document.getElementById('adminQueue');
+  if (queueContainer) {
+    queueContainer.innerHTML = '<p class="account-muted">Loading institutional requests...</p>';
+  }
+
+  loadAdminQueue();
+
+  content.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-admin-update]');
+    if (!button) return;
+    updateAdminRequest(Number(button.dataset.adminUpdate));
+  });
+}
+
 async function submitInstitutionalRequest(event) {
   event.preventDefault();
 
@@ -436,16 +614,18 @@ async function submitInstitutionalRequest(event) {
     email: document.getElementById('institutionalEmail')?.value.trim(),
     phone: document.getElementById('institutionalPhone')?.value.trim(),
     location: document.getElementById('institutionalLocation')?.value.trim(),
-    buyer_type: document.getElementById('institutionalBuyerType')?.value,
     product_category: document.getElementById('institutionalCategory')?.value,
     quantity: Number(document.getElementById('institutionalQuantity')?.value || 1),
-    target_market: document.getElementById('institutionalTarget')?.value,
+    unit_price: Number(document.getElementById('institutionalUnitPrice')?.value || 0),
+    lead_time: document.getElementById('institutionalLeadTime')?.value.trim(),
+    target_buyer: document.getElementById('institutionalTargetBuyer')?.value || 'Open to all',
+    target_market: document.getElementById('institutionalTargetBuyer')?.value || 'Open to all',
     requirements: document.getElementById('institutionalRequirements')?.value.trim()
   };
   const status = document.getElementById('institutionalRequestStatus');
   const subject = encodeURIComponent(`KalaSetu bulk request - ${payload.product_category}`);
   const body = encodeURIComponent(
-    `Name: ${payload.artisan_name}\nEmail: ${payload.email}\nPhone: ${payload.phone}\nLocation: ${payload.location}\nBuyer type: ${payload.buyer_type}\nCategory: ${payload.product_category}\nQuantity: ${payload.quantity}\nTarget: ${payload.target_market}\nRequirements: ${payload.requirements}`
+    `Name: ${payload.artisan_name}\nEmail: ${payload.email}\nPhone: ${payload.phone}\nLocation: ${payload.location}\nPreferred bulk outlet / target buyer: ${payload.target_buyer}\nCategory: ${payload.product_category}\nQuantity: ${payload.quantity}\nUnit price expectation: ${payload.unit_price}\nLead time: ${payload.lead_time}\nRequirements: ${payload.requirements}`
   );
 
   try {

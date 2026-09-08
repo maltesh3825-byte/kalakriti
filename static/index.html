@@ -100,6 +100,11 @@
 
         <!-- Desktop Navigation Tabs -->
         <div class="hidden sm:flex items-center space-x-1">
+          <button data-tab-target="home" 
+                  class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <span>🏠</span>
+            <span>Home</span>
+          </button>
           <button data-tab-target="studio" 
                   class="px-5 py-2 rounded-xl text-sm font-bold text-terracotta-600 bg-terracotta-50/80 border border-terracotta-200 transition-all flex items-center gap-2">
             <span>✨</span>
@@ -114,6 +119,11 @@
                   class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
             <span>🏛️</span>
             <span>Bulk & Institutions</span>
+          </button>
+          <button data-tab-target="about"
+                  class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <span>ℹ️</span>
+            <span>About Project</span>
           </button>
           <button data-tab-target="account"
                   class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
@@ -134,6 +144,166 @@
       </div>
     </div>
   </nav>
+
+  <!-- ===================================================================== -->
+  <!-- HOME / LANDING PAGE                                                  -->
+  <!-- ===================================================================== -->
+  <section id="homeTabSection" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+    <section class="home-hero-wrap">
+      <div class="home-hero-grid">
+        <div class="home-hero-copy">
+          <div class="home-kicker">KalaSetu × SIH26090</div>
+          <h1 class="home-title">Empowering Rural Artisans with AI-Driven Market Linkage</h1>
+          <p class="home-subtitle">Connecting marginalized craftspeople directly to retail buyers, corporate procurement, and government institutions.</p>
+          <div class="home-cta-row">
+            <button class="home-cta-primary" onclick="switchTab('studio')">✨ Start Cataloging (For Artisans)</button>
+            <button class="home-cta-secondary" onclick="switchTab('marketplace')">🛍️ Explore Crafts (For Buyers)</button>
+          </div>
+          <div class="home-proof-grid">
+            <div><span class="home-proof-num">1,200+</span><span class="home-proof-label">Artisans Onboarded</span></div>
+            <div><span class="home-proof-num">15+</span><span class="home-proof-label">Craft Clusters</span></div>
+            <div><span class="home-proof-num">250+</span><span class="home-proof-label">Bulk Requests</span></div>
+            <div><span class="home-proof-num">&lt;5s</span><span class="home-proof-label">AI Processing</span></div>
+          </div>
+        </div>
+        <div class="home-hero-media">
+          <div class="home-media-card">
+            <div class="home-media-image">
+              <img src="https://images.unsplash.com/photo-1577083288073-40892c0860a4?auto=format&fit=crop&w=1200&q=80" alt="KalaSetu craft marketplace">
+              <span class="home-ai-scan">AI Scan Active</span>
+            </div>
+            <div class="home-media-bottom">
+              <span><b>Terracotta • Madhubani • Dhokra</b></span>
+              <span class="home-media-tag">Verified Origin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="section-heading centered">
+        <span class="section-tag">How it works</span>
+        <h2>Two connected pathways</h2>
+      </div>
+      <div class="home-workflow-grid">
+        <article class="workflow-card artisan-track">
+          <span class="workflow-icon">🪡</span>
+          <h3>For Artisans</h3>
+          <ol>
+            <li><span class="step-index">1</span><span>Snap & Upload</span></li>
+            <li><span class="step-index">2</span><span>AI generates titles, descriptions, pricing and tags</span></li>
+            <li><span class="step-index">3</span><span>Publish directly to retail and institutional buyers</span></li>
+          </ol>
+        </article>
+        <article class="workflow-card buyer-track">
+          <span class="workflow-icon">🏛️</span>
+          <h3>For Buyers & Institutions</h3>
+          <ol>
+            <li><span class="step-index">1</span><span>Browse crafts or submit RFQs</span></li>
+            <li><span class="step-index">2</span><span>Inspect artisan origin and pricing transparency</span></li>
+            <li><span class="step-index">3</span><span>Fulfill orders with tracked sourcing</span></li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="section-heading centered">
+        <span class="section-tag">AI Studio</span>
+        <h2>AI-powered cataloging</h2>
+      </div>
+      <div class="home-feature-grid">
+        <article class="feature-card">
+          <span class="feature-icon">👁️</span>
+          <h3>Multimodal AI Vision</h3>
+          <p>Detect material, craft style, and product quality from the uploaded photo.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon">🎙️</span>
+          <h3>Voice-First Input</h3>
+          <p>Capture artisan notes and product stories using multilingual speech-to-text.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon">₹</span>
+          <h3>Smart Dynamic Pricing</h3>
+          <p>Estimate fair prices using effort, material, and marketplace benchmarks.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-section">
+      <div class="section-heading centered">
+        <span class="section-tag">Featured Crafts</span>
+        <h2>Market-ready artisan work</h2>
+      </div>
+      <div class="home-market-grid">
+        <article class="craft-card">
+          <div class="craft-image"><img src="https://images.unsplash.com/photo-1577083288073-40892c0860a4?auto=format&fit=crop&w=800&q=80" alt="">
+          </div>
+          <div class="craft-copy">
+            <span class="craft-category">Terracotta</span>
+            <h3>Terracotta Pottery</h3>
+            <p>Madhubani, Bihar</p>
+            <span class="craft-price">₹690</span>
+          </div>
+        </article>
+        <article class="craft-card">
+          <div class="craft-image"><img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80" alt="">
+          </div>
+          <div class="craft-copy">
+            <span class="craft-category">Dhokra</span>
+            <h3>Dhokra Metalcraft</h3>
+            <p>Bastar, Chhattisgarh</p>
+            <span class="craft-price">₹1,450</span>
+          </div>
+        </article>
+        <article class="craft-card">
+          <div class="craft-image"><img src="https://images.unsplash.com/photo-1581783898377-1c85bf937427?auto=format&fit=crop&w=800&q=80" alt="">
+          </div>
+          <div class="craft-copy">
+            <span class="craft-category">Handloom</span>
+            <h3>Kutch Textile</h3>
+            <p>Kutch, Gujarat</p>
+            <span class="craft-price">₹1,250</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-section impact-strip">
+      <div class="section-heading centered">
+        <span class="section-tag">Impact</span>
+        <h2>Public procurement and artisanal resilience</h2>
+      </div>
+      <div class="home-impact-grid">
+        <div class="impact-card"><span class="impact-score">1,200+</span><span class="impact-label">Artisans Onboarded</span></div>
+        <div class="impact-card"><span class="impact-score">15+</span><span class="impact-label">Craft Clusters Covered</span></div>
+        <div class="impact-card"><span class="impact-score">250+</span><span class="impact-label">Bulk Sourcing Requests</span></div>
+        <div class="impact-card"><span class="impact-score">&lt;5s</span><span class="impact-label">AI Processing Speed</span></div>
+      </div>
+    </section>
+
+    <section id="aboutProjectSection" class="home-section home-about">
+      <div class="section-heading centered">
+        <span class="section-tag">About Project</span>
+        <h2>KalaSetu</h2>
+      </div>
+      <div class="home-about-grid">
+        <div class="about-copy">
+          <p>KalaSetu is an AI-driven market linkage platform for artisans, cooperatives, and craft clusters. It supports cataloging, multilingual voice-first input, transparent pricing, and direct connections to retail and institutional buyers.</p>
+          <p>The platform aligns with the SIH26090 challenge area and supports the Ministry of Social Justice & Empowerment by building a fair, data-supported pathway from handmade production to buyer discovery.</p>
+          <a class="home-cta-secondary small-link" href="mailto:kalasetu24824.9@gmail.com">Contact Support</a>
+        </div>
+        <div class="about-list">
+          <div class="about-list-item">Government & institutional sourcing support</div>
+          <div class="about-list-item">Seller and buyer account in one shared app</div>
+          <div class="about-list-item">Multilingual support for regional artisan communities</div>
+          <div class="about-list-item">Direct marketplace and RFQ workflow</div>
+        </div>
+      </div>
+    </section>
+  </section>
 
   <!-- ===================================================================== -->
   <!-- TAB 1: ARTISAN STUDIO (Low-Literacy Smart Upload & AI Cataloger)      -->
@@ -554,13 +724,12 @@
           <label class="text-xs font-bold text-slate-700">Village / state
             <input id="institutionalLocation" class="institutional-input" placeholder="Madhubani, Bihar">
           </label>
-          <label class="text-xs font-bold text-slate-700">Buyer type
-            <select id="institutionalBuyerType" class="institutional-input">
-              <option>Government department</option>
-              <option>Corporate gifting buyer</option>
-              <option>Hotel / retail chain</option>
-              <option>NGO / institutional buyer</option>
-              <option>Exporter / distributor</option>
+          <label class="text-xs font-bold text-slate-700">Preferred Bulk Outlet / Target Buyer (optional)
+            <select id="institutionalTargetBuyer" class="institutional-input">
+              <option value="Open to all">Anyone / Open to all</option>
+              <option value="Government">Government</option>
+              <option value="Corporate">Corporates</option>
+              <option value="Retail chain">Retail chain</option>
             </select>
           </label>
           <label class="text-xs font-bold text-slate-700">Product category
@@ -576,17 +745,14 @@
           <label class="text-xs font-bold text-slate-700">Available quantity
             <input id="institutionalQuantity" type="number" min="1" value="100" class="institutional-input">
           </label>
-          <label class="text-xs font-bold text-slate-700">Target channel
-            <select id="institutionalTarget" class="institutional-input">
-              <option>GeM government procurement</option>
-              <option>Corporate / institutional bulk order</option>
-              <option>TRIFED / tribal market linkage</option>
-              <option>ONDC seller network</option>
-              <option>Need guidance choosing a channel</option>
-            </select>
+          <label class="text-xs font-bold text-slate-700">Unit price / pricing expectation (₹)
+            <input id="institutionalUnitPrice" type="number" min="1" value="250" class="institutional-input">
+          </label>
+          <label class="text-xs font-bold text-slate-700">Production / Dispatch lead time
+            <input id="institutionalLeadTime" class="institutional-input" placeholder="7-15 working days">
           </label>
           <label class="sm:col-span-2 text-xs font-bold text-slate-700">What should the buyer know?
-            <textarea id="institutionalRequirements" rows="4" class="institutional-input" placeholder="Mention lead time, customization, price range, delivery capacity, certifications, or packaging needs."></textarea>
+            <textarea id="institutionalRequirements" rows="4" class="institutional-input" placeholder="Packaging, customization, certifications, quality sample notes, dispatch detail, or any buyer requirement."></textarea>
           </label>
           <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
             <button type="submit" class="touch-btn flex-1 py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-extrabold">Submit RFQ for follow-up</button>
@@ -650,6 +816,7 @@
         <button class="account-tab" data-account-view="orders">Orders</button>
         <button class="account-tab" data-account-view="requests">Requests</button>
         <button class="account-tab" data-account-view="wishlist">Wishlist</button>
+        <button class="account-tab" data-account-view="admin">Admin Review</button>
         <button class="account-tab account-notification-tab" data-account-view="notifications">Notifications <span id="notificationCountBadge" class="notification-count-badge hidden">0</span></button>
       </div>
       <div id="accountContent"></div>
