@@ -103,10 +103,17 @@ def init_db():
             total INTEGER NOT NULL,
             status TEXT DEFAULT 'Confirmed',
             eta TEXT DEFAULT '2-4 working days',
+            cancel_reason TEXT DEFAULT '',
+            cancelled_at TIMESTAMP NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
     )
+    order_columns = {row[1] for row in cursor.execute("PRAGMA table_info(orders)").fetchall()}
+    if "cancel_reason" not in order_columns:
+        cursor.execute("ALTER TABLE orders ADD COLUMN cancel_reason TEXT DEFAULT ''")
+    if "cancelled_at" not in order_columns:
+        cursor.execute("ALTER TABLE orders ADD COLUMN cancelled_at TIMESTAMP NULL")
 
     cursor.execute(
         """
@@ -136,12 +143,6 @@ def init_db():
         cursor.execute("ALTER TABLE institutional_requests ADD COLUMN quality_flags TEXT DEFAULT ''")
     if "admin_notes" not in request_columns:
         cursor.execute("ALTER TABLE institutional_requests ADD COLUMN admin_notes TEXT DEFAULT ''")
-    if "unit_price" not in request_columns:
-        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN unit_price REAL DEFAULT 0")
-    if "lead_time" not in request_columns:
-        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN lead_time TEXT")
-    if "target_buyer" not in request_columns:
-        cursor.execute("ALTER TABLE institutional_requests ADD COLUMN target_buyer TEXT DEFAULT 'Open to all'")
     if "unit_price" not in request_columns:
         cursor.execute("ALTER TABLE institutional_requests ADD COLUMN unit_price REAL DEFAULT 0")
     if "lead_time" not in request_columns:

@@ -93,6 +93,10 @@ class OrderCreate(BaseModel):
     eta: str = "2-4 working days"
 
 
+class CancelOrderRequest(BaseModel):
+    reason: str = ""
+
+
 class InstitutionalRequestCreate(BaseModel):
     artisan_name: str
     email: str
@@ -397,6 +401,48 @@ def create_order(payload: OrderCreate):
     conn.close()
     remaining_quantity = available_quantity - requested_quantity
     return {"status": "success", "order_id": order_id, "remaining_quantity": remaining_quantity}
+
+
+@app.post("/api/orders/{order_id}/cancel")
+def cancel_order(order_id: int, payload: CancelOrderRequest):
+    """Cancel an order by record, restore tracked quantity and add a cancellation notice to the buyer profile."""
+    reason = payload.reason.strip() if payload.reason else ""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT user_id, product_id, product_name, quantity, status FROM orders WHERE id = ?",
+        (order_id,),
+    )
+    order_row = cursor.fetchone()
+    if not order_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if str(order_row["status"]).lower() == "cancelled":
+        conn.close()
+        raise HTTPException(status_code=409, detail="Order is already cancelled")
+
+    cursor.execute(
+        "UPDATE orders SET status = 'Cancelled', cancel_reason = ?, cancelled_at = ? WHERE id = ?",
+        (reason, datetime.now(timezone.utc).isoformat(), order_id),
+    )
+    cursor.execute(
+        "UPDATE products SET quantity = quantity + ? WHERE id = ?",
+        (int(order_row["quantity"]), int(order_row["product_id"])),
+    )
+    cursor.execute(
+        "INSERT INTO notifications (user_id, kind, title, message, related_id) VALUES (?, ?, ?, ?, ?)",
+        (
+            int(order_row["user_id"]),
+            "order_cancelled",
+            "Order cancelled",
+            f"Order #{order_id} for {order_row['product_name']} was cancelled. Reversal restored {order_row['quantity']} unit(s).{(' Reason: ' + reason) if reason else ''}",
+            order_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "success", "order_id": order_id, "restored_quantity": int(order_row["quantity"]), "reason": reason}
 
 
 def persist_institutional_request(payload: InstitutionalRequestCreate):

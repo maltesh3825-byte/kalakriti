@@ -39,7 +39,8 @@ import {
   OrderRecord,
   loginUser,
   createOrder,
-  fetchOrdersForUser
+  fetchOrdersForUser,
+  cancelOrderApi
 } from './services/api';
 
 export default function App() {
@@ -86,6 +87,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [cancelReason, setCancelReason] = useState('Changed requirement / buyer changed decision');
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const t = i18n[lang];
@@ -116,6 +118,10 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setIsLoggedIn(false);
+    setActiveTab('market');
+  };
+
+  const openHomeMarket = () => {
     setActiveTab('market');
   };
 
@@ -157,6 +163,28 @@ export default function App() {
       `Hello KalaSetu team,\n\nI want to connect with bulk buyers / institutional buyers for my craft.\n\nName: ${currentUser?.name || authName}\nEmail: ${currentUser?.email || authEmail}\nCity: ${currentUser?.city || artisanLocation}\nRequirement: ${bulkNeed || 'Need help connecting to institutional buyers and government e-marketplaces'}\nBuyer type: ${bulkBuyerType}\n\nPlease help me with bulk opportunities and procurement support.`
     );
     Linking.openURL(`mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`);
+  };
+
+  const handleCancelOrder = async (orderId: number) => {
+    if (!isLoggedIn) {
+      Alert.alert('Sign in required', 'Please sign in to manage your orders.');
+      setActiveTab('profile');
+      return;
+    }
+
+    const reason = cancelReason.trim();
+    if (!reason) {
+      Alert.alert('Order cancellation', 'Please add a reason before cancelling this order.');
+      return;
+    }
+
+    const result = await cancelOrderApi(orderId, reason);
+    if (result?.status === 'success') {
+      setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'Cancelled' } : order));
+      Alert.alert('Order cancelled', `The order quantity was restored by ${result.restored_quantity || 1} item(s).`);
+    } else {
+      Alert.alert('Order cancellation', 'Cancel route returned a fallback; the order stays active in the local app view.');
+    }
   };
 
   // Toggle Language
@@ -365,13 +393,13 @@ export default function App() {
       {/* App Header */}
       <View style={styles.header}>
         <View style={styles.brandRow}>
-          <View style={styles.logoBadge}>
+          <TouchableOpacity onPress={openHomeMarket} style={styles.logoBadge}>
             <Text style={styles.logoBadgeText}>क</Text>
-          </View>
-          <View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openHomeMarket}>
             <Text style={styles.appName}>{t.appTitle}</Text>
             <Text style={styles.appSub}>{t.appSubtitle}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
@@ -792,6 +820,15 @@ export default function App() {
                     <Text style={styles.orderMeta}>₹{order.price} • {order.customerName}</Text>
                     <Text style={styles.orderMeta}>{t.orderStatus}: {order.status}</Text>
                     <Text style={styles.orderMeta}>{t.deliveryEta}: {order.eta}</Text>
+                    <TextInput
+                      style={styles.searchBar}
+                      value={cancelReason}
+                      onChangeText={setCancelReason}
+                      placeholder="Why cancel this order?"
+                    />
+                    <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}>
+                      <Text style={styles.secondaryActionText}>Cancel order</Text>
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -835,15 +872,29 @@ export default function App() {
                   <Text style={styles.profileName}>{currentUser?.name}</Text>
                   <Text style={styles.profileMeta}>{currentUser?.email}</Text>
                   <Text style={styles.profileMeta}>{currentUser?.city}</Text>
-                  <Text style={styles.profileMeta}>{currentUser?.role}</Text>
+                  <Text style={styles.profileMeta}>Role: {currentUser?.role || 'both'} · Seller & Buyer</Text>
                 </View>
 
-                <Text style={styles.profileSectionTitle}>Bulk & Institutional Linkage</Text>
-                <TextInput style={styles.searchBar} value={bulkNeed} onChangeText={setBulkNeed} placeholder="Describe your bulk requirement or government opportunity" multiline />
-                <TextInput style={styles.searchBar} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Buyer type / institution" />
-                <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
-                  <Text style={styles.primaryActionText}>Request bulk support</Text>
-                </TouchableOpacity>
+                <Text style={styles.profileSectionTitle}>Bulk Requests</Text>
+                <View style={styles.bulkRequestGrid}>
+                  <View style={styles.bulkRequestColumn}>
+                    <Text style={styles.bulkRequestColumnTitle}>Bulk request from other buyers</Text>
+                    <View style={styles.bulkRequestList}>
+                      <Text style={styles.bulkRequestItem}>Retail Chain RFQ • 120 pcs</Text>
+                      <Text style={styles.bulkRequestItem}>Government Supply Notice • 500 pcs</Text>
+                      <Text style={styles.bulkRequestItem}>Corporate Gifting • 250 pcs</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.bulkRequestColumn}>
+                    <Text style={styles.bulkRequestColumnTitle}>Bulk sell request by me</Text>
+                    <View style={styles.bulkRequestList}>
+                      <Text style={styles.bulkRequestItem}>My textile lot • 300 pcs</Text>
+                      <Text style={styles.bulkRequestItem}>My craft supply • 80 pcs</Text>
+                      <Text style={styles.bulkRequestItem}>My institutional lot • 600 pcs</Text>
+                    </View>
+                  </View>
+                </View>
 
                 <TouchableOpacity style={styles.secondaryAction} onPress={handleLogout}>
                   <Text style={styles.secondaryActionText}>Log out</Text>
@@ -1647,6 +1698,35 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: Colors.textPrimary,
     marginBottom: 8,
+  },
+  bulkRequestGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  bulkRequestColumn: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    padding: 12,
+  },
+  bulkRequestColumnTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  bulkRequestList: {
+    gap: 6,
+  },
+  bulkRequestItem: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    paddingBottom: 6,
   },
   secondaryAction: {
     backgroundColor: '#F1F5F9',

@@ -54,7 +54,7 @@ export interface AiAnalysisResult {
   saved_image_url?: string;
 }
 
-export type UserRole = 'artisan' | 'buyer';
+export type UserRole = 'artisan' | 'buyer' | 'seller' | 'both' | 'buyer-seller' | 'seller-buyer';
 
 export interface AppUser {
   id: number;
@@ -71,9 +71,16 @@ export interface OrderRecord {
   productId: number;
   productName: string;
   price: number;
-  status: 'Confirmed' | 'Packed' | 'In Transit' | 'Delivered';
+  status: 'Confirmed' | 'Packed' | 'In Transit' | 'Delivered' | 'Cancelled';
   eta: string;
   customerName: string;
+}
+
+export interface CancelOrderResponse {
+  status: string;
+  order_id: number;
+  restored_quantity: number;
+  reason: string;
 }
 
 // Fallback seed catalog for offline mobile demo
@@ -266,7 +273,7 @@ export async function loginUser(email: string, password: string, role: UserRole 
       id: 2,
       name: 'Seema Devi',
       email,
-      role: 'artisan',
+      role: 'both',
       phone: '+919876543210',
       city: 'Madhubani, Bihar',
       language: 'hi'
@@ -277,7 +284,7 @@ export async function loginUser(email: string, password: string, role: UserRole 
     id: 1,
     name: 'Aarav Sharma',
     email,
-    role,
+    role: 'both',
     phone: '+919800112233',
     city: 'Bhopal, Madhya Pradesh',
     language: 'en'
@@ -327,6 +334,25 @@ export async function createOrder(input: {
 }
 
 export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/orders/${userId}`, { method: 'GET' });
+    if (!res.ok) {
+      throw new Error('Backend orders unavailable');
+    }
+    const data = await res.json();
+    return (data.orders || []).map((row: any) => ({
+      id: row.id,
+      productId: row.product_id,
+      productName: row.product_name,
+      price: Number(row.total || row.price || 0),
+      status: String(row.status || 'Confirmed'),
+      eta: row.eta || '2-4 working days',
+      customerName: row.buyer_name || 'Verified Buyer'
+    }));
+  } catch (err) {
+    console.warn('Falling back to mobile demo orders:', err);
+  }
+
   return [
     {
       id: 101,
@@ -347,4 +373,21 @@ export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]>
       customerName: 'Aarav Sharma'
     }
   ];
+}
+
+export async function cancelOrderApi(orderId: number, reason: string): Promise<CancelOrderResponse | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/orders/${orderId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason })
+    });
+    if (!res.ok) {
+      throw new Error('Cancel order failed');
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('Order cancellation backend unavailable:', err);
+    return null;
+  }
 }

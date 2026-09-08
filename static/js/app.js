@@ -61,6 +61,52 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function closeProductModal() {
+  const modal = document.getElementById('productDetailModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function showCustomAlert(message, title = 'Notice') {
+  const modal = document.getElementById('customAlertModal');
+  const card = document.getElementById('customAlertCard');
+  const titleEl = document.getElementById('customAlertTitle');
+  const messageEl = document.getElementById('customAlertMessage');
+  const cancelEl = document.getElementById('customAlertCancel');
+  const okEl = document.getElementById('customAlertOk');
+  const closeEl = document.getElementById('customAlertClose');
+
+  if (!modal || !card || !titleEl || !messageEl || !cancelEl || !okEl || !closeEl) return;
+
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  modal.classList.remove('hidden');
+
+  const closePopup = () => modal.classList.add('hidden');
+  cancelEl.onclick = closePopup;
+  closeEl.onclick = closePopup;
+  okEl.onclick = closePopup;
+
+  let startX = 0;
+  let startY = 0;
+  card.ontouchstart = (event) => {
+    const touch = event.changedTouches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+  };
+  card.ontouchend = (event) => {
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      closePopup();
+    }
+  };
+}
+
+window.alert = function(message) {
+  showCustomAlert(String(message), 'Notice');
+};
+
 function downloadBlob(blobContent, filename, mimeType) {
   const blob = blobContent instanceof Blob ? blobContent : new Blob([blobContent], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -259,6 +305,38 @@ function setupEventListeners() {
 
   const aiRfqPitchBtn = document.getElementById('aiRfqPitchBtn');
   if (aiRfqPitchBtn) aiRfqPitchBtn.addEventListener('click', () => handleBusinessManagerTool('rfq'));
+
+  const modal = document.getElementById('productDetailModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const modalCancelBtn = document.getElementById('modalCancelBtn');
+  if (closeModalBtn && modal) {
+    closeModalBtn.addEventListener('click', () => closeProductModal());
+  }
+  if (modalCancelBtn && modal) {
+    modalCancelBtn.addEventListener('click', () => closeProductModal());
+  }
+  if (modal) {
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeProductModal();
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    modal.addEventListener('touchstart', (event) => {
+      const touch = event.changedTouches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+    }, { passive: true });
+
+    modal.addEventListener('touchend', (event) => {
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+        closeProductModal();
+      }
+    }, { passive: true });
+  }
 
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', logoutAccount);
@@ -588,8 +666,23 @@ function renderOrdersView(content) {
   const emptyMessage = isMine ? 'No orders requested by you yet.' : 'No buyer requests for your products yet.';
   const rowsMarkup = rows.length
     ? rows.map(order => isMine
-      ? `<div class="account-row"><strong>${order.product_name}</strong><span>₹${order.total} · ${order.status} · ETA ${order.eta}</span></div>`
-      : `<div class="account-row incoming-order"><strong>${order.product_name}</strong><span>${order.buyer_name || 'Buyer'} · ${order.quantity} unit(s) · ₹${order.total} · ${order.status}</span></div>`).join('')
+      ? `<div class="account-row">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <strong>${escapeHtml(order.product_name)}</strong>
+              <span class="block text-xs mt-1 text-slate-500">₹${escapeHtml(order.total)} · Qty ${escapeHtml(order.quantity || 1)} · ${escapeHtml(order.status || 'Confirmed')} · ETA ${escapeHtml(order.eta || '2-4 working days')}</span>
+              ${order.status && String(order.status).toLowerCase() !== 'cancelled'
+                ? `<span class="block text-xs mt-1 text-slate-500">Cancel reason can be added before cancellation.</span>`
+                : `<span class="block text-xs mt-1 text-slate-500">Order cancelled${order.cancel_reason ? `: ${escapeHtml(order.cancel_reason)}` : ''}</span>`}
+            </div>
+            <div>
+              ${order.status && String(order.status).toLowerCase() !== 'cancelled'
+                ? `<button type="button" class="account-small-action" data-cancel-order="${order.id}">Cancel order</button>`
+                : `<span class="text-xs font-bold text-slate-500">Cancelled</span>`}
+            </div>
+          </div>
+        </div>`
+      : `<div class="account-row incoming-order"><strong>${escapeHtml(order.product_name)}</strong><span>${escapeHtml(order.buyer_name || 'Buyer')} · ${escapeHtml(order.quantity || 1)} unit(s) · ₹${escapeHtml(order.total)} · ${escapeHtml(order.status || 'Confirmed')}</span></div>`).join('')
     : `<p class="account-muted">${emptyMessage}</p>`;
   content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><div class="order-switcher"><button class="order-switch ${isMine ? 'order-switch-active' : ''}" data-order-view="mine">Requested by me</button><button class="order-switch ${!isMine ? 'order-switch-active' : ''}" data-order-view="incoming">Requests from other buyers</button></div><div class="order-view-content">${rowsMarkup}</div></div>`;
   content.querySelectorAll('[data-order-view]').forEach(button => {
@@ -598,6 +691,42 @@ function renderOrdersView(content) {
       renderOrdersView(content);
     });
   });
+  if (isMine) {
+    content.querySelectorAll('[data-cancel-order]').forEach(button => {
+      button.addEventListener('click', () => cancelMarketplaceOrder(Number(button.dataset.cancelOrder), content));
+    });
+  }
+}
+
+async function cancelMarketplaceOrder(orderId, content) {
+  if (!orderId) return;
+  const reason = prompt('Please tell us why you want to cancel this order:', 'Changed requirement / no longer needed');
+  if (reason === null) return;
+  const cleanReason = (reason || '').trim();
+  if (!cleanReason) {
+    showToast('A cancellation reason is required');
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/orders/${orderId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: cleanReason })
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => ({ detail: 'Unable to cancel order' }));
+      throw new Error(detail.detail || 'Unable to cancel order');
+    }
+    const data = await response.json();
+    await loadAccountData();
+    await loadProducts();
+    renderAccountView('orders');
+    showToast(`Order cancelled. ${data.restored_quantity || 0} unit(s) restored.`);
+  } catch (error) {
+    console.error('Cancel order error:', error);
+    showToast(error.message || 'Unable to cancel order');
+  }
 }
 
 async function submitAdminLogin(event) {
@@ -724,13 +853,23 @@ function renderAdminView(content) {
   content.innerHTML = `<div class="account-panel">
     <div class="account-panel-heading">
       <h3>Admin Review Queue</h3>
-      <button id="adminRefreshBtn" class="account-small-action">Refresh</button>
+      <div class="flex gap-2">
+        <button id="adminRefreshBtn" class="account-small-action">Refresh</button>
+        <button id="adminLogoutBtn" class="account-small-action">Logout</button>
+      </div>
     </div>
     <div id="adminQueue" class="mt-4"></div>
   </div>`;
 
   const refresh = document.getElementById('adminRefreshBtn');
   if (refresh) refresh.addEventListener('click', loadAdminQueue);
+
+  const logout = document.getElementById('adminLogoutBtn');
+  if (logout) logout.addEventListener('click', () => {
+    localStorage.removeItem('kalakriti_admin_token');
+    state.adminToken = '';
+    renderAccountView('admin');
+  });
 
   const queueContainer = document.getElementById('adminQueue');
   if (queueContainer) {
