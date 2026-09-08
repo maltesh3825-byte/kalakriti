@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KalaKriti | AI-Driven Market Linkage & Smart Cataloging (SIH26090)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            terracotta: {
+              50: '#fff5eb',
+              100: '#fde8d0',
+              200: '#fbd0a2',
+              500: '#c85a2b',
+              600: '#b0461b',
+              700: '#8c320f',
+            },
+            sand: {
+              50: '#fbf9f5',
+              100: '#f3efe6',
+              200: '#e8e2d4',
+            },
+            indigoGov: {
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Noto Sans Devanagari -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Rozha+One&display=swap" rel="stylesheet">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#faf8f5] text-slate-800 antialiased min-h-screen flex flex-col pb-20 sm:pb-8">
+
+  <!-- Top Government & Hackathon Announcement Strip -->
+  <header class="bg-indigoGov-900 text-white text-xs py-2 px-4 shadow-sm border-b border-indigo-950">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="bg-amber-400 text-indigo-950 text-[10px] font-extrabold px-2 py-0.5 rounded tracking-wide uppercase">SIH 2026</span>
+        <span class="text-amber-200 font-semibold" data-i18n="sih_badge">Problem Statement SIH26090</span>
+        <span class="text-slate-400 hidden sm:inline">&bull;</span>
+        <span class="text-slate-300 hidden sm:inline" data-i18n="mosje_badge">Ministry of Social Justice & Empowerment (MoSJE)</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- AI Status Badge -->
+        <div id="aiEngineBadge">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span data-i18n="gemini_live">Gemini Vision Ready</span>
+          </span>
+        </div>
+
+        <!-- Language Switcher -->
+        <button id="langToggleBtn" 
+                class="bg-white/10 hover:bg-white/20 border border-white/20 text-amber-300 font-bold px-3 py-1 rounded-lg transition-colors flex items-center gap-1.5 text-xs">
+          <span>🌐</span>
+          <span id="langLabel">हिंदी</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Bar -->
+  <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand / Logo -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('studio')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-terracotta-600 to-amber-500 flex items-center justify-center text-white font-black text-xl shadow-md">
+            क
+          </div>
+          <div>
+            <h1 class="font-bold text-xl text-slate-900 tracking-tight flex items-center gap-2">
+              <span data-i18n="app_title">KalaKriti</span>
+              <span class="text-[11px] bg-terracotta-100 text-terracotta-700 px-2 py-0.5 rounded-md font-semibold border border-terracotta-200">AI Studio</span>
+            </h1>
+            <p class="text-[11px] text-slate-500 hidden sm:block" data-i18n="app_subtitle">AI Studio & Market Linkage for Artisans</p>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <div class="hidden sm:flex items-center space-x-1">
+          <button data-tab-target="studio" 
+                  class="px-5 py-2 rounded-xl text-sm font-bold text-terracotta-600 bg-terracotta-50/80 border border-terracotta-200 transition-all flex items-center gap-2">
+            <span>✨</span>
+            <span data-i18n="nav_studio">Artisan Studio</span>
+          </button>
+          <button data-tab-target="marketplace" 
+                  class="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2">
+            <span>🛍️</span>
+            <span data-i18n="nav_market">Buyer Marketplace</span>
+          </button>
+        </div>
+
+        <!-- Direct Artisan Help / Audio Guide -->
+        <div class="flex items-center gap-2">
+          <button onclick="toggleNarration(currentLanguage === 'hi' ? 'नमस्ते! कलाकृति में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें या कैमरा से खींचे। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaKriti! Upload a photo of your handmade craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.')"
+                  class="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                  title="Audio Help">
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+            <span class="hidden md:inline" data-i18n="listen_desc">Listen Help</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================================================================== -->
+  <!-- TAB 1: ARTISAN STUDIO (Low-Literacy Smart Upload & AI Cataloger)      -->
+  <!-- ===================================================================== -->
+  <main id="studioTabSection" class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8">
+
+    <!-- Hero Guidance for Artisan -->
+    <div class="mb-8 text-center sm:text-left bg-gradient-to-r from-terracotta-50 to-amber-50 border border-terracotta-100 rounded-3xl p-6 sm:p-8 shadow-sm">
+      <div class="inline-flex items-center gap-2 bg-white px-3 py-1 rounded-full text-xs font-bold text-terracotta-700 shadow-sm mb-3">
+        <span>🇮🇳</span>
+        <span data-i18n="mosje_badge">Ministry of Social Justice & Empowerment</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight" data-i18n="studio_step1_title">
+        1. Capture or Upload Craft Photo
+      </h2>
+      <p class="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl" data-i18n="studio_step1_sub">
+        Take a clear picture of your handmade product in good natural light. AI will handle the cataloging, pricing, and tags.
+      </p>
+
+      <!-- Quick Sample Buttons for Instant Jury Demo -->
+      <div class="mt-4 pt-4 border-t border-terracotta-200/60">
+        <p class="text-xs font-bold text-slate-600 mb-2">⚡ Quick 1-Click Demo Samples (For Jury Testing):</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="loadDemoPreset(0)" class="text-xs bg-white hover:bg-terracotta-50 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all flex items-center gap-1.5">
+            🏺 Terracotta Pitcher
+          </button>
+          <button type="button" onclick="loadDemoPreset(1)" class="text-xs bg-white hover:bg-terracotta-50 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all flex items-center gap-1.5">
+            🐘 Dhokra Brass Elephant
+          </button>
+          <button type="button" onclick="loadDemoPreset(2)" class="text-xs bg-white hover:bg-terracotta-50 text-slate-800 font-semibold px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm transition-all flex items-center gap-1.5">
+            🧵 Kutch Mirror Textile
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload & Information Form -->
+    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden p-6 sm:p-8">
+      
+      <!-- Photo Dropzone / Capture Module -->
+      <div id="uploadDropzone" 
+           class="relative border-2 border-dashed border-slate-300 hover:border-terracotta-500 rounded-3xl p-6 sm:p-10 text-center transition-all cursor-pointer bg-slate-50/50">
+        
+        <input type="file" id="craftImageInput" accept="image/*" class="hidden">
+        
+        <div id="imagePreviewContainer" class="flex flex-col items-center justify-center">
+          
+          <img id="previewImage" src="" alt="Craft Preview" 
+               class="hidden max-h-72 w-auto rounded-2xl object-cover shadow-md mb-4 studio-raw">
+          
+          <div id="previewPlaceholder" class="flex flex-col items-center">
+            <div class="w-20 h-20 bg-terracotta-100 text-terracotta-600 rounded-full flex items-center justify-center text-3xl mb-4 shadow-inner">
+              📸
+            </div>
+            <p class="font-bold text-slate-800 text-base sm:text-lg" data-i18n="dropzone_hint">
+              Drag & drop your handicraft photo here, or browse files
+            </p>
+            <p class="text-xs text-slate-500 mt-1">Supports JPG, PNG, WEBP from smartphone camera</p>
+          </div>
+
+          <!-- Studio Enhancement Indicator Badge -->
+          <div id="studioEnhanceBadge" class="hidden mt-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-sm">
+              ✨ Studio Lighting Enhanced
+            </span>
+          </div>
+
+          <!-- Upload Action Buttons -->
+          <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <button type="button" onclick="document.getElementById('craftImageInput').click()" 
+                    class="touch-btn px-6 py-3 rounded-2xl bg-terracotta-600 hover:bg-terracotta-700 text-white font-bold text-sm shadow-md transition-all flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              <span data-i18n="btn_upload_photo">Choose Photo</span>
+            </button>
+
+            <button type="button" id="cameraBtn" 
+                    class="touch-btn px-6 py-3 rounded-2xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-sm border border-slate-300 shadow-sm transition-all flex items-center gap-2">
+              <svg class="w-5 h-5 text-terracotta-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <span data-i18n="btn_take_photo">Use Camera</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Studio Lighting Switcher Simulation -->
+      <div class="mt-6 flex items-center justify-between p-4 bg-sand-50 rounded-2xl border border-sand-200">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">💡</span>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900" data-i18n="enhancer_label">AI Studio Light Enhancement</h4>
+            <p class="text-xs text-slate-500" data-i18n="enhancer_sub">Corrects village indoor lighting for professional marketplace standards.</p>
+          </div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="studioEnhanceToggle" class="sr-only peer">
+          <div class="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-terracotta-600"></div>
+        </label>
+      </div>
+
+      <!-- Artisan Profile & Voice Notes Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+        
+        <!-- Artisan Name -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2" data-i18n="artisan_name_label">
+            Your Name (Artisan)
+          </label>
+          <input type="text" id="artisanName" value="Ramvati Devi" 
+                 class="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500 text-sm font-medium"
+                 data-i18n-placeholder="artisan_name_placeholder" placeholder="e.g. Ramvati Devi">
+        </div>
+
+        <!-- Village / Location -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2" data-i18n="artisan_loc_label">
+            Village / Cluster / State
+          </label>
+          <input type="text" id="artisanLocation" value="Madhubani, Bihar" 
+                 class="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500 text-sm font-medium"
+                 data-i18n-placeholder="artisan_loc_placeholder" placeholder="e.g. Madhubani, Bihar">
+        </div>
+
+        <!-- WhatsApp Phone (For Direct Buyer Linkage) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2" data-i18n="artisan_phone_label">
+            WhatsApp Number (For Direct Buyers)
+          </label>
+          <div class="relative">
+            <input type="tel" id="artisanPhone" value="+919876543210" 
+                   class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500 text-sm font-medium"
+                   data-i18n-placeholder="artisan_phone_placeholder" placeholder="+91 98765 43210">
+            <span class="absolute left-3.5 top-3.5 text-slate-400">📱</span>
+          </div>
+        </div>
+
+        <!-- Artisan Estimated Price Idea -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2" data-i18n="price_idea_label">
+            Your Estimated Price (₹)
+          </label>
+          <div class="relative">
+            <input type="number" id="artisanEstimatedPrice" 
+                   class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500 text-sm font-medium"
+                   data-i18n-placeholder="price_idea_placeholder" placeholder="e.g. 500">
+            <span class="absolute left-3.5 top-3.5 text-slate-400 font-bold">₹</span>
+          </div>
+        </div>
+
+        <!-- Voice Notes Input (Speech-to-Text) -->
+        <div class="sm:col-span-2">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="artisan_notes_label">
+              Voice Notes / Craft Details (Speak or Type)
+            </label>
+            <span id="micStatus" class="hidden text-xs text-red-600 font-bold animate-pulse">
+              Listening... Speak now
+            </span>
+          </div>
+
+          <div class="relative">
+            <textarea id="artisanNotes" rows="2" 
+                      class="w-full pl-4 pr-14 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500 text-sm font-medium"
+                      data-i18n-placeholder="artisan_notes_placeholder"
+                      placeholder="Tap the mic and speak what you made, materials used, etc..."></textarea>
+
+            <!-- Microphone Button for Low-Literacy Artisans -->
+            <button type="button" id="micButton" 
+                    class="absolute right-3 top-3 w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all shadow-sm"
+                    data-i18n-title="mic_tooltip" title="Tap to speak in Hindi or English">
+              <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button: AI Vision Analyzer -->
+      <div class="mt-8">
+        <button type="button" id="analyzeBtn" disabled
+                class="touch-btn w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-terracotta-600 to-amber-600 hover:from-terracotta-700 hover:to-amber-700 text-white font-extrabold text-base shadow-lg shadow-terracotta-600/20 transition-all flex items-center justify-center gap-3 opacity-50 cursor-not-allowed">
+          
+          <div id="analyzeSpinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-xl">✨</span>
+          <span id="analyzeBtnText" data-i18n="btn_analyze_ai">Analyze with AI Vision</span>
+        </button>
+
+        <!-- Progress status indicator -->
+        <div id="aiProgressBox" class="hidden mt-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center gap-3">
+          <div class="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+          <p id="aiProgressText" class="text-xs font-semibold text-amber-900">
+            Analyzing craft texture and pigment...
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- STEP 2: ARTISAN REVIEW & EDIT CARD (Revealed after AI Analysis)       -->
+    <!-- ===================================================================== -->
+    <div id="reviewSection" class="hidden mt-10 bg-white rounded-3xl border-2 border-terracotta-400/80 shadow-2xl p-6 sm:p-8 relative">
+      
+      <!-- Section Header -->
+      <div class="flex items-center justify-between pb-6 border-b border-slate-200">
+        <div>
+          <span class="text-xs font-bold uppercase text-terracotta-600 tracking-wider">AI Generated Catalog Entry</span>
+          <h3 class="text-2xl font-black text-slate-900" data-i18n="review_title">2. Review & Optimize Catalog Listing</h3>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5" data-i18n="review_sub">
+            AI has generated these details. You can review or edit anything before publishing.
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-terracotta-50 text-terracotta-600 flex items-center justify-center text-2xl">
+          ✏️
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+        
+        <!-- Left Column: Product Photo Preview -->
+        <div class="lg:col-span-1 flex flex-col items-center">
+          <div class="w-full aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-md">
+            <img id="reviewCardImage" src="" alt="Craft" class="w-full h-full object-cover studio-raw">
+          </div>
+
+          <!-- Dynamic Pricing Assistant Box -->
+          <div class="w-full mt-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">⚖️</span>
+              <h4 class="font-bold text-xs uppercase tracking-wider text-amber-950" data-i18n="pricing_assistant_title">
+                AI Dynamic Pricing Assistant
+              </h4>
+            </div>
+
+            <div class="flex items-baseline justify-between mt-1">
+              <span class="text-xs text-slate-600" data-i18n="fair_range_label">Fair Market Range:</span>
+              <span class="font-extrabold text-slate-900 text-sm">
+                <span id="fairPriceMin">₹450</span> - <span id="fairPriceMax">₹750</span>
+              </span>
+            </div>
+
+            <p id="priceJustificationText" class="text-xs text-amber-900 mt-2 bg-white/70 p-2.5 rounded-xl border border-amber-200/60 leading-relaxed">
+              Pricing justified based on intricate hand carving and labor hours.
+            </p>
+
+            <button type="button" id="applySuggestedPriceBtn" 
+                    class="mt-3 w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition-colors"
+                    data-i18n="btn_apply_suggested">
+              Apply Suggested Price
+            </button>
+          </div>
+        </div>
+
+        <!-- Right 2 Columns: Editable Inputs -->
+        <div class="lg:col-span-2 space-y-5">
+          
+          <!-- Product Title -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" data-i18n="suggested_title_label">
+              Product Marketplace Title
+            </label>
+            <input type="text" id="editProductTitle" 
+                   class="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 font-bold text-base text-slate-900">
+          </div>
+
+          <!-- Category & Selling Price -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1" data-i18n="category_label">
+                Handicraft Category
+              </label>
+              <select id="editProductCategory" 
+                      class="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 font-semibold text-sm">
+                <option value="Handloom & Textiles">Handloom & Textiles</option>
+                <option value="Pottery & Terracotta">Pottery & Terracotta</option>
+                <option value="Brass & Metalcraft">Brass & Metalcraft</option>
+                <option value="Cane & Bamboo">Cane & Bamboo</option>
+                <option value="Woodcraft">Woodcraft</option>
+                <option value="Tribal Jewelry">Tribal Jewelry</option>
+                <option value="Leather Craft">Leather Craft</option>
+                <option value="Folk Art & Painting">Folk Art & Painting</option>
+                <option value="Stone Carving">Stone Carving</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Final Selling Price (₹)
+              </label>
+              <div class="relative">
+                <input type="number" id="editProductPrice" 
+                       class="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 font-extrabold text-base text-slate-900">
+                <span class="absolute left-3.5 top-3 text-slate-500 font-bold">₹</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="tags_label">
+                SEO & Search Tags
+              </label>
+              <span class="text-[11px] text-slate-400" data-i18n="tags_hint">Helps buyers discover on Google</span>
+            </div>
+
+            <div id="tagsContainer" class="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200 min-h-[46px]">
+              <!-- Dynamic tags rendered by app.js -->
+            </div>
+
+            <!-- Add new tag -->
+            <div class="flex gap-2 mt-2">
+              <input type="text" id="newTagInput" placeholder="Add another tag..." 
+                     class="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-medium focus:ring-1 focus:ring-terracotta-500">
+              <button type="button" id="addTagBtn" class="px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold hover:bg-slate-700">
+                + Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Description (English) with Audio Button -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="desc_en_label">
+                Marketable Description (English)
+              </label>
+              <button type="button" id="speakerBtnEn" 
+                      class="speaker-btn px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors">
+                <span>🔊</span>
+                <span class="speaker-label" data-i18n="listen_desc">Listen</span>
+                <div class="audio-wave hidden flex items-center gap-0.5 ml-1">
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-1"></span>
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-2"></span>
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-3"></span>
+                </div>
+              </button>
+            </div>
+            <textarea id="editDescEn" rows="3" 
+                      class="w-full px-4 py-2.5 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 text-sm leading-relaxed"></textarea>
+          </div>
+
+          <!-- Description (Hindi) with Audio Button -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider" data-i18n="desc_hi_label">
+                Marketable Description (हिंदी)
+              </label>
+              <button type="button" id="speakerBtnHi" 
+                      class="speaker-btn px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors">
+                <span>🔊</span>
+                <span class="speaker-label" data-i18n="listen_desc">विवरण सुनें</span>
+                <div class="audio-wave hidden flex items-center gap-0.5 ml-1">
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-1"></span>
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-2"></span>
+                  <span class="w-1 bg-terracotta-600 rounded-full wave-bar-3"></span>
+                </div>
+              </button>
+            </div>
+            <textarea id="editDescHi" rows="3" 
+                      class="w-full px-4 py-2.5 rounded-2xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 text-sm leading-relaxed font-hindi"></textarea>
+          </div>
+
+          <!-- Final Publish Button -->
+          <div class="pt-4 border-t border-slate-200">
+            <button type="button" id="publishBtn" 
+                    class="touch-btn w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-3">
+              <div id="publishSpinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>🚀</span>
+              <span data-i18n="btn_publish">Publish to Marketplace Now</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- TAB 2: PUBLIC BUYER MARKETPLACE (Catalog & Market Linkage)           -->
+  <!-- ===================================================================== -->
+  <section id="marketplaceTabSection" class="hidden flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Hero Banner -->
+    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-indigoGov-900 via-indigoGov-800 to-terracotta-700 text-white p-8 sm:p-12 mb-8 shadow-lg">
+      <div class="max-w-2xl relative z-10">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-indigo-950 uppercase tracking-wider mb-3">
+          Direct Market Linkage
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight" data-i18n="market_hero_title">
+          Direct From India's Master Artisans
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base mt-2" data-i18n="market_hero_sub">
+          Eliminating middlemen. Directly empowering marginalized rural micro-entrepreneurs under MoSJE.
+        </p>
+
+        <div class="mt-6 flex flex-wrap items-center gap-4 text-xs font-semibold text-amber-200">
+          <div class="flex items-center gap-1.5">
+            <span>✓</span> <span data-i18n="artisan_direct">100% Proceeds to Artisan</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span>✓</span> <span data-i18n="mosje_verified">MoSJE Verified Artisan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decorative Indian Motif Watermark -->
+      <div class="absolute right-4 bottom-4 text-8xl opacity-15 pointer-events-none select-none">
+        🪔
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      
+      <!-- Search Input -->
+      <div class="relative w-full sm:w-96">
+        <input type="text" id="catalogSearchInput" 
+               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-terracotta-500 text-sm"
+               data-i18n-placeholder="search_placeholder" placeholder="Search handicrafts, pottery, handlooms, brass...">
+        <span class="absolute left-3.5 top-2.5 text-slate-400">🔍</span>
+      </div>
+
+      <!-- Sort & Count -->
+      <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+        <span id="productCountText" class="text-xs font-semibold text-slate-500">Loading crafts...</span>
+        
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-slate-500 font-medium hidden sm:inline" data-i18n="sort_label">Sort:</label>
+          <select id="catalogSortSelect" class="py-2 px-3 rounded-xl border border-slate-300 text-xs font-semibold bg-white">
+            <option value="newest" data-i18n="sort_newest">Newest First</option>
+            <option value="price_low" data-i18n="sort_price_low">Price: Low to High</option>
+            <option value="price_high" data-i18n="sort_price_high">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Category Pill Filters (Horizontal Scrollable) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar mb-6">
+      <button onclick="filterByCategory('All')" data-cat="All" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-terracotta-600 text-white shadow-sm transition-all">
+        All Crafts
+      </button>
+      <button onclick="filterByCategory('Handloom & Textiles')" data-cat="Handloom & Textiles" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🧵 Handloom & Textiles
+      </button>
+      <button onclick="filterByCategory('Pottery & Terracotta')" data-cat="Pottery & Terracotta" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🏺 Pottery & Terracotta
+      </button>
+      <button onclick="filterByCategory('Brass & Metalcraft')" data-cat="Brass & Metalcraft" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🐘 Brass & Metalcraft
+      </button>
+      <button onclick="filterByCategory('Woodcraft')" data-cat="Woodcraft" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🪵 Woodcraft
+      </button>
+      <button onclick="filterByCategory('Cane & Bamboo')" data-cat="Cane & Bamboo" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🎋 Cane & Bamboo
+      </button>
+      <button onclick="filterByCategory('Tribal Jewelry')" data-cat="Tribal Jewelry" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        💍 Tribal Jewelry
+      </button>
+      <button onclick="filterByCategory('Folk Art & Painting')" data-cat="Folk Art & Painting" 
+              class="cat-pill px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap bg-white text-slate-700 border border-slate-200 hover:border-terracotta-400 transition-all">
+        🎨 Folk Art & Painting
+      </button>
+    </div>
+
+    <!-- Product Grid Container -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Dynamic Products Rendered Here -->
+    </div>
+
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- PRODUCT DETAIL MODAL                                                  -->
+  <!-- ===================================================================== -->
+  <div id="productDetailModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
+      
+      <!-- Modal Header Image -->
+      <div class="relative aspect-video sm:aspect-[16/10] bg-slate-100 overflow-hidden">
+        <img id="modalImage" src="" alt="Product" class="w-full h-full object-cover">
+        
+        <button id="closeModalBtn" 
+                class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-md transition-all">
+          &times;
+        </button>
+
+        <span id="modalCategory" class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-800 shadow-sm">
+          Category
+        </span>
+
+        <span class="absolute bottom-4 right-4 bg-indigoGov-900/90 text-amber-300 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-amber-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          MoSJE Beneficiary Verified
+        </span>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 sm:p-8 space-y-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 id="modalTitle" class="text-xl sm:text-2xl font-black text-slate-900">Product Title</h3>
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-2">
+              <span>👤 Artisan: <strong id="modalArtisanName">Name</strong></span>
+              &bull;
+              <span>📍 <span id="modalArtisanLoc">Location</span></span>
+            </p>
+          </div>
+          <div id="modalPrice" class="text-2xl sm:text-3xl font-black text-terracotta-600 whitespace-nowrap">
+            ₹0
+          </div>
+        </div>
+
+        <!-- Description with Audio Playback -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Product Story & Details</h4>
+            <button id="modalSpeakerBtn" class="speaker-btn px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-1.5">
+              <span>🔊</span>
+              <span class="speaker-label" data-i18n="listen_desc">Listen</span>
+            </button>
+          </div>
+          <p id="modalDesc" class="text-sm text-slate-600 leading-relaxed bg-sand-50 p-4 rounded-2xl border border-sand-200">
+            Description details...
+          </p>
+        </div>
+
+        <!-- Heritage Story Box -->
+        <div id="modalStoryBox" class="hidden p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900">
+          <div class="flex items-center gap-1.5 font-bold mb-1">
+            <span>🏛️</span>
+            <span data-i18n="craft_story_title">Cultural Heritage & Story</span>
+          </div>
+          <p id="modalStoryText" class="leading-relaxed"></p>
+        </div>
+
+        <!-- Tags -->
+        <div id="modalTags" class="flex flex-wrap gap-2"></div>
+
+        <!-- Direct WhatsApp Inquiry Button -->
+        <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row gap-3">
+          <a id="modalWhatsAppBtn" href="#" target="_blank" rel="noopener noreferrer" 
+             class="flex-1 py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z"/></svg>
+            <span data-i18n="btn_whatsapp_inquire">Contact Artisan on WhatsApp</span>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" 
+       class="fixed bottom-24 sm:bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
+    <span class="text-xl">🎉</span>
+    <p id="toastMessage" class="text-xs font-semibold">Message</p>
+  </div>
+
+  <!-- Mobile Bottom Floating Navigation Bar -->
+  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 py-2 px-6 flex items-center justify-around shadow-lg">
+    <button data-tab-target="studio" 
+            class="flex flex-col items-center gap-1 text-terracotta-600 font-bold text-xs">
+      <span class="text-lg">✨</span>
+      <span data-i18n="nav_studio">Studio</span>
+    </button>
+    <button data-tab-target="marketplace" 
+            class="flex flex-col items-center gap-1 text-slate-500 font-semibold text-xs">
+      <span class="text-lg">🛍️</span>
+      <span data-i18n="nav_market">Market</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-slate-900 text-slate-400 text-xs py-8 px-4 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div>
+        <p class="font-bold text-slate-200">KalaKriti &bull; SIH 2026 (Problem Statement SIH26090)</p>
+        <p class="text-[11px] text-slate-500 mt-0.5">Ministry of Social Justice & Empowerment &bull; Heritage & Culture Theme</p>
+      </div>
+      <p class="text-[11px] text-slate-500">
+        Empowering marginalized artisans through Multimodal AI Vision, Dynamic Pricing & Voice Assist.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/voice.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

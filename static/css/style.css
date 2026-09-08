@@ -1,0 +1,136 @@
+/* 
+ * KalaKriti - AI-Driven Market Linkage & Smart Cataloging
+ * Smart India Hackathon 2026 - SIH26090
+ * Theme: Heritage Terracotta, Indigo, & Warm Sandstone
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Rozha+One&family=Yatra+One&display=swap');
+
+:root {
+  --terracotta-50: #fff5eb;
+  --terracotta-100: #fde8d0;
+  --terracotta-500: #c85a2b;
+  --terracotta-600: #b0461b;
+  --terracotta-700: #8c320f;
+  --sand-50: #fbf9f5;
+  --sand-100: #f3efe6;
+  --sand-200: #e8e2d4;
+  --indigo-900: #1b263b;
+  --indigo-800: #273752;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: #faf8f5;
+  color: #1e293b;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Devanagari Font support */
+.font-hindi {
+  font-family: 'Noto Sans Devanagari', 'Plus Jakarta Sans', sans-serif;
+}
+
+.heritage-heading {
+  font-family: 'Rozha One', serif;
+}
+
+/* Studio Image Enhancer Lighting Effect */
+.studio-enhanced {
+  filter: contrast(106%) saturate(112%) brightness(103%);
+  box-shadow: 0 14px 35px -8px rgba(176, 70, 27, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.studio-raw {
+  filter: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Voice Recording Pulsing Animation */
+@keyframes voice-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 16px rgba(220, 38, 38, 0);
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    transform: scale(1);
+  }
+}
+
+.recording-pulse {
+  animation: voice-pulse 1.4s infinite;
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+/* Audio narration wave animation */
+@keyframes wave-bar {
+  0%, 100% { height: 6px; }
+  50% { height: 18px; }
+}
+
+.wave-bar-1 { animation: wave-bar 0.7s infinite ease-in-out; }
+.wave-bar-2 { animation: wave-bar 0.9s infinite ease-in-out 0.2s; }
+.wave-bar-3 { animation: wave-bar 0.6s infinite ease-in-out 0.4s; }
+
+/* Custom scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Badge styling */
+.badge-mosje {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  color: #ffffff;
+}
+
+/* Touch friendly large touch targets */
+.touch-btn {
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-loading::after {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.6) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 1.8s infinite;
+  content: '';
+}

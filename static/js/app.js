@@ -1,0 +1,848 @@
+/**
+ * KalaKriti - Core Frontend Application Controller
+ * Smart India Hackathon 2026 - SIH26090
+ * AI-Driven Market Linkage and Smart Cataloging for Marginalized Artisans
+ */
+
+// Application State
+const state = {
+  currentTab: 'studio', // 'studio' | 'marketplace'
+  selectedFile: null,
+  uploadedImageUrl: null,
+  aiResult: null,
+  currentCategoryFilter: 'All',
+  searchQuery: '',
+  sortBy: 'newest',
+  products: [],
+  selectedProductForModal: null,
+  isEnhanced: false,
+  apiConfig: null
+};
+
+// Demo sample craft photos for instant jury testing
+const SAMPLE_PRESETS = [
+  {
+    name: "Terracotta Hand-Made Pitcher",
+    notes: "Red clay pot made on village wheel with floral carvings",
+    price: 600,
+    imageUrl: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    name: "Dhokra Brass Bell-Metal Figurine",
+    notes: "Lost wax cast brass metal craft by tribal artisans in Bastar",
+    price: 1800,
+    imageUrl: "https://images.unsplash.com/photo-1610444583715-46884024b33a?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    name: "Kutch Hand Embroidered Textile",
+    notes: "Traditional mirror work needle craft on handspun cotton fabric",
+    price: 1350,
+    imageUrl: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80"
+  }
+];
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  initApp();
+});
+
+async function initApp() {
+  checkApiConfig();
+  loadProducts();
+  setupEventListeners();
+  setLanguage('en');
+}
+
+// Check Backend AI Model Status
+async function checkApiConfig() {
+  try {
+    const res = await fetch('/api/config-status');
+    const data = await res.json();
+    state.apiConfig = data;
+
+    const badge = document.getElementById('aiEngineBadge');
+    if (badge) {
+      if (data.has_gemini_key) {
+        badge.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span data-i18n="gemini_live">Gemini Vision Active</span>
+        </span>`;
+      } else {
+        badge.innerHTML = `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span data-i18n="gemini_sim">Smart AI Fallback Active</span>
+        </span>`;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not check AI config:", err);
+  }
+}
+
+// Event Listeners
+function setupEventListeners() {
+  // Tab navigation
+  document.querySelectorAll('[data-tab-target]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.getAttribute('data-tab-target'));
+    });
+  });
+
+  // Language toggle
+  const langToggleBtn = document.getElementById('langToggleBtn');
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener('click', toggleLanguage);
+  }
+
+  // Voice recording button
+  const micBtn = document.getElementById('micButton');
+  if (micBtn) {
+    micBtn.addEventListener('click', toggleVoiceInput);
+  }
+
+  // File Upload Handlers
+  const fileInput = document.getElementById('craftImageInput');
+  const uploadBox = document.getElementById('uploadDropzone');
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+  }
+
+  if (uploadBox) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadBox.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        uploadBox.classList.add('border-terracotta-500', 'bg-terracotta-50');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadBox.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        uploadBox.classList.remove('border-terracotta-500', 'bg-terracotta-50');
+      }, false);
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelection(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  // Camera capture button (triggers file input with camera attribute)
+  const cameraBtn = document.getElementById('cameraBtn');
+  if (cameraBtn && fileInput) {
+    cameraBtn.addEventListener('click', () => {
+      fileInput.setAttribute('capture', 'environment');
+      fileInput.click();
+    });
+  }
+
+  // AI Analysis Button
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener('click', triggerAiAnalysis);
+  }
+
+  // Studio Lighting Toggle
+  const studioToggle = document.getElementById('studioEnhanceToggle');
+  if (studioToggle) {
+    studioToggle.addEventListener('change', (e) => {
+      state.isEnhanced = e.target.checked;
+      updatePreviewEnhancement();
+    });
+  }
+
+  // Apply Suggested Price Button
+  const applyPriceBtn = document.getElementById('applySuggestedPriceBtn');
+  if (applyPriceBtn) {
+    applyPriceBtn.addEventListener('click', () => {
+      if (state.aiResult && state.aiResult.pricing) {
+        const priceInput = document.getElementById('editProductPrice');
+        if (priceInput) {
+          priceInput.value = state.aiResult.pricing.suggested;
+        }
+      }
+    });
+  }
+
+  // Publish Button
+  const publishBtn = document.getElementById('publishBtn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', publishProductToMarketplace);
+  }
+
+  // Search & Filter
+  const searchInput = document.getElementById('catalogSearchInput');
+  if (searchInput) {
+    let timeout = null;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        state.searchQuery = e.target.value.trim();
+        loadProducts();
+      }, 250);
+    });
+  }
+
+  const sortSelect = document.getElementById('catalogSortSelect');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      state.sortBy = e.target.value;
+      loadProducts();
+    });
+  }
+
+  // Close modal
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const modalBackdrop = document.getElementById('productDetailModal');
+  if (closeModalBtn && modalBackdrop) {
+    closeModalBtn.addEventListener('click', () => {
+      stopSpeaking();
+      modalBackdrop.classList.add('hidden');
+    });
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) {
+        stopSpeaking();
+        modalBackdrop.classList.add('hidden');
+      }
+    });
+  }
+}
+
+// Switch between Studio and Marketplace tabs
+function switchTab(tab) {
+  state.currentTab = tab;
+  const studioSection = document.getElementById('studioTabSection');
+  const marketSection = document.getElementById('marketplaceTabSection');
+
+  document.querySelectorAll('[data-tab-target]').forEach(btn => {
+    const isTarget = btn.getAttribute('data-tab-target') === tab;
+    if (isTarget) {
+      btn.classList.add('text-terracotta-600', 'border-b-2', 'border-terracotta-600', 'font-bold');
+      btn.classList.remove('text-slate-600', 'hover:text-slate-900');
+    } else {
+      btn.classList.remove('text-terracotta-600', 'border-b-2', 'border-terracotta-600', 'font-bold');
+      btn.classList.add('text-slate-600', 'hover:text-slate-900');
+    }
+  });
+
+  if (tab === 'studio') {
+    studioSection.classList.remove('hidden');
+    marketSection.classList.add('hidden');
+  } else {
+    studioSection.classList.add('hidden');
+    marketSection.classList.remove('hidden');
+    loadProducts();
+  }
+}
+
+// Handle Photo Selection
+function handleFileSelection(file) {
+  if (!file.type.startsWith('image/')) {
+    alert("Please select a valid image file (JPEG, PNG, WEBP).");
+    return;
+  }
+
+  state.selectedFile = file;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    state.uploadedImageUrl = e.target.result;
+    displayImagePreview(e.target.result);
+  };
+  reader.readAsDataURL(file);
+
+  // Enable analyze button
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  if (analyzeBtn) {
+    analyzeBtn.disabled = false;
+    analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  }
+}
+
+// Load a preset demo craft
+function loadDemoPreset(index) {
+  const preset = SAMPLE_PRESETS[index];
+  if (!preset) return;
+
+  const artisanNotes = document.getElementById('artisanNotes');
+  const priceIdea = document.getElementById('artisanEstimatedPrice');
+  const artisanName = document.getElementById('artisanName');
+
+  if (artisanNotes) artisanNotes.value = preset.notes;
+  if (priceIdea) priceIdea.value = preset.price;
+  if (artisanName && !artisanName.value) artisanName.value = "Ramvati Devi";
+
+  // Fetch preset image as blob
+  fetch(preset.imageUrl)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], `sample_${index}.jpg`, { type: "image/jpeg" });
+      handleFileSelection(file);
+    })
+    .catch(err => {
+      console.warn("Could not fetch sample image blob, using data URL fallback", err);
+      displayImagePreview(preset.imageUrl);
+      state.uploadedImageUrl = preset.imageUrl;
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      if (analyzeBtn) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    });
+}
+
+function displayImagePreview(url) {
+  const previewImg = document.getElementById('previewImage');
+  const placeholder = document.getElementById('previewPlaceholder');
+  const previewContainer = document.getElementById('imagePreviewContainer');
+
+  if (previewImg && placeholder && previewContainer) {
+    previewImg.src = url;
+    previewImg.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    previewContainer.classList.remove('border-dashed');
+    updatePreviewEnhancement();
+  }
+}
+
+function updatePreviewEnhancement() {
+  const previewImg = document.getElementById('previewImage');
+  const reviewImg = document.getElementById('reviewCardImage');
+  const badge = document.getElementById('studioEnhanceBadge');
+
+  [previewImg, reviewImg].forEach(img => {
+    if (!img) return;
+    if (state.isEnhanced) {
+      img.classList.add('studio-enhanced');
+      img.classList.remove('studio-raw');
+    } else {
+      img.classList.remove('studio-enhanced');
+      img.classList.add('studio-raw');
+    }
+  });
+
+  if (badge) {
+    if (state.isEnhanced) {
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+}
+
+// Trigger AI Vision Analysis
+async function triggerAiAnalysis() {
+  if (!state.selectedFile && !state.uploadedImageUrl) {
+    alert("Please take or choose a craft photo first.");
+    return;
+  }
+
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const analyzeBtnText = document.getElementById('analyzeBtnText');
+  const analyzeSpinner = document.getElementById('analyzeSpinner');
+  const progressBox = document.getElementById('aiProgressBox');
+  const progressText = document.getElementById('aiProgressText');
+
+  // Disable button & show spinner
+  if (analyzeBtn) analyzeBtn.disabled = true;
+  if (analyzeSpinner) analyzeSpinner.classList.remove('hidden');
+  if (analyzeBtnText) analyzeBtnText.textContent = t('btn_analyzing');
+  if (progressBox) progressBox.classList.remove('hidden');
+
+  // Multi-step animated progress simulation
+  const progressSteps = [
+    currentLanguage === 'hi' ? "शिल्प की बनावट और रंग की जांच..." : "Analyzing craft texture and pigment...",
+    currentLanguage === 'hi' ? "पारंपरिक हस्तकला और श्रेणी की पहचान..." : "Identifying cultural craft category...",
+    currentLanguage === 'hi' ? "उचित कारीगर मूल्य और ई-कॉमर्स टैग तैयार..." : "Calculating fair artisan pricing & SEO tags..."
+  ];
+
+  let stepIdx = 0;
+  const progressInterval = setInterval(() => {
+    stepIdx = (stepIdx + 1) % progressSteps.length;
+    if (progressText) progressText.textContent = progressSteps[stepIdx];
+  }, 900);
+
+  try {
+    const formData = new FormData();
+    if (state.selectedFile) {
+      formData.append('file', state.selectedFile);
+    } else {
+      // If demo image URL, convert to dummy blob
+      const blob = new Blob(["demo-image"], { type: "image/jpeg" });
+      formData.append('file', blob, "sample.jpg");
+    }
+
+    const notes = document.getElementById('artisanNotes')?.value;
+    const priceHint = document.getElementById('artisanEstimatedPrice')?.value;
+
+    if (notes) formData.append('notes', notes);
+    if (priceHint) formData.append('price_hint', priceHint);
+
+    const res = await fetch('/api/analyze-product', {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(progressInterval);
+
+    if (!res.ok) {
+      throw new Error(`Server returned HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    state.aiResult = data;
+    if (data.saved_image_url) {
+      state.uploadedImageUrl = data.saved_image_url;
+    }
+
+    // Populate Review & Edit Section
+    populateReviewCard(data);
+
+    // Scroll to review card
+    const reviewCard = document.getElementById('reviewSection');
+    if (reviewCard) {
+      reviewCard.classList.remove('hidden');
+      reviewCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+  } catch (err) {
+    clearInterval(progressInterval);
+    console.error("AI Analysis error:", err);
+    alert("AI Analysis encountered an error. Please try again or check your server logs.");
+  } finally {
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    if (analyzeSpinner) analyzeSpinner.classList.add('hidden');
+    if (analyzeBtnText) analyzeBtnText.textContent = t('btn_analyze_ai');
+    if (progressBox) progressBox.classList.add('hidden');
+  }
+}
+
+// Populate the Review & Edit Form
+function populateReviewCard(data) {
+  const reviewImg = document.getElementById('reviewCardImage');
+  if (reviewImg && state.uploadedImageUrl) {
+    reviewImg.src = state.uploadedImageUrl;
+  }
+
+  // Suggested Title
+  const titleInput = document.getElementById('editProductTitle');
+  if (titleInput) {
+    titleInput.value = data.suggested_title || "";
+  }
+
+  // Category
+  const categorySelect = document.getElementById('editProductCategory');
+  if (categorySelect && data.category) {
+    categorySelect.value = data.category;
+  }
+
+  // Dynamic Pricing
+  const priceInput = document.getElementById('editProductPrice');
+  const fairMin = document.getElementById('fairPriceMin');
+  const fairMax = document.getElementById('fairPriceMax');
+  const priceJustification = document.getElementById('priceJustificationText');
+
+  if (data.pricing) {
+    if (priceInput) priceInput.value = data.pricing.suggested || "";
+    if (fairMin) fairMin.textContent = `₹${data.pricing.fair_min || 0}`;
+    if (fairMax) fairMax.textContent = `₹${data.pricing.fair_max || 0}`;
+    if (priceJustification) priceJustification.textContent = data.pricing.justification || "";
+  }
+
+  // Descriptions
+  const descEn = document.getElementById('editDescEn');
+  const descHi = document.getElementById('editDescHi');
+  if (descEn) descEn.value = data.description_en || "";
+  if (descHi) descHi.value = data.description_hi || "";
+
+  // Audio Buttons
+  setupAudioNarrationButtons(data);
+
+  // Tags
+  renderEditableTags(data.tags || []);
+}
+
+function setupAudioNarrationButtons(data) {
+  const speakerEn = document.getElementById('speakerBtnEn');
+  const speakerHi = document.getElementById('speakerBtnHi');
+
+  if (speakerEn) {
+    speakerEn.onclick = () => {
+      const text = document.getElementById('editDescEn')?.value || data.description_en;
+      toggleNarration(text, 'en-IN');
+    };
+  }
+
+  if (speakerHi) {
+    speakerHi.onclick = () => {
+      const text = document.getElementById('editDescHi')?.value || data.description_hi;
+      toggleNarration(text, 'hi-IN');
+    };
+  }
+}
+
+// Tags Management
+let currentTags = [];
+
+function renderEditableTags(tags) {
+  currentTags = [...tags];
+  const container = document.getElementById('tagsContainer');
+  const input = document.getElementById('newTagInput');
+  const addBtn = document.getElementById('addTagBtn');
+
+  if (!container) return;
+
+  function updateTagPills() {
+    container.innerHTML = '';
+    currentTags.forEach((tag, idx) => {
+      const pill = document.createElement('span');
+      pill.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-terracotta-100 text-terracotta-700 border border-terracotta-200';
+      pill.innerHTML = `
+        <span>#${tag}</span>
+        <button type="button" class="hover:text-red-600 focus:outline-none" onclick="removeTag(${idx})">&times;</button>
+      `;
+      container.appendChild(pill);
+    });
+  }
+
+  window.removeTag = (idx) => {
+    currentTags.splice(idx, 1);
+    updateTagPills();
+  };
+
+  if (addBtn && input) {
+    addBtn.onclick = () => {
+      const val = input.value.trim().replace(/^#/, '');
+      if (val && !currentTags.includes(val)) {
+        currentTags.push(val);
+        input.value = '';
+        updateTagPills();
+      }
+    };
+
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBtn.click();
+      }
+    };
+  }
+
+  updateTagPills();
+}
+
+// Publish Product to Marketplace
+async function publishProductToMarketplace() {
+  const title = document.getElementById('editProductTitle')?.value.trim();
+  const category = document.getElementById('editProductCategory')?.value;
+  const price = parseInt(document.getElementById('editProductPrice')?.value, 10);
+  const descEn = document.getElementById('editDescEn')?.value.trim();
+  const descHi = document.getElementById('editDescHi')?.value.trim();
+  const artisanName = document.getElementById('artisanName')?.value.trim() || "Artisan Beneficiary";
+  const artisanLoc = document.getElementById('artisanLocation')?.value.trim() || "Rural Cluster, India";
+  const artisanPhone = document.getElementById('artisanPhone')?.value.trim() || "+919876543210";
+
+  if (!title) {
+    alert("Please enter a product title.");
+    return;
+  }
+
+  if (!price || isNaN(price)) {
+    alert("Please specify a valid price.");
+    return;
+  }
+
+  const publishBtn = document.getElementById('publishBtn');
+  const publishSpinner = document.getElementById('publishSpinner');
+  if (publishBtn) publishBtn.disabled = true;
+  if (publishSpinner) publishSpinner.classList.remove('hidden');
+
+  const payload = {
+    name: title,
+    artisan_name: artisanName,
+    artisan_phone: artisanPhone,
+    artisan_location: artisanLoc,
+    category: category,
+    price: price,
+    suggested_price_min: state.aiResult?.pricing?.fair_min || Math.round(price * 0.85),
+    suggested_price_max: state.aiResult?.pricing?.fair_max || Math.round(price * 1.25),
+    price_justification: state.aiResult?.pricing?.justification || "Fair trade calculated based on handcraft labor and materials.",
+    description_en: descEn,
+    description_hi: descHi,
+    tags: currentTags.length > 0 ? currentTags : ["Handmade", "Artisan", category],
+    image_url: state.uploadedImageUrl || "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+    is_enhanced: state.isEnhanced
+  };
+
+  try {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error("Failed to save product");
+
+    const data = await res.json();
+    
+    // Show celebratory toast
+    showToast(t('publish_success'));
+
+    // Reset upload form
+    resetArtisanForm();
+
+    // Switch to Marketplace tab and refresh
+    switchTab('marketplace');
+
+  } catch (err) {
+    console.error("Publish error:", err);
+    alert("Could not publish product. Please check console.");
+  } finally {
+    if (publishBtn) publishBtn.disabled = false;
+    if (publishSpinner) publishSpinner.classList.add('hidden');
+  }
+}
+
+function resetArtisanForm() {
+  document.getElementById('craftImageInput').value = '';
+  document.getElementById('previewImage').src = '';
+  document.getElementById('previewImage').classList.add('hidden');
+  document.getElementById('previewPlaceholder').classList.remove('hidden');
+  document.getElementById('reviewSection').classList.add('hidden');
+  document.getElementById('artisanNotes').value = '';
+  document.getElementById('artisanEstimatedPrice').value = '';
+  state.selectedFile = null;
+  state.uploadedImageUrl = null;
+  state.aiResult = null;
+}
+
+// Fetch and Render Products in Marketplace
+async function loadProducts() {
+  const container = document.getElementById('productsGrid');
+  const countEl = document.getElementById('productCountText');
+
+  if (container) {
+    container.innerHTML = `
+      <div class="col-span-full py-16 text-center text-slate-400">
+        <div class="inline-block w-8 h-8 border-4 border-terracotta-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-2 text-sm">Loading authentic handcrafted items...</p>
+      </div>
+    `;
+  }
+
+  try {
+    const params = new URLSearchParams();
+    if (state.currentCategoryFilter && state.currentCategoryFilter !== 'All') {
+      params.append('category', state.currentCategoryFilter);
+    }
+    if (state.searchQuery) {
+      params.append('search', state.searchQuery);
+    }
+    if (state.sortBy) {
+      params.append('sort', state.sortBy);
+    }
+
+    const res = await fetch(`/api/products?${params.toString()}`);
+    const data = await res.json();
+    state.products = data.products || [];
+
+    if (countEl) {
+      countEl.textContent = `${state.products.length} ${currentLanguage === 'hi' ? 'शिल्प उपलब्ध' : 'crafts available'}`;
+    }
+
+    renderProducts(state.products);
+
+  } catch (err) {
+    console.error("Failed to load products:", err);
+    if (container) {
+      container.innerHTML = `<div class="col-span-full py-12 text-center text-red-500">Failed to load marketplace products.</div>`;
+    }
+  }
+}
+
+function renderProducts(products) {
+  const container = document.getElementById('productsGrid');
+  if (!container) return;
+
+  if (products.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-16 text-center bg-white rounded-2xl border border-dashed border-slate-300 p-8">
+        <div class="w-16 h-16 mx-auto mb-4 bg-terracotta-50 text-terracotta-500 rounded-full flex items-center justify-center text-2xl">
+          🏺
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">No crafts found</h3>
+        <p class="text-sm text-slate-500 max-w-sm mx-auto mt-1">Try searching for a different term or clear your category filters.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = products.map(p => {
+    const tagsList = Array.isArray(p.tags) ? p.tags.slice(0, 3) : [];
+    const imageClass = p.is_enhanced ? 'studio-enhanced' : '';
+
+    return `
+      <div class="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 hover:border-terracotta-300 hover:shadow-xl transition-all duration-300 flex flex-col">
+        <!-- Image Container -->
+        <div class="relative aspect-square overflow-hidden bg-slate-100">
+          <img src="${p.image_url}" alt="${p.name}" 
+               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${imageClass}">
+          
+          <!-- Category Pill -->
+          <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-xs font-semibold px-2.5 py-1 rounded-full text-slate-800 shadow-sm border border-slate-100">
+            ${p.category}
+          </span>
+
+          <!-- MoSJE Verified Badge -->
+          <span class="absolute top-3 right-3 bg-indigo-900/90 backdrop-blur-md text-[10px] font-bold px-2 py-0.5 rounded-full text-amber-300 shadow-sm flex items-center gap-1">
+            <svg class="w-3 h-3 text-amber-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            MoSJE
+          </span>
+
+          <!-- Price Tag -->
+          <div class="absolute bottom-3 right-3 bg-slate-900/90 backdrop-blur-md text-white px-3 py-1 rounded-full font-bold text-sm shadow-md">
+            ₹${p.price.toLocaleString('en-IN')}
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-slate-900 line-clamp-1 group-hover:text-terracotta-600 transition-colors">
+              ${p.name}
+            </h3>
+            
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-terracotta-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              <span>${p.artisan_name}</span> &bull; <span>${p.artisan_location}</span>
+            </p>
+
+            <p class="text-xs text-slate-600 mt-2.5 line-clamp-2 leading-relaxed">
+              ${currentLanguage === 'hi' && p.description_hi ? p.description_hi : p.description_en}
+            </p>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-1.5 mt-3">
+              ${tagsList.map(t => `<span class="text-[11px] bg-sand-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">#${t}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <button onclick="openProductModal(${p.id})" 
+                    class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-terracotta-50 text-terracotta-700 hover:bg-terracotta-100 transition-colors text-center">
+              ${t('btn_view_details')}
+            </button>
+
+            <a href="https://wa.me/${(p.artisan_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${p.artisan_name}, I am interested in buying your handcrafted '${p.name}' listed on KalaKriti marketplace for ₹${p.price}.`)}"
+               target="_blank" rel="noopener noreferrer"
+               class="p-2 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
+               title="WhatsApp Inquiry">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Category filter button handler
+function filterByCategory(cat) {
+  state.currentCategoryFilter = cat;
+  document.querySelectorAll('.cat-pill').forEach(pill => {
+    if (pill.getAttribute('data-cat') === cat) {
+      pill.classList.add('bg-terracotta-600', 'text-white');
+      pill.classList.remove('bg-white', 'text-slate-700', 'border-slate-200');
+    } else {
+      pill.classList.remove('bg-terracotta-600', 'text-white');
+      pill.classList.add('bg-white', 'text-slate-700', 'border-slate-200');
+    }
+  });
+  loadProducts();
+}
+
+// Open Product Detail Modal
+function openProductModal(productId) {
+  const product = state.products.find(p => p.id === productId);
+  if (!product) return;
+
+  state.selectedProductForModal = product;
+  const modal = document.getElementById('productDetailModal');
+  if (!modal) return;
+
+  document.getElementById('modalImage').src = product.image_url;
+  document.getElementById('modalTitle').textContent = product.name;
+  document.getElementById('modalPrice').textContent = `₹${product.price.toLocaleString('en-IN')}`;
+  document.getElementById('modalCategory').textContent = product.category;
+  document.getElementById('modalArtisanName').textContent = product.artisan_name;
+  document.getElementById('modalArtisanLoc').textContent = product.artisan_location;
+  
+  const descText = currentLanguage === 'hi' && product.description_hi ? product.description_hi : product.description_en;
+  document.getElementById('modalDesc').textContent = descText;
+
+  // Heritage story & pricing justification
+  const storyBox = document.getElementById('modalStoryBox');
+  const storyText = document.getElementById('modalStoryText');
+  if (product.price_justification && storyBox && storyText) {
+    storyBox.classList.remove('hidden');
+    storyText.textContent = product.price_justification;
+  }
+
+  // Tags
+  const modalTags = document.getElementById('modalTags');
+  if (modalTags && Array.isArray(product.tags)) {
+    modalTags.innerHTML = product.tags.map(t => 
+      `<span class="text-xs bg-sand-100 text-slate-700 px-2.5 py-1 rounded-md font-medium">#${t}</span>`
+    ).join('');
+  }
+
+  // Audio button inside modal
+  const modalSpeaker = document.getElementById('modalSpeakerBtn');
+  if (modalSpeaker) {
+    modalSpeaker.onclick = () => {
+      const lang = currentLanguage === 'hi' ? 'hi-IN' : 'en-IN';
+      toggleNarration(descText, lang);
+    };
+  }
+
+  // WhatsApp Button
+  const waBtn = document.getElementById('modalWhatsAppBtn');
+  if (waBtn) {
+    const cleanPhone = (product.artisan_phone || '').replace(/[^0-9]/g, '');
+    const msg = `Namaste ${product.artisan_name}, I saw your handcrafted '${product.name}' on KalaKriti marketplace for ₹${product.price}. I would like to order directly from you.`;
+    waBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+// Toast notification helper
+function showToast(message) {
+  const toast = document.getElementById('toastNotification');
+  const toastMsg = document.getElementById('toastMessage');
+  if (!toast || !toastMsg) return;
+
+  toastMsg.textContent = message;
+  toast.classList.remove('translate-y-24', 'opacity-0');
+  toast.classList.add('translate-y-0', 'opacity-100');
+
+  setTimeout(() => {
+    toast.classList.remove('translate-y-0', 'opacity-100');
+    toast.classList.add('translate-y-24', 'opacity-0');
+  }, 4000);
+}
+
+// Global hook for language changes
+window.onLanguageChanged = (lang) => {
+  if (state.products.length > 0) {
+    renderProducts(state.products);
+  }
+};

@@ -1,0 +1,23 @@
+# Python local environment and runtime files
+.env
+*.py[cod]
+__pycache__/
+.venv/
+venv/
+artisan_catalog.db
+
+# Uploaded/generated application data
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Node and Expo dependencies/build output
+mobile-app/node_modules/
+mobile-app/.expo/
+mobile-app/dist/
+mobile-app/web-build/
+
+# Logs and local editor/system files
+*.log
+.DS_Store
+Thumbs.db
+.vscode/

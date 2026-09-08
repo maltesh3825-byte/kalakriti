@@ -1,0 +1,238 @@
+/**
+ * Bilingual Internationalization (English & Hindi)
+ * Smart India Hackathon 2026 - SIH26090
+ * Supports low-literacy artisans with clear Hindi translations.
+ */
+
+const translations = {
+  en: {
+    app_title: "KalaKriti",
+    app_subtitle: "AI Studio & Market Linkage for Artisans",
+    nav_studio: "Artisan Studio",
+    nav_market: "Buyer Marketplace",
+    nav_about: "MoSJE Mission",
+    lang_toggle: "हिंदी",
+    
+    // Header & Badges
+    mosje_badge: "Ministry of Social Justice & Empowerment",
+    sih_badge: "SIH 2026 | SIH26090",
+    gemini_live: "Gemini Vision Active",
+    gemini_sim: "Smart AI Mode",
+
+    // Artisan Studio
+    studio_step1_title: "1. Capture or Upload Craft Photo",
+    studio_step1_sub: "Take a clear picture of your handmade product in good natural light.",
+    btn_upload_photo: "Choose Photo",
+    btn_take_photo: "Use Camera",
+    or_label: "OR",
+    dropzone_hint: "Drag & drop your handicraft photo here, or browse files",
+    
+    // Form Inputs
+    artisan_name_label: "Your Name (Artisan)",
+    artisan_name_placeholder: "e.g. Rameshwar Prajapati",
+    artisan_loc_label: "Village / Cluster / State",
+    artisan_loc_placeholder: "e.g. Gorakhpur, Uttar Pradesh",
+    artisan_phone_label: "WhatsApp Number (For Direct Buyers)",
+    artisan_phone_placeholder: "+91 98765 43210",
+    artisan_notes_label: "Voice Notes / Craft Details (Speak or Type)",
+    artisan_notes_placeholder: "Tap the mic and speak what you made, materials used, etc...",
+    mic_tooltip: "Tap to speak in Hindi or English",
+    mic_recording: "Listening... Speak now",
+    
+    price_idea_label: "Your Estimated Price (₹)",
+    price_idea_placeholder: "e.g. 500",
+
+    // Action button
+    btn_analyze_ai: "Analyze with AI Vision",
+    btn_analyzing: "AI is analyzing your craft...",
+
+    // Review & Edit Card
+    review_title: "2. Review & Optimize Catalog Listing",
+    review_sub: "AI has generated these details. You can review or edit anything before publishing.",
+    suggested_title_label: "Product Marketplace Title",
+    category_label: "Handicraft Category",
+    tags_label: "SEO & Search Tags",
+    tags_hint: "Tags help buyers discover your item on Google and e-commerce platforms.",
+    desc_en_label: "Marketable Description (English)",
+    desc_hi_label: "Marketable Description (हिंदी)",
+    
+    // Dynamic Pricing Assistant
+    pricing_assistant_title: "AI Dynamic Pricing Assistant",
+    fair_range_label: "Suggested Fair Market Range:",
+    justification_label: "Why this price?",
+    btn_apply_suggested: "Apply Suggested Price",
+
+    // Studio Enhancement
+    enhancer_label: "AI Studio Light Enhancement",
+    enhancer_sub: "Enhances lighting and contrasts for professional e-commerce presentation.",
+
+    // Publish
+    btn_publish: "Publish to Marketplace Now",
+    btn_publishing: "Publishing your craft...",
+    publish_success: "Product published successfully to the marketplace!",
+
+    // Marketplace Tab
+    market_hero_title: "Direct From India's Master Artisans",
+    market_hero_sub: "Eliminating middlemen. Directly empowering marginalized rural micro-entrepreneurs under MoSJE.",
+    search_placeholder: "Search handicrafts, pottery, handlooms, brass...",
+    filter_all: "All Crafts",
+    sort_label: "Sort by:",
+    sort_newest: "Newest First",
+    sort_price_low: "Price: Low to High",
+    sort_price_high: "Price: High to Low",
+    mosje_verified: "MoSJE Verified Artisan",
+    btn_view_details: "View & Inquire",
+    btn_whatsapp_inquire: "Contact Artisan on WhatsApp",
+    artisan_direct: "100% Proceeds to Artisan",
+
+    // Detail Modal
+    craft_story_title: "Cultural Heritage & Story",
+    care_title: "Artisan Care Instructions",
+    close_btn: "Close",
+
+    // Audio narration
+    listen_desc: "Listen to Description",
+    stop_audio: "Stop Audio"
+  },
+
+  hi: {
+    app_title: "कलाकृति",
+    app_subtitle: "कारीगरों के लिए एआई स्टूडियो और सीधा बाज़ार",
+    nav_studio: "कारीगर स्टूडियो (अपलोड)",
+    nav_market: "खरीदार हाट (बाज़ार)",
+    nav_about: "सामाजिक न्याय मंत्रालय",
+    lang_toggle: "English",
+    
+    // Header & Badges
+    mosje_badge: "सामाजिक न्याय और अधिकारिता मंत्रालय",
+    sih_badge: "स्मार्ट इंडिया हैकथॉन 2026",
+    gemini_live: "जेमिनी एआई सक्रिय",
+    gemini_sim: "स्मार्ट एआई मोड",
+
+    // Artisan Studio
+    studio_step1_title: "१. हस्तशिल्प उत्पाद की फोटो खींचें / अपलोड करें",
+    studio_step1_sub: "अपने हाथ से बने सामान की साफ फोटो लें या गैलरी से चुनें।",
+    btn_upload_photo: "फोटो चुनें",
+    btn_take_photo: "कैमरा खोलें",
+    or_label: "या",
+    dropzone_hint: "यहाँ फोटो खींचकर लाएं या फाइल चुनें",
+    
+    // Form Inputs
+    artisan_name_label: "आपका नाम (कारीगर)",
+    artisan_name_placeholder: "जैसे: रामेश्वर प्रजापति",
+    artisan_loc_label: "गाँव / ज़िला / राज्य",
+    artisan_loc_placeholder: "जैसे: गोरखपुर, उत्तर प्रदेश",
+    artisan_phone_label: "व्हाट्सएप नंबर (सीधे खरीदार के लिए)",
+    artisan_phone_placeholder: "+91 98765 43210",
+    artisan_notes_label: "आवाज से बताएं / विवरण (बोलें या लिखें)",
+    artisan_notes_placeholder: "माइक बटन दबाकर बोलें कि आपने क्या बनाया है...",
+    mic_tooltip: "हिंदी या अंग्रेजी में बोलने के लिए माइक दबाएं",
+    mic_recording: "सुन रहे हैं... कृपया बोलें",
+    
+    price_idea_label: "आपकी अनुमानित कीमत (₹)",
+    price_idea_placeholder: "जैसे: 500",
+
+    // Action button
+    btn_analyze_ai: "एआई दृष्टि से जांचें (Analyze with AI)",
+    btn_analyzing: "एआई आपके उत्पाद की जांच कर रहा है...",
+
+    // Review & Edit Card
+    review_title: "२. एआई सुझाव देखें और सुधारें",
+    review_sub: "एआई ने आपके उत्पाद का विवरण तैयार किया है। बाज़ार में डालने से पहले जांच लें।",
+    suggested_title_label: "उत्पाद का नाम (बाज़ार के लिए)",
+    category_label: "शिल्प की श्रेणी (Category)",
+    tags_label: "सर्च टैग्स (Tags)",
+    tags_hint: "टैग्स से खरीदार आपके उत्पाद को गूगल और ऑनलाइन बाज़ार में आसानी से खोज पाते हैं।",
+    desc_en_label: "अंग्रेजी विवरण (English Description)",
+    desc_hi_label: "हिंदी विवरण (Hindi Description)",
+    
+    // Dynamic Pricing Assistant
+    pricing_assistant_title: "एआई उचित मूल्य सहायक (AI Dynamic Pricing)",
+    fair_range_label: "बाज़ार के अनुसार उचित कीमत दायरा:",
+    justification_label: "यह कीमत क्यों सही है?",
+    btn_apply_suggested: "सुझाई गई कीमत लागू करें",
+
+    // Studio Enhancement
+    enhancer_label: "एआई स्टूडियो लाइटिंग सुधार",
+    enhancer_sub: "फोटो की रोशनी और पृष्ठभूमि को पेशेवर ई-कॉमर्स स्तर पर सुधारें।",
+
+    // Publish
+    btn_publish: "अभी बाज़ार में प्रकाशित करें",
+    btn_publishing: "प्रकाशित किया जा रहा है...",
+    publish_success: "बधाई! आपका हस्तशिल्प बाज़ार में सफलतापूर्वक जुड़ गया है!",
+
+    // Marketplace Tab
+    market_hero_title: "भारत के हुनरमंद कारीगरों से सीधे खरीदें",
+    market_hero_sub: "बिचौलियों से मुक्ति। सामाजिक न्याय और अधिकारिता मंत्रालय (MoSJE) समर्थित कारीगर।",
+    search_placeholder: "हस्तशिल्प, साड़ी, टेराकोटा, पीतल, खिलौने खोजें...",
+    filter_all: "सभी शिल्प",
+    sort_label: "क्रमबद्ध करें:",
+    sort_newest: "सबसे नया",
+    sort_price_low: "कम से अधिक कीमत",
+    sort_price_high: "अधिक से कम कीमत",
+    mosje_verified: "मंत्रालय प्रमाणित कारीगर",
+    btn_view_details: "देखें और संपर्क करें",
+    btn_whatsapp_inquire: "कारीगर से व्हाट्सएप पर बात करें",
+    artisan_direct: "100% कमाई सीधे कारीगर को",
+
+    // Detail Modal
+    craft_story_title: "सांस्कृतिक विरासत एवं परंपरा",
+    care_title: "कारीगर द्वारा रखरखाव सलाह",
+    close_btn: "बंद करें",
+
+    // Audio narration
+    listen_desc: "विवरण सुनें (Audio)",
+    stop_audio: "ऑडियो रोकें"
+  }
+};
+
+let currentLanguage = 'en';
+
+function setLanguage(lang) {
+  currentLanguage = lang;
+  document.documentElement.lang = lang;
+  
+  // Update all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang] && translations[lang][key]) {
+      el.textContent = translations[lang][key];
+    }
+  });
+
+  // Update placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (translations[lang] && translations[lang][key]) {
+      el.setAttribute('placeholder', translations[lang][key]);
+    }
+  });
+
+  // Update titles/tooltips
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (translations[lang] && translations[lang][key]) {
+      el.setAttribute('title', translations[lang][key]);
+    }
+  });
+
+  // Toggle button text
+  const toggleBtn = document.getElementById('langToggleBtn');
+  if (toggleBtn) {
+    toggleBtn.textContent = lang === 'en' ? 'हिंदी' : 'English';
+  }
+
+  // Update dynamic badges if needed
+  if (window.onLanguageChanged) {
+    window.onLanguageChanged(lang);
+  }
+}
+
+function toggleLanguage() {
+  const nextLang = currentLanguage === 'en' ? 'hi' : 'en';
+  setLanguage(nextLang);
+}
+
+function t(key) {
+  return (translations[currentLanguage] && translations[currentLanguage][key]) || key;
+}
