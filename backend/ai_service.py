@@ -32,6 +32,33 @@ CATEGORIES = [
     "Stone Carving"
 ]
 
+
+def translate_text_with_gemini(text: str, source_language: str = "Kannada", target_language: str = "English") -> str:
+    """Translate artisan voice notes without exposing the provider key to the client."""
+    if not GEMINI_API_KEY or GEMINI_API_KEY == "YOUR_GEMINI_API_KEY_HERE":
+        raise RuntimeError("Translation service is not configured")
+
+    prompt = (
+        f"Translate the following artisan product description from {source_language} to {target_language}. "
+        "Preserve craft names, materials, techniques and cultural meaning. Return only the translated text.\n\n"
+        f"{text.strip()}"
+    )
+    response = requests.post(
+        GEMINI_API_URL,
+        params={"key": GEMINI_API_KEY},
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.1, "maxOutputTokens": 512},
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    data = response.json()
+    translated = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+    if not translated:
+        raise RuntimeError("Translation service returned empty text")
+    return translated
+
 def encode_image_to_base64(image_bytes: bytes) -> str:
     """Encodes raw image bytes to base64 string."""
     return base64.b64encode(image_bytes).decode("utf-8")

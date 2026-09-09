@@ -300,6 +300,17 @@ export async function analyzeProductPhoto(
   };
 }
 
+export async function translateProductDescription(text: string): Promise<string> {
+  const res = await fetch(`${BACKEND_URL}/api/translate-text`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, source_language: 'Kannada', target_language: 'English' })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || 'Kannada translation is unavailable');
+  return data.translated_text;
+}
+
 export async function publishProductToApi(product: Omit<CraftProduct, 'id'>): Promise<boolean> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/products`, {

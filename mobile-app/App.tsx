@@ -49,7 +49,8 @@ import {
   cancelOrderApi,
   addProductReview,
   deleteProduct,
-  fetchPublishedProducts
+  fetchPublishedProducts,
+  translateProductDescription
   ,loginAdmin, fetchAdminRequests, updateAdminRequest, AdminRequest
 } from './services/api';
 
@@ -85,6 +86,7 @@ export default function App() {
   const [artisanNotes, setArtisanNotes] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState('');
+  const [isTranslatingNotes, setIsTranslatingNotes] = useState(false);
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
 
@@ -614,6 +616,23 @@ export default function App() {
     }
   };
 
+  const translateKannadaNotes = async () => {
+    const notes = artisanNotes.trim();
+    if (!notes) {
+      setSpeechError(tx('voiceNotesRequired'));
+      return;
+    }
+    setIsTranslatingNotes(true);
+    setSpeechError('');
+    try {
+      setArtisanNotes(await translateProductDescription(notes));
+    } catch (error) {
+      setSpeechError(error instanceof Error ? error.message : tx('voiceTranslationError'));
+    } finally {
+      setIsTranslatingNotes(false);
+    }
+  };
+
   // Add Tag
   const handleAddTag = () => {
     const trimmed = newTag.trim().replace(/^#/, '');
@@ -973,6 +992,15 @@ export default function App() {
                     >
                       <Text style={styles.voiceButtonText}>
                         {isListening ? `⏹️ ${tx('voiceListening')}` : `🎙️ ${tx('voiceInput')}`}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.translateButton, isTranslatingNotes && styles.disabledButton]}
+                      onPress={translateKannadaNotes}
+                      disabled={isTranslatingNotes}
+                    >
+                      <Text style={styles.translateButtonText}>
+                        {isTranslatingNotes ? 'Translating...' : 'ಕನ್ನಡ → English'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -2208,6 +2236,21 @@ const styles = StyleSheet.create({
   },
   voiceButtonText: {
     color: Colors.primary,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  translateButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 5,
+  },
+  translateButtonText: {
+    color: '#1D4ED8',
     fontSize: 10,
     fontWeight: '700',
   },

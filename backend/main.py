@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from backend.ai_service import analyze_craft_image_with_gemini, CATEGORIES
+from backend.ai_service import analyze_craft_image_with_gemini, translate_text_with_gemini, CATEGORIES
 from backend.config import STATIC_DIR, UPLOAD_DIR, GEMINI_API_KEY, HOST, PORT, ADMIN_EMAIL, ADMIN_PASSWORD
 from backend.database import get_db_connection, init_db
 
@@ -114,6 +114,12 @@ class CancelOrderRequest(BaseModel):
 
 class ProductDeleteRequest(BaseModel):
     user_id: int
+
+
+class TranslationRequest(BaseModel):
+    text: str
+    source_language: str = "Kannada"
+    target_language: str = "English"
 
 
 class InstitutionalRequestCreate(BaseModel):
@@ -704,6 +710,18 @@ async def analyze_product(
             status_code=500,
             content={"error": f"Failed to analyze product: {str(exc)}"},
         )
+
+
+@app.post("/api/translate-text")
+def translate_text(payload: TranslationRequest):
+    text = payload.text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Text to translate is required")
+    try:
+        translated = translate_text_with_gemini(text, payload.source_language, payload.target_language)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Translation unavailable: {exc}") from exc
+    return {"translated_text": translated, "source_language": payload.source_language, "target_language": payload.target_language}
 
 
 @app.post("/api/products")

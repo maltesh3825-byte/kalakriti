@@ -490,7 +490,8 @@ export type AppTextKey =
   | 'homeTab' | 'deliveryDetails' | 'mobileNumber' | 'houseStreet' | 'city' | 'state' | 'pincode'
   | 'reviews' | 'rateReview' | 'writeExperience' | 'submitReview' | 'bulkLinkage' | 'prepareRfq'
   | 'buyerType' | 'purchaseHistory' | 'publishedManage' | 'tapToSpeak'
-  | 'voiceInput' | 'voiceListening' | 'voicePermissionDenied' | 'voiceError' | 'voiceTranslationHint';
+  | 'voiceInput' | 'voiceListening' | 'voicePermissionDenied' | 'voiceError' | 'voiceTranslationHint'
+  | 'voiceNotesRequired' | 'voiceTranslationError';
 
 const englishAppText: Record<AppTextKey, string> = {
   homeTitle: 'Empowering Rural Artisans with AI-Driven Market Linkage',
@@ -529,7 +530,8 @@ const englishAppText: Record<AppTextKey, string> = {
   reviews: 'review(s)', rateReview: '★ Rate & review (no purchase required)', writeExperience: 'Write your experience...',
   submitReview: 'Submit review', bulkLinkage: 'Bulk & Institutional Linkage', prepareRfq: 'Prepare bulk RFQ',
   voiceInput: 'Speak in Kannada', voiceListening: 'Listening...', voicePermissionDenied: 'Microphone permission is required.',
-  voiceError: 'Could not start voice input.', voiceTranslationHint: 'Kannada voice notes are converted into English during AI cataloging.'
+  voiceError: 'Could not start voice input.', voiceTranslationHint: 'Speak in Kannada, then translate the notes into English before cataloging.',
+  voiceNotesRequired: 'Add Kannada voice or text notes first.', voiceTranslationError: 'Could not translate the Kannada notes.'
 };
 
 const regionalAppText: Record<Exclude<Language, 'en'>, Partial<Record<AppTextKey, string>>> = {
