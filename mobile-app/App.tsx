@@ -40,7 +40,8 @@ import {
   loginUser,
   createOrder,
   fetchOrdersForUser,
-  cancelOrderApi
+  cancelOrderApi,
+  addProductReview
 } from './services/api';
 
 export default function App() {
@@ -89,6 +90,10 @@ export default function App() {
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [cancelReason, setCancelReason] = useState('Changed requirement / buyer changed decision');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [reviewProductId, setReviewProductId] = useState<number | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const t = i18n[lang];
 
@@ -155,6 +160,25 @@ export default function App() {
     setOrders(prev => [order, ...prev]);
     Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
     setActiveTab('orders');
+  };
+
+  const submitReview = async (product: CraftProduct) => {
+    if (!reviewComment.trim()) {
+      Alert.alert('Review required', 'Please write a comment before submitting.');
+      return;
+    }
+    setIsSubmittingReview(true);
+    try {
+      const result = await addProductReview(product.id, currentUser?.name || 'Marketplace visitor', reviewRating, reviewComment.trim());
+      setProducts(prev => prev.map(item => item.id === product.id ? { ...item, rating: result.rating, reviews: result.reviews } : item));
+      setReviewComment('');
+      setReviewProductId(null);
+      Alert.alert('Thank you', 'Your rating and review were added.');
+    } catch (error) {
+      Alert.alert('Review unavailable', error instanceof Error ? error.message : 'Could not submit the review.');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const handleBulkSupport = () => {
@@ -758,6 +782,31 @@ export default function App() {
                       <Text style={styles.ratingText}>★ {Number(product.rating || 4.5).toFixed(1)}</Text>
                       <Text style={styles.reviewText}>{product.reviews?.length || 0} review(s)</Text>
                     </View>
+
+                    <TouchableOpacity style={styles.reviewButton} onPress={() => setReviewProductId(reviewProductId === product.id ? null : product.id)}>
+                      <Text style={styles.reviewButtonText}>★ Rate & review (no purchase required)</Text>
+                    </TouchableOpacity>
+                    {reviewProductId === product.id && (
+                      <View style={styles.reviewEditor}>
+                        <View style={styles.reviewStarsRow}>
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <TouchableOpacity key={star} onPress={() => setReviewRating(star)}>
+                              <Text style={[styles.reviewStar, star <= reviewRating && styles.reviewStarActive]}>★</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                        <TextInput
+                          style={styles.reviewInput}
+                          value={reviewComment}
+                          onChangeText={setReviewComment}
+                          placeholder="Write your experience..."
+                          multiline
+                        />
+                        <TouchableOpacity style={styles.submitReviewButton} onPress={() => submitReview(product)} disabled={isSubmittingReview}>
+                          {isSubmittingReview ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitReviewButtonText}>Submit review</Text>}
+                        </TouchableOpacity>
+                      </View>
+                    )}
 
                     {product.image_gallery && product.image_gallery.length > 1 ? (
                       <View style={styles.galleryRow}>
@@ -1554,6 +1603,61 @@ const styles = StyleSheet.create({
   reviewText: {
     color: Colors.textSecondary,
     fontSize: 11,
+  },
+  reviewButton: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  reviewButtonText: {
+    color: '#92400E',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  reviewEditor: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 10,
+  },
+  reviewStarsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  reviewStar: {
+    color: '#D1D5DB',
+    fontSize: 24,
+  },
+  reviewStarActive: {
+    color: '#D97706',
+  },
+  reviewInput: {
+    minHeight: 60,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: Colors.textPrimary,
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  submitReviewButton: {
+    backgroundColor: '#D97706',
+    borderRadius: 10,
+    paddingVertical: 9,
+    alignItems: 'center',
+  },
+  submitReviewButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   galleryRow: {
     flexDirection: 'row',

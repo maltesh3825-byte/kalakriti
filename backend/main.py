@@ -685,6 +685,11 @@ def create_product(product: ProductCreate):
 @app.post("/api/products/{product_id}/reviews")
 def add_product_review(product_id: int, payload: ProductReviewCreate):
     """Add a marketplace product review with a review text and rating."""
+    if not 1 <= payload.rating <= 5:
+        raise HTTPException(status_code=422, detail="Rating must be between 1 and 5")
+    if not payload.comment.strip():
+        raise HTTPException(status_code=422, detail="Review comment is required")
+
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT reviews, rating FROM products WHERE id = ?", (product_id,))

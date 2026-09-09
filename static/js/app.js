@@ -462,6 +462,8 @@ function setupEventListeners() {
 
   const placeOrderBtn = document.getElementById('modalPlaceOrderBtn');
   if (placeOrderBtn) placeOrderBtn.addEventListener('click', placeMarketplaceOrder);
+  const submitReviewBtn = document.getElementById('modalSubmitReviewBtn');
+  if (submitReviewBtn) submitReviewBtn.addEventListener('click', submitProductReview);
 }
 
 // Switch between Studio and Marketplace tabs
@@ -1503,6 +1505,9 @@ function renderProducts(products) {
                     class="flex-1 py-2 px-3 rounded-xl text-xs font-semibold bg-terracotta-50 text-terracotta-700 hover:bg-terracotta-100 transition-colors text-center">
               ${t('btn_view_details')}
             </button>
+            <button onclick="openProductModal(${p.id})"
+                    class="px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"
+                    title="Rate and review this product">★ Rate</button>
 
             <button onclick="toggleWishlist(${p.id})"
                     class="p-2 rounded-xl ${state.accountWishlist.includes(p.id) ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'} hover:bg-rose-100 hover:text-rose-600 transition-colors"
@@ -1597,6 +1602,17 @@ function openProductModal(productId) {
     ).join('');
   }
 
+  const ratingSummary = document.getElementById('modalRatingSummary');
+  if (ratingSummary) ratingSummary.textContent = `★ ${Number(product.rating || 0).toFixed(1)} · ${product.reviews?.length || 0} review(s)`;
+  const reviewComment = document.getElementById('modalReviewComment');
+  const reviewStatus = document.getElementById('modalReviewStatus');
+  if (reviewComment) reviewComment.value = '';
+  if (reviewStatus) {
+    reviewStatus.textContent = '';
+    reviewStatus.className = 'hidden mt-2 text-xs font-semibold';
+  }
+  renderModalReviews(product.reviews || []);
+
   // Audio button inside modal
   const modalSpeaker = document.getElementById('modalSpeakerBtn');
   if (modalSpeaker) {
@@ -1615,6 +1631,70 @@ function openProductModal(productId) {
   }
 
   modal.classList.remove('hidden');
+}
+
+function renderModalReviews(reviews) {
+  const container = document.getElementById('modalReviews');
+  if (!container) return;
+  container.innerHTML = reviews.length
+    ? reviews.slice().reverse().slice(0, 5).map(review => `
+        <div class="rounded-xl bg-white border border-amber-100 px-3 py-2">
+          <div class="flex items-center justify-between gap-2 text-xs">
+            <strong class="text-slate-800">${escapeHtml(review.user_name || 'Anonymous')}</strong>
+            <span class="text-amber-700 font-bold">★ ${Number(review.rating || 0).toFixed(1)}</span>
+          </div>
+          <p class="text-xs text-slate-600 mt-1">${escapeHtml(review.comment || '')}</p>
+        </div>`).join('')
+    : '<p class="text-xs text-slate-500">No reviews yet. Be the first to share your experience.</p>';
+}
+
+async function submitProductReview() {
+  const product = state.selectedProductForModal;
+  if (!product) return;
+  const button = document.getElementById('modalSubmitReviewBtn');
+  const status = document.getElementById('modalReviewStatus');
+  const comment = document.getElementById('modalReviewComment')?.value.trim();
+  const rating = Number(document.getElementById('modalReviewRating')?.value || 5);
+  if (!comment) {
+    if (status) {
+      status.textContent = 'Please write a review before submitting.';
+      status.className = 'mt-2 text-xs font-semibold text-red-700';
+    }
+    return;
+  }
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch(`/api/products/${product.id}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_name: state.currentUser?.name || 'Marketplace visitor',
+        rating,
+        comment
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || 'Review could not be submitted');
+    product.rating = data.rating;
+    product.reviews = data.reviews;
+    const ratingSummary = document.getElementById('modalRatingSummary');
+    if (ratingSummary) ratingSummary.textContent = `★ ${Number(data.rating).toFixed(1)} · ${data.reviews.length} review(s)`;
+    renderModalReviews(data.reviews);
+    if (status) {
+      status.textContent = 'Thanks for sharing your review.';
+      status.className = 'mt-2 text-xs font-semibold text-emerald-700';
+    }
+    if (document.getElementById('modalReviewComment')) document.getElementById('modalReviewComment').value = '';
+    renderProducts(state.products);
+  } catch (error) {
+    console.error('Product review error:', error);
+    if (status) {
+      status.textContent = error.message || 'Review could not be submitted.';
+      status.className = 'mt-2 text-xs font-semibold text-red-700';
+    }
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function placeMarketplaceOrder() {

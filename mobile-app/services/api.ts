@@ -180,10 +180,27 @@ export async function fetchMarketplaceProducts(): Promise<CraftProduct[]> {
       const data = await res.json();
       return data.products || SEED_PRODUCTS;
     }
+
   } catch (err) {
     console.warn("Backend not reachable, loading local seed catalog:", err);
   }
   return SEED_PRODUCTS;
+}
+
+export async function addProductReview(
+  productId: number,
+  userName: string,
+  rating: number,
+  comment: string
+): Promise<{ rating: number; reviews: ProductReview[] }> {
+  const res = await fetch(`${BACKEND_URL}/api/products/${productId}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_name: userName, rating, comment })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Review could not be submitted');
+  return { rating: data.rating, reviews: data.reviews || [] };
 }
 
 export async function analyzeProductPhoto(
