@@ -65,6 +65,7 @@ type BrowserSpeechRecognition = {
   onend: () => void;
   start: () => void;
   stop: () => void;
+  abort?: () => void;
 };
 
 type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
@@ -103,6 +104,7 @@ export default function App() {
   const [speechError, setSpeechError] = useState('');
   const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const browserListeningRef = useRef(false);
+  const browserTranscriptRef = useRef('');
   const nativeListeningRef = useRef(false);
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
@@ -628,10 +630,14 @@ export default function App() {
     if (isListening) {
       if (Platform.OS === 'web') {
         browserListeningRef.current = false;
+        browserRecognitionRef.current?.abort?.();
         browserRecognitionRef.current?.stop();
+        browserRecognitionRef.current = null;
+        setIsListening(false);
       } else {
         nativeListeningRef.current = false;
         ExpoSpeechRecognitionModule.stop();
+        setIsListening(false);
       }
       return;
     }
@@ -651,12 +657,26 @@ export default function App() {
 
         const recognition = new Recognition();
         browserRecognitionRef.current = recognition;
+        browserTranscriptRef.current = artisanNotes.trim();
         recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN';
         recognition.interimResults = true;
         recognition.continuous = true;
         recognition.onresult = event => {
-          const transcript = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
-          if (transcript) setArtisanNotes(transcript);
+          let transcript = '';
+          for (let index = 0; index < event.results.length; index += 1) {
+            transcript += `${event.results[index]?.[0]?.transcript || ''} `;
+          }
+          const cleanTranscript = transcript.trim();
+          if (cleanTranscript) {
+            const existing = browserTranscriptRef.current;
+            const nextText = existing && !cleanTranscript.startsWith(existing)
+              ? `${existing} ${cleanTranscript}`
+              : cleanTranscript;
+            setArtisanNotes(nextText.trim());
+            if (event.results[event.results.length - 1]?.[0]) {
+              browserTranscriptRef.current = nextText.trim();
+            }
+          }
         };
         recognition.onerror = event => {
           if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
@@ -690,8 +710,15 @@ export default function App() {
           }
         };
         browserListeningRef.current = true;
-        recognition.start();
-        setIsListening(true);
+        try {
+          recognition.start();
+          setIsListening(true);
+        } catch (error) {
+          browserListeningRef.current = false;
+          browserRecognitionRef.current = null;
+          setSpeechError(error instanceof Error ? error.message : tx('voiceError'));
+          setIsListening(false);
+        }
         return;
       }
 
