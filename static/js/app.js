@@ -1517,6 +1517,11 @@ function renderProducts(products) {
             <button onclick="toggleWishlist(${p.id})"
                     class="p-2 rounded-xl ${state.accountWishlist.includes(p.id) ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-500'} hover:bg-rose-100 hover:text-rose-600 transition-colors"
                     title="Save to wishlist">♥</button>
+            ${state.currentUser && state.currentUser.name?.trim().toLowerCase() === String(p.artisan_name || '').trim().toLowerCase()
+                    ? `<button onclick="deleteMarketplaceProduct(${p.id})"
+                             class="p-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                             title="Delete your listing">🗑</button>`
+                    : ''}
 
             <a href="https://wa.me/${(p.artisan_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${p.artisan_name}, I am interested in buying your handcrafted '${p.name}' listed on KalaSetu marketplace for ₹${p.price}.`)}"
                target="_blank" rel="noopener noreferrer"
@@ -1537,6 +1542,7 @@ async function toggleWishlist(productId) {
     showToast('Sign in to save crafts to your wishlist');
     return;
   }
+
   const saved = state.accountWishlist.includes(productId);
   const url = saved ? `/api/wishlist/${state.currentUser.id}/${productId}` : `/api/wishlist/${state.currentUser.id}`;
   const response = await fetch(url, {
@@ -1548,6 +1554,24 @@ async function toggleWishlist(productId) {
     state.accountWishlist = saved ? state.accountWishlist.filter(id => id !== productId) : [...state.accountWishlist, productId];
     showToast(saved ? 'Removed from wishlist' : 'Saved to wishlist');
     renderProducts(state.products);
+  }
+}
+
+async function deleteMarketplaceProduct(productId) {
+  if (!state.currentUser || !confirm('Delete this product listing? This cannot be undone.')) return;
+  try {
+    const response = await fetch(`/api/products/${productId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: state.currentUser.id })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || 'Product could not be deleted');
+    showToast('Product listing deleted');
+    await loadProducts();
+  } catch (error) {
+    console.error('Product deletion error:', error);
+    showToast(error.message || 'Product could not be deleted');
   }
 }
 
@@ -1729,7 +1753,13 @@ async function placeMarketplaceOrder() {
         quantity: Math.max(1, parseInt(document.getElementById('modalOrderQuantity')?.value, 10) || 1),
         total: product.price,
         status: 'Requested',
-        eta: 'Artisan will confirm delivery'
+        eta: 'Artisan will confirm delivery',
+        recipient_name: document.getElementById('orderRecipientName')?.value.trim(),
+        recipient_phone: document.getElementById('orderRecipientPhone')?.value.trim(),
+        address_line: document.getElementById('orderAddressLine')?.value.trim(),
+        city: document.getElementById('orderCity')?.value.trim(),
+        state: document.getElementById('orderState')?.value.trim(),
+        pincode: document.getElementById('orderPincode')?.value.trim()
       })
     });
     if (!response.ok) throw new Error('Order request failed');

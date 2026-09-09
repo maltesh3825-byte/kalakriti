@@ -41,7 +41,8 @@ import {
   createOrder,
   fetchOrdersForUser,
   cancelOrderApi,
-  addProductReview
+  addProductReview,
+  deleteProduct
 } from './services/api';
 
 export default function App() {
@@ -94,6 +95,9 @@ export default function App() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [deliveryDetails, setDeliveryDetails] = useState({
+    recipientName: '', recipientPhone: '', addressLine: '', city: '', state: '', pincode: ''
+  });
 
   const t = i18n[lang];
 
@@ -149,17 +153,40 @@ export default function App() {
       return;
     }
 
+    if (!deliveryDetails.recipientName || !deliveryDetails.recipientPhone || !deliveryDetails.addressLine ||
+      !deliveryDetails.city || !deliveryDetails.state || !/^\d{6}$/.test(deliveryDetails.pincode)) {
+      Alert.alert('Delivery details required', 'Enter your name, phone, address, city, state, and 6-digit pincode before ordering.');
+      return;
+    }
+
     const order = await createOrder({
       userId: currentUser.id,
       productId: product.id,
       productName: product.name,
       price: product.price,
-      customerName: currentUser.name
+      customerName: currentUser.name,
+      ...deliveryDetails
     });
 
     setOrders(prev => [order, ...prev]);
     Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
     setActiveTab('orders');
+  };
+
+  const removeOwnProduct = async (product: CraftProduct) => {
+    if (!currentUser || currentUser.name.trim().toLowerCase() !== product.artisan_name.trim().toLowerCase()) return;
+    Alert.alert('Delete listing', 'Delete this product listing?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await deleteProduct(product.id, currentUser.id);
+          setProducts(prev => prev.filter(item => item.id !== product.id));
+          Alert.alert('Deleted', 'Your product listing was deleted.');
+        } catch (error) {
+          Alert.alert('Delete failed', error instanceof Error ? error.message : 'Could not delete listing.');
+        }
+      }}
+    ]);
   };
 
   const submitReview = async (product: CraftProduct) => {
@@ -733,6 +760,26 @@ export default function App() {
               value={searchQuery} 
               onChangeText={setSearchQuery} 
             />
+            <View style={styles.deliveryCard}>
+              <Text style={styles.deliveryTitle}>Delivery details for orders</Text>
+              {([
+                ['recipientName', 'Full name'],
+                ['recipientPhone', 'Mobile number'],
+                ['addressLine', 'House / street / locality'],
+                ['city', 'City'],
+                ['state', 'State'],
+                ['pincode', '6-digit pincode']
+              ] as const).map(([key, placeholder]) => (
+                <TextInput
+                  key={key}
+                  style={styles.deliveryInput}
+                  placeholder={placeholder}
+                  value={deliveryDetails[key]}
+                  onChangeText={value => setDeliveryDetails(prev => ({ ...prev, [key]: value }))}
+                  keyboardType={key === 'pincode' || key === 'recipientPhone' ? 'phone-pad' : 'default'}
+                />
+              ))}
+            </View>
 
             {/* Category Filter Chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesBar}>
@@ -830,6 +877,11 @@ export default function App() {
                       onPress={() => openWhatsApp(product.artisan_phone || '+919876543210', product.name, product.price)}>
                       <Text style={styles.whatsAppButtonText}>💬 {t.btnWhatsApp}</Text>
                     </TouchableOpacity>
+                    {isLoggedIn && currentUser?.name.trim().toLowerCase() === product.artisan_name.trim().toLowerCase() && (
+                      <TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}>
+                        <Text style={styles.deleteProductButtonText}>Delete my listing</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
 
                 </View>
@@ -1484,6 +1536,31 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 12,
   },
+  deliveryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 12,
+    marginBottom: 12,
+  },
+  deliveryTitle: {
+    color: Colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  deliveryInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 7,
+    fontSize: 12,
+    color: Colors.textPrimary,
+  },
   categoriesBar: {
     marginBottom: 14,
   },
@@ -1706,6 +1783,18 @@ const styles = StyleSheet.create({
   },
   whatsAppButtonText: {
     color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  deleteProductButton: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  deleteProductButtonText: {
+    color: '#B91C1C',
     fontWeight: 'bold',
     fontSize: 12,
   },

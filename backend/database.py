@@ -115,6 +115,12 @@ def init_db():
             eta TEXT DEFAULT '2-4 working days',
             cancel_reason TEXT DEFAULT '',
             cancelled_at TIMESTAMP NULL,
+            recipient_name TEXT DEFAULT '',
+            recipient_phone TEXT DEFAULT '',
+            address_line TEXT DEFAULT '',
+            city TEXT DEFAULT '',
+            state TEXT DEFAULT '',
+            pincode TEXT DEFAULT '',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
@@ -124,6 +130,16 @@ def init_db():
         cursor.execute("ALTER TABLE orders ADD COLUMN cancel_reason TEXT DEFAULT ''")
     if "cancelled_at" not in order_columns:
         cursor.execute("ALTER TABLE orders ADD COLUMN cancelled_at TIMESTAMP NULL")
+    for column, column_type in {
+        "recipient_name": "TEXT DEFAULT ''",
+        "recipient_phone": "TEXT DEFAULT ''",
+        "address_line": "TEXT DEFAULT ''",
+        "city": "TEXT DEFAULT ''",
+        "state": "TEXT DEFAULT ''",
+        "pincode": "TEXT DEFAULT ''",
+    }.items():
+        if column not in order_columns:
+            cursor.execute(f"ALTER TABLE orders ADD COLUMN {column} {column_type}")
 
     cursor.execute(
         """

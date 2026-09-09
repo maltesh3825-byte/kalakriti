@@ -100,10 +100,20 @@ class OrderCreate(BaseModel):
     total: int
     status: str = "Confirmed"
     eta: str = "2-4 working days"
+    recipient_name: str
+    recipient_phone: str
+    address_line: str
+    city: str
+    state: str
+    pincode: str
 
 
 class CancelOrderRequest(BaseModel):
     reason: str = ""
+
+
+class ProductDeleteRequest(BaseModel):
+    user_id: int
 
 
 class InstitutionalRequestCreate(BaseModel):
@@ -353,6 +363,14 @@ def mark_notifications_read(user_id: int):
 
 @app.post("/api/orders")
 def create_order(payload: OrderCreate):
+    if not all(value.strip() for value in (
+        payload.recipient_name, payload.recipient_phone, payload.address_line,
+        payload.city, payload.state, payload.pincode,
+    )):
+        raise HTTPException(status_code=422, detail="Complete delivery details are required")
+    if not payload.pincode.isdigit() or len(payload.pincode) != 6:
+        raise HTTPException(status_code=422, detail="Pincode must be a valid 6-digit number")
+
     conn = get_db_connection()
     cursor = conn.cursor()
     requested_quantity = max(1, payload.quantity)
@@ -376,8 +394,10 @@ def create_order(payload: OrderCreate):
         raise HTTPException(status_code=409, detail="This product was just reserved by another buyer")
     cursor.execute(
         """
-        INSERT INTO orders (user_id, product_id, product_name, quantity, total, status, eta)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (
+            user_id, product_id, product_name, quantity, total, status, eta,
+            recipient_name, recipient_phone, address_line, city, state, pincode
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             payload.user_id,
@@ -387,6 +407,12 @@ def create_order(payload: OrderCreate):
             payload.total * requested_quantity,
             payload.status,
             payload.eta,
+            payload.recipient_name.strip(),
+            payload.recipient_phone.strip(),
+            payload.address_line.strip(),
+            payload.city.strip(),
+            payload.state.strip(),
+            payload.pincode.strip(),
         ),
     )
     order_id = cursor.lastrowid
@@ -410,6 +436,33 @@ def create_order(payload: OrderCreate):
     conn.close()
     remaining_quantity = available_quantity - requested_quantity
     return {"status": "success", "order_id": order_id, "remaining_quantity": remaining_quantity}
+
+
+@app.delete("/api/products/{product_id}")
+def delete_product(product_id: int, payload: ProductDeleteRequest):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT p.artisan_name, u.name
+        FROM products p
+        JOIN users u ON u.id = ?
+        WHERE p.id = ?
+        """,
+        (payload.user_id, product_id),
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Product not found")
+    if row["artisan_name"].strip().lower() != row["name"].strip().lower():
+        conn.close()
+        raise HTTPException(status_code=403, detail="Only the seller who posted this product can delete it")
+    cursor.execute("DELETE FROM wishlist WHERE product_id = ?", (product_id,))
+    cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "product_id": product_id}
 
 
 @app.post("/api/orders/{order_id}/cancel")

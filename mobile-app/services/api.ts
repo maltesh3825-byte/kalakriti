@@ -84,6 +84,7 @@ export interface OrderRecord {
   status: 'Confirmed' | 'Packed' | 'In Transit' | 'Delivered' | 'Cancelled';
   eta: string;
   customerName: string;
+  deliveryAddress?: string;
 }
 
 export interface CancelOrderResponse {
@@ -349,6 +350,12 @@ export async function createOrder(input: {
   productName: string;
   price: number;
   customerName: string;
+  recipientName: string;
+  recipientPhone: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pincode: string;
 }): Promise<OrderRecord> {
   const order: OrderRecord = {
     id: Date.now(),
@@ -371,18 +378,35 @@ export async function createOrder(input: {
         quantity: 1,
         total: input.price,
         status: order.status,
-        eta: order.eta
+        eta: order.eta,
+        recipient_name: input.recipientName,
+        recipient_phone: input.recipientPhone,
+        address_line: input.addressLine,
+        city: input.city,
+        state: input.state,
+        pincode: input.pincode
       })
     });
 
     if (res.ok) {
       return order;
     }
+
   } catch (err) {
     console.warn('Order API unavailable, saved in app state only:', err);
   }
 
   return order;
+}
+
+export async function deleteProduct(productId: number, userId: number): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/products/${productId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: userId })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || 'Product could not be deleted');
 }
 
 export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]> {
