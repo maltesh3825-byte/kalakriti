@@ -16,6 +16,13 @@ const configuredBackendUrl =
 
 export const BACKEND_URL = configuredBackendUrl;
 
+export interface ProductReview {
+  user_name?: string;
+  rating?: number;
+  comment?: string;
+  created_at?: string;
+}
+
 export interface CraftProduct {
   id: number;
   name: string;
@@ -31,6 +38,9 @@ export interface CraftProduct {
   description_hi?: string;
   tags: string[];
   image_url: string;
+  image_gallery?: string[];
+  rating?: number;
+  reviews?: ProductReview[];
   is_enhanced?: boolean;
   mosje_verified?: boolean;
 }
@@ -100,6 +110,15 @@ export const SEED_PRODUCTS: CraftProduct[] = [
     description_hi: "पारंपरिक भारतीय टेराकोटा मिट्टी की सुराही जो प्राकृतिक रूप से पानी को ठंडा रखती है। इस पर सुंदर लोक चित्रकारी उकेरी गई है।",
     tags: ["Terracotta", "Clay Pitcher", "Eco-Friendly", "Handmade"],
     image_url: "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+    image_gallery: [
+      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80"
+    ],
+    rating: 4.8,
+    reviews: [
+      { user_name: "Aarav", rating: 5, comment: "Beautiful terracotta piece and great artisan story." },
+      { user_name: "Ritika", rating: 4.7, comment: "Lovely finish and authentic clay texture." }
+    ],
     mosje_verified: true
   },
   {
@@ -117,6 +136,14 @@ export const SEED_PRODUCTS: CraftProduct[] = [
     description_hi: "प्राचीन लॉस्ट-वैक्स तकनीक का उपयोग करके बस्तर के जनजातीय कारीगरों द्वारा हस्तनिर्मित प्रामाणिक ढोकरा बेल-मेटल हाथी।",
     tags: ["Dhokra Art", "Bastar Craft", "Brass Metal", "Tribal Art"],
     image_url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80",
+    image_gallery: [
+      "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80"
+    ],
+    rating: 4.7,
+    reviews: [
+      { user_name: "Priya", rating: 4.8, comment: "Beautifully cast and carefully finished." }
+    ],
     mosje_verified: true
   },
   {
@@ -134,6 +161,14 @@ export const SEED_PRODUCTS: CraftProduct[] = [
     description_hi: "कच्छ की ग्रामीण महिला कारीगरों द्वारा हाथ से काढ़ा गया जीवंत आभला (दर्पण) वर्क वॉल हैंगिंग।",
     tags: ["Kutch Embroidery", "Mirror Work", "Handloom", "Tapestry"],
     image_url: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80",
+    image_gallery: [
+      "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=800&q=80"
+    ],
+    rating: 4.9,
+    reviews: [
+      { user_name: "Meera", rating: 5, comment: "Stunning mirrorwork and authentic craft story." }
+    ],
     mosje_verified: true
   }
 ];

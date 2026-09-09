@@ -36,6 +36,9 @@ def init_db():
             description_hi TEXT,
             tags TEXT NOT NULL,
             image_url TEXT NOT NULL,
+            image_gallery TEXT DEFAULT '[]',
+            rating REAL DEFAULT 4.5,
+            reviews TEXT DEFAULT '[]',
             is_enhanced INTEGER DEFAULT 0,
             mosje_verified INTEGER DEFAULT 1,
             quantity INTEGER NOT NULL DEFAULT 10,
@@ -46,6 +49,13 @@ def init_db():
     product_columns = {row[1] for row in cursor.execute("PRAGMA table_info(products)").fetchall()}
     if "quantity" not in product_columns:
         cursor.execute("ALTER TABLE products ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1")
+    for column, column_type in {
+        "image_gallery": "TEXT DEFAULT '[]'",
+        "rating": "REAL DEFAULT 4.5",
+        "reviews": "TEXT DEFAULT '[]'",
+    }.items():
+        if column not in product_columns:
+            cursor.execute(f"ALTER TABLE products ADD COLUMN {column} {column_type}")
 
     cursor.execute(
         """

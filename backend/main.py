@@ -53,8 +53,17 @@ class ProductCreate(BaseModel):
     description_hi: Optional[str] = ""
     tags: List[str]
     image_url: str
+    image_gallery: Optional[List[str]] = []
+    rating: Optional[float] = 4.5
+    reviews: Optional[List[dict]] = []
     is_enhanced: Optional[bool] = False
     quantity: int = 1
+
+
+class ProductReviewCreate(BaseModel):
+    user_name: str = "Verified Buyer"
+    rating: float = 5.0
+    comment: str = ""
 
 
 class UserLogin(BaseModel):
@@ -631,14 +640,17 @@ def create_product(product: ProductCreate):
         conn.close()
         raise HTTPException(status_code=429, detail="This artisan has used all 3 marketplace listings for this month")
 
+    gallery_json = json.dumps(product.image_gallery or [product.image_url])
+    reviews_json = json.dumps(product.reviews or [])
     cursor.execute(
         """
         INSERT INTO products (
             name, artisan_name, artisan_phone, artisan_location,
             category, price, suggested_price_min, suggested_price_max,
             price_justification, description_en, description_hi,
-            tags, image_url, is_enhanced, mosje_verified, quantity
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            tags, image_url, image_gallery, rating, reviews,
+            is_enhanced, mosje_verified, quantity
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             product.name,
@@ -654,6 +666,9 @@ def create_product(product: ProductCreate):
             product.description_hi or "",
             json.dumps(product.tags),
             product.image_url,
+            gallery_json,
+            product.rating or 4.5,
+            reviews_json,
             1 if product.is_enhanced else 0,
             1,
             listing_quantity,
@@ -665,6 +680,39 @@ def create_product(product: ProductCreate):
     conn.close()
 
     return {"status": "success", "product_id": new_id, "message": "Product published to marketplace!"}
+
+
+@app.post("/api/products/{product_id}/reviews")
+def add_product_review(product_id: int, payload: ProductReviewCreate):
+    """Add a marketplace product review with a review text and rating."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT reviews, rating FROM products WHERE id = ?", (product_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    raw_reviews = json.loads(row["reviews"] or "[]") if isinstance(row["reviews"], str) else (row["reviews"] or [])
+    review = {
+        "user_name": payload.user_name.strip() or "Verified Buyer",
+        "rating": round(float(payload.rating), 1),
+        "comment": payload.comment.strip(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    raw_reviews.append(review)
+
+    ratings = [float(item.get("rating", 4.5)) for item in raw_reviews if isinstance(item, dict) and item.get("rating") is not None]
+    average_rating = round(sum(ratings) / len(ratings), 1) if ratings else 4.5
+
+    cursor.execute(
+        "UPDATE products SET reviews = ?, rating = ? WHERE id = ?",
+        (json.dumps(raw_reviews), average_rating, product_id),
+    )
+    conn.commit()
+    conn.close()
+
+    return {"status": "success", "product_id": product_id, "rating": average_rating, "reviews": raw_reviews}
 
 
 @app.get("/api/products")
@@ -716,6 +764,14 @@ def list_products(
             p["tags"] = json.loads(p["tags"]) if isinstance(p["tags"], str) else p["tags"]
         except Exception:
             p["tags"] = [t.strip() for t in str(p["tags"]).split(",") if t.strip()]
+        try:
+            p["image_gallery"] = json.loads(p["image_gallery"]) if isinstance(p["image_gallery"], str) else (p["image_gallery"] or [])
+        except Exception:
+            p["image_gallery"] = []
+        try:
+            p["reviews"] = json.loads(p["reviews"]) if isinstance(p["reviews"], str) else (p["reviews"] or [])
+        except Exception:
+            p["reviews"] = []
         products.append(p)
 
     conn.close()
@@ -738,6 +794,14 @@ def get_product(product_id: int):
         p["tags"] = json.loads(p["tags"])
     except Exception:
         p["tags"] = [t.strip() for t in str(p["tags"]).split(",") if t.strip()]
+    try:
+        p["image_gallery"] = json.loads(p["image_gallery"]) if isinstance(p["image_gallery"], str) else (p["image_gallery"] or [])
+    except Exception:
+        p["image_gallery"] = []
+    try:
+        p["reviews"] = json.loads(p["reviews"]) if isinstance(p["reviews"], str) else (p["reviews"] or [])
+    except Exception:
+        p["reviews"] = []
 
     return p
 
