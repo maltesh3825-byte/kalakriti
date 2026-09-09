@@ -1628,9 +1628,12 @@ function openProductModal(productId) {
   document.getElementById('modalArtisanLoc').textContent = product.artisan_location;
   const orderQuantity = document.getElementById('modalOrderQuantity');
   if (orderQuantity) {
-    orderQuantity.max = String(Math.max(1, product.quantity || 1));
+    const maxQuantity = Math.min(10, Math.max(1, product.quantity ?? 10));
+    Array.from(orderQuantity.options).forEach(option => {
+      option.disabled = Number(option.value) > maxQuantity;
+    });
     orderQuantity.value = '1';
-    orderQuantity.disabled = (product.quantity || 1) < 2;
+    orderQuantity.disabled = maxQuantity < 2;
   }
   
   const descText = currentLanguage === 'hi' && product.description_hi ? product.description_hi : product.description_en;
@@ -1792,7 +1795,7 @@ async function placeMarketplaceOrder() {
         product_id: product.id,
         product_name: product.name,
         quantity: Math.max(1, parseInt(document.getElementById('modalOrderQuantity')?.value, 10) || 1),
-        total: product.price,
+        total: product.price * Math.max(1, parseInt(document.getElementById('modalOrderQuantity')?.value, 10) || 1),
         status: 'Requested',
         eta: 'Artisan will confirm delivery',
         ...deliveryFields

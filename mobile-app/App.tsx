@@ -905,8 +905,20 @@ export default function App() {
                 value={buyQuantity}
                 onChangeText={setBuyQuantity}
                 keyboardType="number-pad"
+                inputMode="numeric"
                 maxLength={2}
               />
+            </View>
+            <View style={styles.quantityOptions}>
+              {Array.from({ length: 10 }, (_, index) => String(index + 1)).map(option => (
+                <TouchableOpacity
+                  key={option}
+                  style={[styles.quantityOption, buyQuantity === option && styles.quantityOptionActive]}
+                  onPress={() => setBuyQuantity(option)}
+                >
+                  <Text style={[styles.quantityOptionText, buyQuantity === option && styles.quantityOptionTextActive]}>{option}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
             {/* Category Filter Chips */}
@@ -2024,6 +2036,34 @@ const styles = StyleSheet.create({
     width: 72,
     textAlign: 'center',
     backgroundColor: '#FFFFFF',
+  },
+  quantityOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 12,
+  },
+  quantityOption: {
+    minWidth: 30,
+    paddingVertical: 7,
+    paddingHorizontal: 9,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  quantityOptionActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  quantityOptionText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  quantityOptionTextActive: {
+    color: '#FFFFFF',
   },
   deliveryTitle: {
     color: Colors.textPrimary,
