@@ -294,6 +294,11 @@ function setupEventListeners() {
 
   const listenBtn = document.getElementById('listenBtn');
   if (listenBtn) listenBtn.addEventListener('click', listenInstitutionalRequest);
+  ['institutionalQuantity', 'institutionalUnitPrice'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) input.addEventListener('input', updateBulkPricingTiers);
+  });
+  updateBulkPricingTiers();
 
   const aiHsnTaxBtn = document.getElementById('aiHsnTaxBtn');
   if (aiHsnTaxBtn) aiHsnTaxBtn.addEventListener('click', () => handleBusinessManagerTool('hsn'));
@@ -1007,6 +1012,22 @@ async function submitInstitutionalRequest(event) {
   }
 
   window.location.href = `mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`;
+}
+
+function updateBulkPricingTiers() {
+  const quantity = Math.max(0, Number(document.getElementById('institutionalQuantity')?.value || 0));
+  const unitPrice = Math.max(0, Number(document.getElementById('institutionalUnitPrice')?.value || 0));
+  const tiers = [
+    { price: unitPrice, priceId: 'bulkTierPriceRetail', marginId: 'bulkTierMarginRetail', minimum: 1, label: 'Retail' },
+    { price: unitPrice * 0.87, priceId: 'bulkTierPriceStandard', marginId: 'bulkTierMarginStandard', minimum: 11, label: '13% savings' },
+    { price: unitPrice * 0.74, priceId: 'bulkTierPriceVolume', marginId: 'bulkTierMarginVolume', minimum: 51, label: '26% savings' }
+  ];
+  tiers.forEach(tier => {
+    const price = document.getElementById(tier.priceId);
+    const margin = document.getElementById(tier.marginId);
+    if (price) price.textContent = `₹${Math.round(tier.price).toLocaleString('en-IN')}`;
+    if (margin) margin.textContent = quantity >= tier.minimum ? tier.label : `Needs ${tier.minimum}+ units`;
+  });
 }
 
 // Handle Photo Selection

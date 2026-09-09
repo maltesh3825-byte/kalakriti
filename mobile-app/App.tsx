@@ -122,6 +122,13 @@ export default function App() {
   const [adminStatus, setAdminStatus] = useState('');
 
   const t = i18n[lang];
+  const bulkQuantityNumber = Math.max(0, Number(bulkQuantity) || 0);
+  const bulkUnitPriceNumber = Math.max(0, Number(bulkUnitPrice) || 0);
+  const bulkPricingTiers = [
+    { volume: '1-10 units', price: bulkUnitPriceNumber, minimum: 1, margin: 'Retail' },
+    { volume: '11-50 units', price: bulkUnitPriceNumber * 0.87, minimum: 11, margin: '13% savings' },
+    { volume: '50+ units', price: bulkUnitPriceNumber * 0.74, minimum: 51, margin: '26% savings' }
+  ];
 
   useEffect(() => {
     loadProducts();
@@ -1208,8 +1215,26 @@ export default function App() {
             <Text style={styles.stepLabel}>STEP 2</Text>
             <Text style={styles.profileSectionTitle}>Make your request buyer-ready</Text>
             <Text style={styles.bulkHelpText}>Prepare pricing and marketplace-ready information before contacting buyers.</Text>
+            <View style={styles.bulkPricingCard}>
+              <View style={styles.bulkPricingHeader}>
+                <Text style={styles.bulkPricingTitle}>Dynamic Pricing & Quantity Tiers</Text>
+                <Text style={styles.bulkPricingBadge}>Wholesale Ready</Text>
+              </View>
+              <Text style={styles.bulkPricingHint}>
+                Based on {bulkQuantityNumber || 0} units at ₹{bulkUnitPriceNumber.toLocaleString('en-IN')} base price
+              </Text>
+              {bulkPricingTiers.map(tier => (
+                <View key={tier.volume} style={styles.bulkPricingRow}>
+                  <Text style={styles.bulkPricingVolume}>{tier.volume}</Text>
+                  <Text style={styles.bulkPricingPrice}>₹{Math.round(tier.price).toLocaleString('en-IN')}</Text>
+                  <Text style={[styles.bulkPricingMargin, bulkQuantityNumber < tier.minimum && styles.bulkPricingUnavailable]}>
+                    {bulkQuantityNumber >= tier.minimum ? tier.margin : `Needs ${tier.minimum}+`}
+                  </Text>
+                </View>
+              ))}
+            </View>
             <View style={styles.bulkToolRow}>
-              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('Bulk pricing', `Suggested tier: ₹${Math.max(1, Number(bulkUnitPrice) - 20)} per unit for ${bulkQuantity} units.`)}>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('Bulk pricing', `Suggested tier: ₹${Math.round(bulkPricingTiers[bulkQuantityNumber >= 51 ? 2 : bulkQuantityNumber >= 11 ? 1 : 0].price).toLocaleString('en-IN')} per unit for ${bulkQuantityNumber} units.`)}>
                 <Text style={styles.bulkToolText}>📊 Bulk pricing calculator</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('RFQ pitch', `Create a buyer pitch for ${bulkCategory}, ${bulkQuantity} units at ₹${bulkUnitPrice} each.`)}>
@@ -2192,6 +2217,67 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 8,
+  },
+  bulkPricingCard: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 14,
+    backgroundColor: Colors.background,
+    padding: 12,
+    marginBottom: 12,
+  },
+  bulkPricingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 6,
+  },
+  bulkPricingTitle: {
+    flex: 1,
+    color: Colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  bulkPricingBadge: {
+    color: Colors.accent,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  bulkPricingHint: {
+    color: Colors.textSecondary,
+    fontSize: 11,
+    marginBottom: 8,
+  },
+  bulkPricingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    paddingVertical: 9,
+    gap: 6,
+  },
+  bulkPricingVolume: {
+    flex: 1.2,
+    color: Colors.textPrimary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  bulkPricingPrice: {
+    flex: 0.8,
+    color: Colors.textPrimary,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  bulkPricingMargin: {
+    flex: 1,
+    color: Colors.success,
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
+  bulkPricingUnavailable: {
+    color: Colors.textSecondary,
   },
   bulkToolButton: {
     flex: 1,
