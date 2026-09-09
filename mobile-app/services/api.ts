@@ -4,15 +4,12 @@
  */
 import Constants from 'expo-constants';
 
-const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
-const discoveredBackendUrl = expoHost ? `http://${expoHost}:8000` : 'http://127.0.0.1:8000';
-
 // Override through a public Expo environment variable for deployed backends.
 // Example: EXPO_PUBLIC_BACKEND_URL=https://your-render-app.onrender.com
 const configuredBackendUrl =
   Constants.expoConfig?.extra?.backendUrl ||
   process.env.EXPO_PUBLIC_BACKEND_URL ||
-  discoveredBackendUrl;
+  'https://kalakriti-api-nmnz.onrender.com';
 
 export const BACKEND_URL = configuredBackendUrl;
 
