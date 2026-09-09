@@ -25,6 +25,10 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import * as Speech from 'expo-speech';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors } from './constants/Colors';
@@ -79,6 +83,8 @@ export default function App() {
   const [artisanLocation, setArtisanLocation] = useState('Madhubani, Bihar');
   const [artisanPhone, setArtisanPhone] = useState('+919876543210');
   const [artisanNotes, setArtisanNotes] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState('');
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
 
@@ -142,6 +148,27 @@ export default function App() {
     { volume: '11-50 units', price: bulkUnitPriceNumber * 0.87, minimum: 11, margin: '13% savings' },
     { volume: '50+ units', price: bulkUnitPriceNumber * 0.74, minimum: 51, margin: '26% savings' }
   ];
+
+  useSpeechRecognitionEvent('start', () => {
+    setIsListening(true);
+    setSpeechError('');
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setIsListening(false);
+  });
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results[0]?.transcript?.trim();
+    if (transcript) {
+      setArtisanNotes(transcript);
+    }
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    setIsListening(false);
+    setSpeechError(event.message || event.error);
+  });
 
   useEffect(() => {
     loadProducts();
@@ -546,6 +573,31 @@ export default function App() {
     }
   };
 
+  const toggleVoiceInput = async () => {
+    if (isListening) {
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+
+    setSpeechError('');
+    try {
+      const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permission.granted) {
+        setSpeechError(tx('voicePermissionDenied'));
+        return;
+      }
+
+      ExpoSpeechRecognitionModule.start({
+        lang: 'kn-IN',
+        interimResults: true,
+        continuous: false,
+        maxAlternatives: 1,
+      });
+    } catch (error) {
+      setSpeechError(error instanceof Error ? error.message : tx('voiceError'));
+    }
+  };
+
   // Add Tag
   const handleAddTag = () => {
     const trimmed = newTag.trim().replace(/^#/, '');
@@ -897,7 +949,17 @@ export default function App() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>{t.artisanNotes}</Text>
+                  <View style={styles.inputLabelRow}>
+                    <Text style={styles.inputLabel}>{t.artisanNotes}</Text>
+                    <TouchableOpacity
+                      style={[styles.voiceButton, isListening && styles.voiceButtonActive]}
+                      onPress={toggleVoiceInput}
+                    >
+                      <Text style={styles.voiceButtonText}>
+                        {isListening ? `⏹️ ${tx('voiceListening')}` : `🎙️ ${tx('voiceInput')}`}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                   <TextInput 
                     style={[styles.textInput, styles.textArea]} 
                     value={artisanNotes} 
@@ -905,6 +967,8 @@ export default function App() {
                     multiline 
                     placeholder={t.artisanNotesPlaceholder} 
                   />
+                  <Text style={styles.voiceHint}>{tx('voiceTranslationHint')}</Text>
+                  {speechError ? <Text style={styles.errorText}>{speechError}</Text> : null}
                 </View>
               </View>
 
@@ -2107,6 +2171,39 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginBottom: 4,
     textTransform: 'uppercase',
+  },
+  inputLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  voiceButton: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FDBA74',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  voiceButtonActive: {
+    backgroundColor: '#FFEDD5',
+    borderColor: Colors.primary,
+  },
+  voiceButtonText: {
+    color: Colors.primary,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  voiceHint: {
+    color: Colors.textSecondary,
+    fontSize: 10,
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#B91C1C',
+    fontSize: 11,
+    marginTop: 4,
   },
   textInput: {
     backgroundColor: '#F8FAFC',

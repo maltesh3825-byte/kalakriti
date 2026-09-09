@@ -95,6 +95,7 @@ Your mission is to empower low-literacy artisans by analyzing their handmade cra
 Context from artisan (if any):
 - Artisan Voice/Text Notes: "{artisan_notes or 'None provided'}"
 - Artisan Self-Price Idea: "{artisan_input_price or 'Not specified'}"
+If the artisan notes are spoken or written in Kannada (or another Indian language), interpret and translate them into natural English before using them in the English catalog title and description.
 
 Analyze the product image with high attention to Indian heritage craftsmanship (handloom, terracotta, metal, bamboo, wood, embroidery, etc.).
 
