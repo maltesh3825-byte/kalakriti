@@ -473,3 +473,54 @@ export const additionalTranslations: Record<Exclude<Language, keyof typeof i18n>
     removeFromWishlist: 'सहेजल बा'
   }
 };
+
+export type AppTextKey =
+  | 'homeTitle' | 'homeSubtitle' | 'startCataloging' | 'exploreCrafts' | 'connectedPaths'
+  | 'forArtisans' | 'artisanPath' | 'forBuyers' | 'buyerPath' | 'aiCataloging' | 'aiCatalogingText'
+  | 'bulkTab' | 'accountTab' | 'bulkHero' | 'bulkTitle' | 'bulkSubtitle' | 'step'
+  | 'createBulkRequest' | 'bulkHelp' | 'submitRfq' | 'saveDraft' | 'restoreDraft'
+  | 'buyerReady' | 'buyerReadyHelp' | 'pricingTiers' | 'wholesaleReady' | 'basedOn'
+  | 'connectChannels' | 'connectHelp' | 'emailSupport' | 'account' | 'profile' | 'history'
+  | 'requests' | 'notifications' | 'admin' | 'publishedListings' | 'savedCrafts' | 'logout'
+  | 'activityHistory' | 'purchaseOrders' | 'publishedListing' | 'ordersByMe' | 'noActiveOrders'
+  | 'cancelOrder' | 'ordersPublishedByMe' | 'noPublishedProducts' | 'recentActivity';
+
+const englishAppText: Record<AppTextKey, string> = {
+  homeTitle: 'Empowering Rural Artisans with AI-Driven Market Linkage',
+  homeSubtitle: 'Connect craftspeople directly to retail buyers, corporate procurement, and government institutions.',
+  startCataloging: 'Start Cataloging', exploreCrafts: 'Explore Crafts', connectedPaths: 'Two connected pathways',
+  forArtisans: 'For Artisans', artisanPath: 'Snap a photo, generate a catalog with AI, and publish directly to buyers.',
+  forBuyers: 'For Buyers & Institutions', buyerPath: 'Browse verified crafts or send bulk and institutional sourcing requests.',
+  aiCataloging: 'AI-powered cataloging', aiCatalogingText: 'Vision, voice, pricing and market linkage',
+  bulkTab: 'Bulk', accountTab: 'Account', bulkHero: '🏛️ Institutional Market Linkage',
+  bulkTitle: 'Turn your craft inventory into bulk opportunities.',
+  bulkSubtitle: 'Prepare a buyer-ready RFQ, share your catalog with institutions, and get guidance for government procurement channels.',
+  step: 'STEP', createBulkRequest: 'Create a bulk buyer request',
+  bulkHelp: 'Tell us what you can supply so the team can follow up with buyer introductions.',
+  submitRfq: 'Submit RFQ for follow-up', saveDraft: 'Save RFQ as offline draft', restoreDraft: 'Restore latest bulk draft',
+  buyerReady: 'Make your request buyer-ready', buyerReadyHelp: 'Prepare pricing and marketplace-ready information before contacting buyers.',
+  pricingTiers: 'Dynamic Pricing & Quantity Tiers', wholesaleReady: 'Wholesale Ready', basedOn: 'Based on',
+  connectChannels: 'Connect with procurement channels',
+  connectHelp: 'Open official channels or contact KalaSetu support for registration and buyer approval guidance.',
+  emailSupport: 'Email KalaSetu support', account: 'My KalaSetu Account', profile: 'Profile', history: 'History',
+  requests: 'Requests', notifications: 'Notifications', admin: 'Admin', publishedListings: 'Published listings',
+  savedCrafts: 'Saved crafts', logout: 'Log out', activityHistory: 'Activity history',
+  purchaseOrders: 'purchase order(s)', publishedListing: 'published listing(s)', ordersByMe: 'Orders requested by me',
+  noActiveOrders: 'No active purchase requests.', cancelOrder: 'Cancel order',
+  ordersPublishedByMe: 'Orders published by me', noPublishedProducts: 'No products published by you yet.',
+  recentActivity: 'Recent activity'
+};
+
+const regionalAppText: Record<Exclude<Language, 'en'>, Partial<Record<AppTextKey, string>>> = {
+  hi: { homeTitle: 'एआई से ग्रामीण कारीगरों को बाजार से जोड़ना', homeSubtitle: 'कारीगरों को खरीदारों, कंपनियों और सरकारी संस्थानों से सीधे जोड़ें।', startCataloging: 'कैटलॉग शुरू करें', exploreCrafts: 'शिल्प देखें', connectedPaths: 'दो जुड़े हुए रास्ते', forArtisans: 'कारीगरों के लिए', forBuyers: 'खरीदारों और संस्थानों के लिए', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'अपने शिल्प भंडार को थोक अवसरों में बदलें।', submitRfq: 'RFQ भेजें', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजें', pricingTiers: 'गतिशील मूल्य और मात्रा स्तर', account: 'मेरा कलासेतु खाता', profile: 'प्रोफ़ाइल', history: 'इतिहास', requests: 'अनुरोध', notifications: 'सूचनाएं', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास', ordersByMe: 'मेरे ऑर्डर', ordersPublishedByMe: 'मेरे प्रकाशित ऑर्डर' },
+  ta: { homeTitle: 'AI மூலம் கிராமப்புற கைவினைஞர்களை சந்தையுடன் இணைத்தல்', startCataloging: 'பட்டியல் தொடங்கு', exploreCrafts: 'கைவினைகளை காண்க', connectedPaths: 'இரண்டு இணைந்த பாதைகள்', forArtisans: 'கைவினைஞர்களுக்கு', forBuyers: 'வாங்குபவர்கள் மற்றும் நிறுவனங்களுக்கு', bulkTab: 'மொத்தம்', accountTab: 'கணக்கு', bulkTitle: 'உங்கள் கைவினைப் பொருட்களை மொத்த வாய்ப்புகளாக மாற்றுங்கள்.', submitRfq: 'RFQ சமர்ப்பிக்கவும்', saveDraft: 'ஆஃப்லைன் வரைவை சேமிக்கவும்', pricingTiers: 'மாறும் விலை மற்றும் அளவு நிலைகள்', account: 'என் கலாசேது கணக்கு', profile: 'சுயவிவரம்', history: 'வரலாறு', requests: 'கோரிக்கைகள்', notifications: 'அறிவிப்புகள்', admin: 'நிர்வாகம்', logout: 'வெளியேறு', activityHistory: 'செயல் வரலாறு' },
+  kn: { homeTitle: 'AI ಮೂಲಕ ಗ್ರಾಮೀಣ ಕಲಾವಿದರನ್ನು ಮಾರುಕಟ್ಟೆಗೆ ಸಂಪರ್ಕಿಸುವುದು', startCataloging: 'ಕ್ಯಾಟಲಾಗ್ ಪ್ರಾರಂಭಿಸಿ', exploreCrafts: 'ಕಲೆಗಳನ್ನು ನೋಡಿ', connectedPaths: 'ಎರಡು ಸಂಪರ್ಕಿತ ಮಾರ್ಗಗಳು', forArtisans: 'ಕಲಾವಿದರಿಗೆ', forBuyers: 'ಖರೀದಿದಾರರು ಮತ್ತು ಸಂಸ್ಥೆಗಳಿಗೆ', bulkTab: 'ಸಗಟು', accountTab: 'ಖಾತೆ', bulkTitle: 'ನಿಮ್ಮ ಕಲೆ ಸಂಗ್ರಹವನ್ನು ಸಗಟು ಅವಕಾಶಗಳಾಗಿ ಬದಲಿಸಿ.', submitRfq: 'RFQ ಸಲ್ಲಿಸಿ', saveDraft: 'ಆಫ್‌ಲೈನ್ ಕರಡು ಉಳಿಸಿ', pricingTiers: 'ಚಲನಶೀಲ ಬೆಲೆ ಮತ್ತು ಪ್ರಮಾಣ ಹಂತಗಳು', account: 'ನನ್ನ ಕಲಾಸೇತು ಖಾತೆ', profile: 'ಪ್ರೊಫೈಲ್', history: 'ಇತಿಹಾಸ', requests: 'ವಿನಂತಿಗಳು', notifications: 'ಅಧಿಸೂಚನೆಗಳು', admin: 'ನಿರ್ವಾಹಕ', logout: 'ಲಾಗ್ ಔಟ್', activityHistory: 'ಚಟುವಟಿಕೆ ಇತಿಹಾಸ' },
+  te: { homeTitle: 'AIతో గ్రామీణ కళాకారులను మార్కెట్‌కు అనుసంధానం చేయడం', startCataloging: 'కేటలాగ్ ప్రారంభించండి', exploreCrafts: 'కళలను చూడండి', connectedPaths: 'రెండు అనుసంధాన మార్గాలు', forArtisans: 'కళాకారుల కోసం', forBuyers: 'కొనుగోలుదారులు మరియు సంస్థల కోసం', bulkTab: 'బల్క్', accountTab: 'ఖాతా', bulkTitle: 'మీ కళా నిల్వను బల్క్ అవకాశాలుగా మార్చండి.', submitRfq: 'RFQ పంపండి', saveDraft: 'ఆఫ్‌లైన్ డ్రాఫ్ట్ సేవ్ చేయండి', pricingTiers: 'డైనమిక్ ధరలు మరియు పరిమాణ స్థాయిలు', account: 'నా కలాసేతు ఖాతా', profile: 'ప్రొఫైల్', history: 'చరిత్ర', requests: 'అభ్యర్థనలు', notifications: 'నోటిఫికేషన్లు', admin: 'అడ్మిన్', logout: 'లాగ్ అవుట్', activityHistory: 'చర్యల చరిత్ర' },
+  ml: { homeTitle: 'AI ഉപയോഗിച്ച് ഗ്രാമീണ കലാകാരന്മാരെ വിപണിയുമായി ബന്ധിപ്പിക്കുന്നു', startCataloging: 'കാറ്റലോഗ് ആരംഭിക്കുക', exploreCrafts: 'കരകൗശലങ്ങൾ കാണുക', connectedPaths: 'രണ്ട് ബന്ധിപ്പിച്ച വഴികൾ', forArtisans: 'കലാകാരന്മാർക്ക്', forBuyers: 'വാങ്ങുന്നവർക്കും സ്ഥാപനങ്ങൾക്കും', bulkTab: 'ബൾക്ക്', accountTab: 'അക്കൗണ്ട്', bulkTitle: 'നിങ്ങളുടെ കരകൗശല ശേഖരം ബൾക്ക് അവസരങ്ങളാക്കുക.', submitRfq: 'RFQ സമർപ്പിക്കുക', saveDraft: 'ഓഫ്‌ലൈൻ ഡ്രാഫ്റ്റ് സംരക്ഷിക്കുക', pricingTiers: 'ഡൈനാമിക് വിലയും അളവ് തലങ്ങളും', account: 'എന്റെ കലാസേതു അക്കൗണ്ട്', profile: 'പ്രൊഫൈൽ', history: 'ചരിത്രം', requests: 'അഭ്യർത്ഥനകൾ', notifications: 'അറിയിപ്പുകൾ', admin: 'അഡ്മിൻ', logout: 'പുറത്തുകടക്കുക', activityHistory: 'പ്രവർത്തന ചരിത്രം' },
+  mr: { homeTitle: 'AI द्वारे ग्रामीण कारागिरांना बाजारपेठेशी जोडणे', startCataloging: 'कॅटलॉग सुरू करा', exploreCrafts: 'कलाकृती पहा', connectedPaths: 'दोन जोडलेले मार्ग', forArtisans: 'कारागिरांसाठी', forBuyers: 'खरेदीदार आणि संस्थांसाठी', bulkTab: 'घाऊक', accountTab: 'खाते', bulkTitle: 'तुमचा हस्तकला साठा घाऊक संधींमध्ये बदला.', submitRfq: 'RFQ पाठवा', saveDraft: 'ऑफलाइन मसुदा जतन करा', pricingTiers: 'डायनॅमिक किंमत आणि प्रमाण स्तर', account: 'माझे कलासेतू खाते', profile: 'प्रोफाइल', history: 'इतिहास', requests: 'विनंत्या', notifications: 'सूचना', admin: 'अॅडमिन', logout: 'लॉग आउट', activityHistory: 'कृती इतिहास' },
+  bh: { homeTitle: 'AI से गाँव के कारीगरन के बाजार से जोड़े के काम', startCataloging: 'कैटलॉग शुरू करीं', exploreCrafts: 'शिल्प देखीं', connectedPaths: 'दू गो जुड़ल रास्ता', forArtisans: 'कारीगर खातिर', forBuyers: 'खरीदार आ संस्था खातिर', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'आपन शिल्प के थोक मौका में बदलीं.', submitRfq: 'RFQ भेजीं', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजीं', pricingTiers: 'बदलत दाम आ मात्रा स्तर', account: 'हमार कलासेतु खाता', profile: 'प्रोफाइल', history: 'इतिहास', requests: 'निवेदन', notifications: 'सूचना', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास' },
+  bho: { homeTitle: 'AI से गाँव के कारीगरन के बाजार से जोड़े के काम', startCataloging: 'कैटलॉग शुरू करीं', exploreCrafts: 'शिल्प देखीं', connectedPaths: 'दू गो जुड़ल रास्ता', forArtisans: 'कारीगर खातिर', forBuyers: 'खरीदार आ संस्था खातिर', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'आपन कारीगरी के थोक मौका में बदलीं.', submitRfq: 'RFQ भेजीं', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजीं', pricingTiers: 'बदलत दाम आ मात्रा स्तर', account: 'हमार कलासेतु खाता', profile: 'प्रोफाइल', history: 'इतिहास', requests: 'निवेदन', notifications: 'सूचना', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास' }
+};
+
+export const getAppText = (language: Language, key: AppTextKey): string =>
+  (language === 'en' ? undefined : regionalAppText[language]?.[key]) || englishAppText[key];

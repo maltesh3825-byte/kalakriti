@@ -28,7 +28,7 @@ import * as Speech from 'expo-speech';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors } from './constants/Colors';
-import { i18n, additionalTranslations, Language } from './constants/i18n';
+import { i18n, additionalTranslations, getAppText, Language } from './constants/i18n';
 import {
   CraftProduct,
   AiAnalysisResult,
@@ -124,6 +124,7 @@ export default function App() {
   const [adminStatus, setAdminStatus] = useState('');
 
   const t = { ...i18n, ...additionalTranslations }[lang];
+  const tx = (key: Parameters<typeof getAppText>[1]) => getAppText(lang, key);
   const languageOptions: Array<[Language, string]> = [
     ['en', 'English'], ['hi', 'हिंदी'], ['kn', 'ಕನ್ನಡ'], ['te', 'తెలుగు'],
     ['ml', 'മലയാളം'], ['mr', 'मराठी'], ['ta', 'தமிழ்'], ['bh', 'बिहारी'], ['bho', 'भोजपुरी']
@@ -708,14 +709,14 @@ export default function App() {
           <View style={styles.homeContainer}>
             <View style={styles.homeHero}>
               <Text style={styles.homeKicker}>KalaSetu x SIH26090</Text>
-              <Text style={styles.homeTitle}>Empowering Rural Artisans with AI-Driven Market Linkage</Text>
-              <Text style={styles.homeSubtitle}>Connect craftspeople directly to retail buyers, corporate procurement, and government institutions.</Text>
+              <Text style={styles.homeTitle}>{tx('homeTitle')}</Text>
+              <Text style={styles.homeSubtitle}>{tx('homeSubtitle')}</Text>
               <View style={styles.homeActionRow}>
                 <TouchableOpacity style={styles.primaryAction} onPress={() => setActiveTab('studio')}>
-                  <Text style={styles.primaryActionText}>Start Cataloging</Text>
+                  <Text style={styles.primaryActionText}>{tx('startCataloging')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.secondaryAction} onPress={() => setActiveTab('market')}>
-                  <Text style={styles.secondaryActionText}>Explore Crafts</Text>
+                  <Text style={styles.secondaryActionText}>{tx('exploreCrafts')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -723,23 +724,23 @@ export default function App() {
               <Image source={{ uri: 'https://images.unsplash.com/photo-1577083288073-40892c0860a4?auto=format&fit=crop&w=1200&q=80' }} style={styles.homeImage} />
               <Text style={styles.homeImageCaption}>Terracotta • Madhubani • Dhokra • Verified Origin</Text>
             </View>
-            <Text style={styles.homeSectionTitle}>Two connected pathways</Text>
+            <Text style={styles.homeSectionTitle}>{tx('connectedPaths')}</Text>
             <View style={styles.homeFeatureGrid}>
               <View style={styles.homeFeatureCard}>
                 <Text style={styles.homeFeatureIcon}>🪡</Text>
-                <Text style={styles.homeFeatureTitle}>For Artisans</Text>
-                <Text style={styles.homeFeatureText}>Snap a photo, generate a catalog with AI, and publish directly to buyers.</Text>
+                <Text style={styles.homeFeatureTitle}>{tx('forArtisans')}</Text>
+                <Text style={styles.homeFeatureText}>{tx('artisanPath')}</Text>
               </View>
               <View style={styles.homeFeatureCard}>
                 <Text style={styles.homeFeatureIcon}>🏛️</Text>
-                <Text style={styles.homeFeatureTitle}>For Buyers & Institutions</Text>
-                <Text style={styles.homeFeatureText}>Browse verified crafts or send bulk and institutional sourcing requests.</Text>
+                <Text style={styles.homeFeatureTitle}>{tx('forBuyers')}</Text>
+                <Text style={styles.homeFeatureText}>{tx('buyerPath')}</Text>
               </View>
             </View>
-            <Text style={styles.homeSectionTitle}>AI-powered cataloging</Text>
+            <Text style={styles.homeSectionTitle}>{tx('aiCataloging')}</Text>
             <View style={styles.homeFeatureCard}>
-              <Text style={styles.homeFeatureTitle}>Vision, voice, pricing and market linkage</Text>
-              <Text style={styles.homeFeatureText}>Gemini helps identify materials, write bilingual descriptions, suggest fair prices, and connect every listing to the marketplace.</Text>
+              <Text style={styles.homeFeatureTitle}>{tx('aiCatalogingText')}</Text>
+              <Text style={styles.homeFeatureText}>{tx('homeSubtitle')}</Text>
             </View>
           </View>
         ) : activeTab === 'studio' ? (
@@ -1220,18 +1221,18 @@ export default function App() {
         ) : activeTab === 'institutional' ? (
         <View style={styles.marketContainer}>
           <View style={styles.institutionalHero}>
-            <Text style={styles.institutionalKicker}>🏛️ Institutional Market Linkage</Text>
-            <Text style={styles.institutionalTitle}>Turn your craft inventory into bulk opportunities.</Text>
-            <Text style={styles.institutionalSubtitle}>Prepare a buyer-ready RFQ, share your catalog with institutions, and get guidance for government procurement channels.</Text>
+            <Text style={styles.institutionalKicker}>{tx('bulkHero')}</Text>
+            <Text style={styles.institutionalTitle}>{tx('bulkTitle')}</Text>
+            <Text style={styles.institutionalSubtitle}>{tx('bulkSubtitle')}</Text>
           </View>
           <View style={styles.card}>
-            <Text style={styles.stepLabel}>STEP 1</Text>
-            <Text style={styles.profileSectionTitle}>Create a bulk buyer request</Text>
-            <Text style={styles.bulkHelpText}>Tell us what you can supply so the team can follow up with buyer introductions.</Text>
-            <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder="Artisan / cluster name" editable={!isLoggedIn} />
-            <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder="Email for follow-up" keyboardType="email-address" editable={!isLoggedIn} />
-            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Preferred target buyer" />
-            <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder="Product category" />
+            <Text style={styles.stepLabel}>{tx('step')} 1</Text>
+            <Text style={styles.profileSectionTitle}>{tx('createBulkRequest')}</Text>
+            <Text style={styles.bulkHelpText}>{tx('bulkHelp')}</Text>
+            <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder={t.fullName} editable={!isLoggedIn} />
+            <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder={`${t.email} for follow-up`} keyboardType="email-address" editable={!isLoggedIn} />
+            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('forBuyers')} />
+            <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder={t.category} />
             <View style={styles.bulkInputRow}>
               <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkQuantity} onChangeText={setBulkQuantity} placeholder="Quantity" keyboardType="numeric" />
               <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkUnitPrice} onChangeText={setBulkUnitPrice} placeholder="Unit price (₹)" keyboardType="numeric" />
@@ -1239,28 +1240,28 @@ export default function App() {
             <TextInput style={styles.textInput} value={bulkLeadTime} onChangeText={setBulkLeadTime} placeholder="Production / dispatch lead time" />
             <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Packaging, customization, certifications, quality sample notes..." />
             <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
-              <Text style={styles.primaryActionText}>Submit RFQ for follow-up</Text>
+              <Text style={styles.primaryActionText}>{tx('submitRfq')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryButton} onPress={saveBulkDraft}>
-              <Text style={styles.secondaryButtonText}>Save RFQ as offline draft</Text>
+              <Text style={styles.secondaryButtonText}>{tx('saveDraft')}</Text>
             </TouchableOpacity>
             {bulkDrafts.length > 0 && (
               <View>
                 <Text style={styles.helperText}>{bulkDrafts.length} bulk draft(s) saved on this device.</Text>
                 <TouchableOpacity onPress={() => restoreBulkDraft(bulkDrafts[0])}>
-                  <Text style={styles.offlineDraftRestore}>Restore latest bulk draft</Text>
+                  <Text style={styles.offlineDraftRestore}>{tx('restoreDraft')}</Text>
                 </TouchableOpacity>
               </View>
             )}
           </View>
           <View style={styles.card}>
-            <Text style={styles.stepLabel}>STEP 2</Text>
-            <Text style={styles.profileSectionTitle}>Make your request buyer-ready</Text>
-            <Text style={styles.bulkHelpText}>Prepare pricing and marketplace-ready information before contacting buyers.</Text>
+            <Text style={styles.stepLabel}>{tx('step')} 2</Text>
+            <Text style={styles.profileSectionTitle}>{tx('buyerReady')}</Text>
+            <Text style={styles.bulkHelpText}>{tx('buyerReadyHelp')}</Text>
             <View style={styles.bulkPricingCard}>
               <View style={styles.bulkPricingHeader}>
-                <Text style={styles.bulkPricingTitle}>Dynamic Pricing & Quantity Tiers</Text>
-                <Text style={styles.bulkPricingBadge}>Wholesale Ready</Text>
+                <Text style={styles.bulkPricingTitle}>{tx('pricingTiers')}</Text>
+                <Text style={styles.bulkPricingBadge}>{tx('wholesaleReady')}</Text>
               </View>
               <Text style={styles.bulkPricingHint}>
                 Based on {bulkQuantityNumber || 0} units at ₹{bulkUnitPriceNumber.toLocaleString('en-IN')} base price
@@ -1303,16 +1304,16 @@ export default function App() {
             </View>
           </View>
           <View style={styles.card}>
-            <Text style={styles.stepLabel}>STEP 3</Text>
-            <Text style={styles.profileSectionTitle}>Connect with procurement channels</Text>
-            <Text style={styles.bulkHelpText}>Open official channels or contact KalaSetu support for registration and buyer approval guidance.</Text>
+            <Text style={styles.stepLabel}>{tx('step')} 3</Text>
+            <Text style={styles.profileSectionTitle}>{tx('connectChannels')}</Text>
+            <Text style={styles.bulkHelpText}>{tx('connectHelp')}</Text>
             <View style={styles.bulkChannelRow}>
               <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://gem.gov.in/')}><Text style={styles.bulkToolText}>GeM ↗</Text></TouchableOpacity>
               <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://ondc.org/')}><Text style={styles.bulkToolText}>ONDC ↗</Text></TouchableOpacity>
               <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://trifed.tribal.gov.in/')}><Text style={styles.bulkToolText}>TRIFED ↗</Text></TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.secondaryAction} onPress={() => openBulkChannel('mailto:kalasetu24824.9@gmail.com?subject=KalaSetu%20Bulk%20Buyer%20Support')}>
-              <Text style={styles.secondaryActionText}>Email KalaSetu support</Text>
+              <Text style={styles.secondaryActionText}>{tx('emailSupport')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1330,13 +1331,13 @@ export default function App() {
               </View>
             ) : (
               <View style={styles.profileCard}>
-                <Text style={styles.marketHeroTitle}>My KalaSetu Account</Text>
+                <Text style={styles.marketHeroTitle}>{tx('account')}</Text>
                 <Text style={styles.profileName}>{currentUser?.name}</Text>
                 <Text style={styles.profileMeta}>{currentUser?.email} · {currentUser?.city}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountSubnav}>
                   {([
-                    ['profile', 'Profile'], ['history', 'History'], ['orders', 'Orders'],
-                    ['requests', 'Requests'], ['wishlist', 'Wishlist'], ['notifications', 'Notifications'], ['admin', 'Admin']
+                    ['profile', tx('profile')], ['history', tx('history')], ['orders', t.tabOrders],
+                    ['requests', tx('requests')], ['wishlist', t.tabWishlist], ['notifications', tx('notifications')], ['admin', tx('admin')]
                   ] as const).map(([key, label]) => (
                     <TouchableOpacity key={key} style={[styles.accountSubnavButton, accountView === key && styles.accountSubnavButtonActive]} onPress={() => setAccountView(key)}>
                       <Text style={[styles.accountSubnavText, accountView === key && styles.accountSubnavTextActive]}>{label}</Text>
@@ -1345,33 +1346,33 @@ export default function App() {
                 </ScrollView>
                 {accountView === 'profile' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Profile</Text>
+                    <Text style={styles.profileSectionTitle}>{tx('profile')}</Text>
                     <Text style={styles.notificationText}>Role: {currentUser?.role || 'both'} · Seller & Buyer</Text>
-                    <Text style={styles.notificationText}>Published listings: {publishedProducts.length}</Text>
-                    <Text style={styles.notificationText}>Saved crafts: {wishlist.length}</Text>
-                    <TouchableOpacity style={styles.secondaryAction} onPress={handleLogout}><Text style={styles.secondaryActionText}>Log out</Text></TouchableOpacity>
+                    <Text style={styles.notificationText}>{tx('publishedListings')}: {publishedProducts.length}</Text>
+                    <Text style={styles.notificationText}>{tx('savedCrafts')}: {wishlist.length}</Text>
+                    <TouchableOpacity style={styles.secondaryAction} onPress={handleLogout}><Text style={styles.secondaryActionText}>{tx('logout')}</Text></TouchableOpacity>
                   </View>
                 )}
                 {accountView === 'history' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Activity history</Text>
-                    <Text style={styles.notificationText}>{orders.length} purchase order(s)</Text>
-                    <Text style={styles.notificationText}>{publishedProducts.length} published listing(s)</Text>
+                    <Text style={styles.profileSectionTitle}>{tx('activityHistory')}</Text>
+                    <Text style={styles.notificationText}>{orders.length} {tx('purchaseOrders')}</Text>
+                    <Text style={styles.notificationText}>{publishedProducts.length} {tx('publishedListing')}</Text>
                     {orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>• {order.productName} — {order.status}</Text>)}
                     {publishedProducts.slice(0, 5).map(product => <Text key={`published-${product.id}`} style={styles.notificationText}>• Published: {product.name} — ₹{product.price}</Text>)}
                   </View>
                 )}
                 {accountView === 'orders' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Orders requested by me</Text>
-                    {orders.filter(order => order.status.toLowerCase() !== 'cancelled').length === 0 ? <Text style={styles.emptyStateText}>No active purchase requests.</Text> : orders.filter(order => order.status.toLowerCase() !== 'cancelled').map(order => (
+                    <Text style={styles.profileSectionTitle}>{tx('ordersByMe')}</Text>
+                    {orders.filter(order => order.status.toLowerCase() !== 'cancelled').length === 0 ? <Text style={styles.emptyStateText}>{tx('noActiveOrders')}</Text> : orders.filter(order => order.status.toLowerCase() !== 'cancelled').map(order => (
                       <View key={order.id} style={styles.orderCard}>
                         <Text style={styles.orderTitle}>{order.productName}</Text>
                         <Text style={styles.orderMeta}>₹{order.price} · {order.status}</Text>
-                        <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}><Text style={styles.secondaryActionText}>Cancel order</Text></TouchableOpacity>
+                        <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}><Text style={styles.secondaryActionText}>{tx('cancelOrder')}</Text></TouchableOpacity>
                       </View>
                     ))}
-                    <Text style={styles.profileSectionTitle}>Orders published by me</Text>
+                    <Text style={styles.profileSectionTitle}>{tx('ordersPublishedByMe')}</Text>
                     {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}><Text style={styles.deleteProductButtonText}>Remove published order</Text></TouchableOpacity></View>)}
                   </View>
                 )}
@@ -1625,14 +1626,14 @@ export default function App() {
           style={[styles.tabButton, activeTab === 'institutional' && styles.tabButtonActive]}
           onPress={() => setActiveTab('institutional')}>
           <Text style={styles.tabIcon}>🏛️</Text>
-          <Text style={[styles.tabText, activeTab === 'institutional' && styles.tabTextActive]}>Bulk</Text>
+          <Text style={[styles.tabText, activeTab === 'institutional' && styles.tabTextActive]}>{tx('bulkTab')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'account' && styles.tabButtonActive]}
           onPress={() => setActiveTab('account')}>
           <Text style={styles.tabIcon}>👤</Text>
-          <Text style={[styles.tabText, activeTab === 'account' && styles.tabTextActive]}>Account</Text>
+          <Text style={[styles.tabText, activeTab === 'account' && styles.tabTextActive]}>{tx('accountTab')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
