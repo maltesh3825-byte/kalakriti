@@ -62,6 +62,10 @@ export default function App() {
   const [authRole, setAuthRole] = useState<UserRole>('buyer');
   const [bulkNeed, setBulkNeed] = useState('');
   const [bulkBuyerType, setBulkBuyerType] = useState('Retail / Institutional Buyer');
+  const [bulkCategory, setBulkCategory] = useState('Handloom & Textiles');
+  const [bulkQuantity, setBulkQuantity] = useState('100');
+  const [bulkUnitPrice, setBulkUnitPrice] = useState('250');
+  const [bulkLeadTime, setBulkLeadTime] = useState('7-15 working days');
 
   // Artisan Studio State
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -223,6 +227,12 @@ export default function App() {
       `Hello KalaSetu team,\n\nI want to connect with bulk buyers / institutional buyers for my craft.\n\nName: ${currentUser?.name || authName}\nEmail: ${currentUser?.email || authEmail}\nCity: ${currentUser?.city || artisanLocation}\nRequirement: ${bulkNeed || 'Need help connecting to institutional buyers and government e-marketplaces'}\nBuyer type: ${bulkBuyerType}\n\nPlease help me with bulk opportunities and procurement support.`
     );
     Linking.openURL(`mailto:kalasetu24824.9@gmail.com?subject=${subject}&body=${body}`);
+  };
+
+  const openBulkChannel = (url: string) => {
+    Linking.openURL(url).catch(() => {
+      Alert.alert('Link unavailable', 'Please open this channel from a browser.');
+    });
   };
 
   const handleCancelOrder = async (orderId: number) => {
@@ -938,21 +948,62 @@ export default function App() {
           </View>
         ) : activeTab === 'institutional' ? (
         <View style={styles.marketContainer}>
-          <Text style={styles.marketHeroTitle}>Bulk & Institutions</Text>
-          <Text style={styles.marketHeroSubtitle}>Connect with institutional buyers, corporate procurement teams, and government marketplace opportunities.</Text>
+          <View style={styles.institutionalHero}>
+            <Text style={styles.institutionalKicker}>🏛️ Institutional Market Linkage</Text>
+            <Text style={styles.institutionalTitle}>Turn your craft inventory into bulk opportunities.</Text>
+            <Text style={styles.institutionalSubtitle}>Prepare a buyer-ready RFQ, share your catalog with institutions, and get guidance for government procurement channels.</Text>
+          </View>
           <View style={styles.card}>
-            <Text style={styles.profileSectionTitle}>Submit a bulk sourcing request</Text>
-            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Buyer type" />
-            <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Describe your craft, quantity, and sourcing requirement" />
+            <Text style={styles.stepLabel}>STEP 1</Text>
+            <Text style={styles.profileSectionTitle}>Create a bulk buyer request</Text>
+            <Text style={styles.bulkHelpText}>Tell us what you can supply so the team can follow up with buyer introductions.</Text>
+            <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder="Artisan / cluster name" editable={!isLoggedIn} />
+            <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder="Email for follow-up" keyboardType="email-address" editable={!isLoggedIn} />
+            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Preferred target buyer" />
+            <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder="Product category" />
+            <View style={styles.bulkInputRow}>
+              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkQuantity} onChangeText={setBulkQuantity} placeholder="Quantity" keyboardType="numeric" />
+              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkUnitPrice} onChangeText={setBulkUnitPrice} placeholder="Unit price (₹)" keyboardType="numeric" />
+            </View>
+            <TextInput style={styles.textInput} value={bulkLeadTime} onChangeText={setBulkLeadTime} placeholder="Production / dispatch lead time" />
+            <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Packaging, customization, certifications, quality sample notes..." />
             <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
-              <Text style={styles.primaryActionText}>Email bulk request</Text>
+              <Text style={styles.primaryActionText}>Submit RFQ for follow-up</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.card}>
-            <Text style={styles.profileSectionTitle}>Procurement pathways</Text>
-            <Text style={styles.bulkRequestItem}>• Retail chain and corporate gifting RFQs</Text>
-            <Text style={styles.bulkRequestItem}>• Government and institutional supply notices</Text>
-            <Text style={styles.bulkRequestItem}>• Direct artisan lots with transparent pricing</Text>
+            <Text style={styles.stepLabel}>STEP 2</Text>
+            <Text style={styles.profileSectionTitle}>Make your request buyer-ready</Text>
+            <Text style={styles.bulkHelpText}>Prepare pricing and marketplace-ready information before contacting buyers.</Text>
+            <View style={styles.bulkToolRow}>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('Bulk pricing', `Suggested tier: ₹${Math.max(1, Number(bulkUnitPrice) - 20)} per unit for ${bulkQuantity} units.`)}>
+                <Text style={styles.bulkToolText}>📊 Bulk pricing calculator</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('RFQ pitch', `Create a buyer pitch for ${bulkCategory}, ${bulkQuantity} units at ₹${bulkUnitPrice} each.`)}>
+                <Text style={styles.bulkToolText}>✉️ Generate RFQ pitch</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.bulkToolRow}>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('GeM export', 'Your RFQ details are ready to be copied into a GeM-compliant CSV.')}>
+                <Text style={styles.bulkToolText}>📦 GeM-ready export</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('ONDC export', 'Your RFQ details are ready for an ONDC Beckn JSON payload.')}>
+                <Text style={styles.bulkToolText}>⚡ ONDC JSON</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.stepLabel}>STEP 3</Text>
+            <Text style={styles.profileSectionTitle}>Connect with procurement channels</Text>
+            <Text style={styles.bulkHelpText}>Open official channels or contact KalaSetu support for registration and buyer approval guidance.</Text>
+            <View style={styles.bulkChannelRow}>
+              <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://gem.gov.in/')}><Text style={styles.bulkToolText}>GeM ↗</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://ondc.org/')}><Text style={styles.bulkToolText}>ONDC ↗</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.bulkChannelButton} onPress={() => openBulkChannel('https://trifed.tribal.gov.in/')}><Text style={styles.bulkToolText}>TRIFED ↗</Text></TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.secondaryAction} onPress={() => openBulkChannel('mailto:kalasetu24824.9@gmail.com?subject=KalaSetu%20Bulk%20Buyer%20Support')}>
+              <Text style={styles.secondaryActionText}>Email KalaSetu support</Text>
+            </TouchableOpacity>
           </View>
         </View>
         ) : activeTab === 'account' ? (
@@ -1745,6 +1796,82 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 11,
     fontWeight: 'bold',
+  },
+  institutionalHero: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 14,
+  },
+  institutionalKicker: {
+    color: '#FDE68A',
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  institutionalTitle: {
+    color: '#FFFFFF',
+    fontSize: 23,
+    lineHeight: 29,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  institutionalSubtitle: {
+    color: '#CBD5E1',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  stepLabel: {
+    color: Colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 5,
+  },
+  bulkHelpText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  bulkInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  bulkHalfInput: {
+    flex: 1,
+  },
+  bulkToolRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  bulkToolButton: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    padding: 10,
+  },
+  bulkToolText: {
+    color: Colors.textPrimary,
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  bulkChannelRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
+  },
+  bulkChannelButton: {
+    flex: 1,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 10,
+    paddingVertical: 11,
   },
   marketHero: {
     backgroundColor: Colors.secondary,
