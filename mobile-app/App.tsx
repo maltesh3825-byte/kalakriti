@@ -48,7 +48,8 @@ import {
 
 export default function App() {
   // Navigation & Language State
-  const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'wishlist' | 'orders' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'account' | 'wishlist' | 'orders' | 'profile'>('home');
+  const [accountView, setAccountView] = useState<'profile' | 'history' | 'orders' | 'requests' | 'wishlist' | 'notifications'>('profile');
   const [lang, setLang] = useState<Language>('en');
 
   // Unified user account state
@@ -144,7 +145,7 @@ export default function App() {
   const toggleWishlist = (productId: number) => {
     if (!isLoggedIn) {
       Alert.alert('Sign in required', 'Please sign in to save products to your wishlist.');
-      setActiveTab('profile');
+      setActiveTab('account');
       return;
     }
 
@@ -156,7 +157,7 @@ export default function App() {
   const requestOrder = async (product: CraftProduct) => {
     if (!isLoggedIn || !currentUser) {
       Alert.alert('Sign in required', 'Please sign in to request an order.');
-      setActiveTab('profile');
+      setActiveTab('account');
       return;
     }
 
@@ -177,7 +178,8 @@ export default function App() {
 
     setOrders(prev => [order, ...prev]);
     Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
-    setActiveTab('orders');
+    setActiveTab('account');
+    setAccountView('orders');
   };
 
   const removeOwnProduct = async (product: CraftProduct) => {
@@ -226,7 +228,7 @@ export default function App() {
   const handleCancelOrder = async (orderId: number) => {
     if (!isLoggedIn) {
       Alert.alert('Sign in required', 'Please sign in to manage your orders.');
-      setActiveTab('profile');
+      setActiveTab('account');
       return;
     }
 
@@ -793,7 +795,7 @@ export default function App() {
             <View style={styles.bulkLeadCard}>
               <Text style={styles.bulkLeadTitle}>Bulk & Institutional Linkage</Text>
               <Text style={styles.bulkLeadText}>Connect with institutional buyers, bulk procurement teams, and government e-marketplace opportunities.</Text>
-              <TouchableOpacity style={styles.bulkLeadButton} onPress={() => setActiveTab('profile')}>
+              <TouchableOpacity style={styles.bulkLeadButton} onPress={() => setActiveTab('institutional')}>
                 <Text style={styles.bulkLeadButtonText}>Prepare bulk RFQ</Text>
               </TouchableOpacity>
             </View>
@@ -954,6 +956,88 @@ export default function App() {
             <Text style={styles.bulkRequestItem}>• Direct artisan lots with transparent pricing</Text>
           </View>
         </View>
+        ) : activeTab === 'account' ? (
+          <View style={styles.marketContainer}>
+            {!isLoggedIn ? (
+              <View style={styles.authCard}>
+                <Text style={styles.marketHeroTitle}>{t.loginTitle}</Text>
+                <Text style={styles.authSubtitle}>{t.loginSubtitle}</Text>
+                <TextInput style={styles.searchBar} value={authEmail} onChangeText={setAuthEmail} placeholder={t.email} keyboardType="email-address" autoCapitalize="none" />
+                <TextInput style={styles.searchBar} value={authPassword} onChangeText={setAuthPassword} placeholder={t.password} secureTextEntry />
+                <TouchableOpacity style={styles.primaryAction} onPress={handleGuestLogin}>
+                  <Text style={styles.primaryActionText}>{t.signIn}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.profileCard}>
+                <Text style={styles.marketHeroTitle}>My KalaSetu Account</Text>
+                <Text style={styles.profileName}>{currentUser?.name}</Text>
+                <Text style={styles.profileMeta}>{currentUser?.email} · {currentUser?.city}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountSubnav}>
+                  {([
+                    ['profile', 'Profile'], ['history', 'History'], ['orders', 'Orders'],
+                    ['requests', 'Requests'], ['wishlist', 'Wishlist'], ['notifications', 'Notifications']
+                  ] as const).map(([key, label]) => (
+                    <TouchableOpacity key={key} style={[styles.accountSubnavButton, accountView === key && styles.accountSubnavButtonActive]} onPress={() => setAccountView(key)}>
+                      <Text style={[styles.accountSubnavText, accountView === key && styles.accountSubnavTextActive]}>{label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                {accountView === 'profile' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Profile</Text>
+                    <Text style={styles.notificationText}>Role: {currentUser?.role || 'both'} · Seller & Buyer</Text>
+                    <Text style={styles.notificationText}>Published listings: {publishedProducts.length}</Text>
+                    <Text style={styles.notificationText}>Saved crafts: {wishlist.length}</Text>
+                    <TouchableOpacity style={styles.secondaryAction} onPress={handleLogout}><Text style={styles.secondaryActionText}>Log out</Text></TouchableOpacity>
+                  </View>
+                )}
+                {accountView === 'history' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Activity history</Text>
+                    <Text style={styles.notificationText}>{orders.length} purchase order(s)</Text>
+                    <Text style={styles.notificationText}>{publishedProducts.length} published listing(s)</Text>
+                    {orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>• {order.productName} — {order.status}</Text>)}
+                  </View>
+                )}
+                {accountView === 'orders' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Orders requested by me</Text>
+                    {orders.length === 0 ? <Text style={styles.emptyStateText}>No purchase requests yet.</Text> : orders.map(order => (
+                      <View key={order.id} style={styles.orderCard}>
+                        <Text style={styles.orderTitle}>{order.productName}</Text>
+                        <Text style={styles.orderMeta}>₹{order.price} · {order.status}</Text>
+                        <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}><Text style={styles.secondaryActionText}>Cancel order</Text></TouchableOpacity>
+                      </View>
+                    ))}
+                    <Text style={styles.profileSectionTitle}>Orders published by me</Text>
+                    {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}><Text style={styles.deleteProductButtonText}>Remove published order</Text></TouchableOpacity></View>)}
+                  </View>
+                )}
+                {accountView === 'requests' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Bulk and institutional requests</Text>
+                    <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Buyer type" />
+                    <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Describe your quantity and craft requirement" />
+                    <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}><Text style={styles.primaryActionText}>Send request</Text></TouchableOpacity>
+                  </View>
+                )}
+                {accountView === 'wishlist' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Saved crafts</Text>
+                    {products.filter(product => wishlist.includes(product.id)).map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.artisan_name}</Text></View>)}
+                    {wishlist.length === 0 && <Text style={styles.emptyStateText}>No saved crafts yet.</Text>}
+                  </View>
+                )}
+                {accountView === 'notifications' && (
+                  <View style={styles.notificationCard}>
+                    <Text style={styles.notificationTitle}>Notifications</Text>
+                    {orders.length ? orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>Order update: {order.productName} is {order.status}.</Text>) : <Text style={styles.notificationText}>No notifications yet.</Text>}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
         ) : activeTab === 'wishlist' ? (
           <View style={styles.marketContainer}>
             <Text style={styles.marketHeroTitle}>{t.wishlistTitle}</Text>
@@ -1113,7 +1197,7 @@ export default function App() {
       </ScrollView>
 
       {/* Bottom Tab Navigation Bar */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bottomTabBar}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bottomTabBar} contentContainerStyle={styles.bottomTabBarContent}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'home' && styles.tabButtonActive]}
           onPress={() => setActiveTab('home')}>
@@ -1147,30 +1231,10 @@ export default function App() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'wishlist' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('wishlist')}>
-          <Text style={styles.tabIcon}>❤️</Text>
-          <Text style={[styles.tabText, activeTab === 'wishlist' && styles.tabTextActive]}>
-            {t.tabWishlist}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.tabButton, activeTab === 'orders' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('orders')}>
-          <Text style={styles.tabIcon}>📦</Text>
-          <Text style={[styles.tabText, activeTab === 'orders' && styles.tabTextActive]}>
-            {t.tabOrders}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.tabButton, activeTab === 'profile' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('profile')}>
+          style={[styles.tabButton, activeTab === 'account' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('account')}>
           <Text style={styles.tabIcon}>👤</Text>
-          <Text style={[styles.tabText, activeTab === 'profile' && styles.tabTextActive]}>
-            {t.tabProfile}
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'account' && styles.tabTextActive]}>Account</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -2125,6 +2189,27 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: 8,
   },
+  accountSubnav: {
+    marginVertical: 16,
+  },
+  accountSubnavButton: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  accountSubnavButtonActive: {
+    backgroundColor: Colors.primary,
+  },
+  accountSubnavText: {
+    color: Colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  accountSubnavTextActive: {
+    color: '#FFFFFF',
+  },
   notificationCard: {
     backgroundColor: '#EFF6FF',
     borderRadius: 12,
@@ -2206,7 +2291,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    zIndex: 20,
+    elevation: 20,
+  },
+  bottomTabBarContent: {
     flexDirection: 'row',
+    minWidth: '100%',
+    height: 78,
     paddingBottom: 8,
     paddingHorizontal: 6,
   },
