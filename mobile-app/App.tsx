@@ -1234,7 +1234,17 @@ export default function App() {
               ))}
             </View>
             <View style={styles.bulkToolRow}>
-              <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('Bulk pricing', `Suggested tier: ₹${Math.round(bulkPricingTiers[bulkQuantityNumber >= 51 ? 2 : bulkQuantityNumber >= 11 ? 1 : 0].price).toLocaleString('en-IN')} per unit for ${bulkQuantityNumber} units.`)}>
+              <TouchableOpacity style={styles.bulkToolButton} onPress={() => {
+                if (!bulkQuantityNumber || !bulkUnitPriceNumber) {
+                  Alert.alert('Bulk pricing', 'Enter both quantity and unit price to calculate your live bulk total.');
+                  return;
+                }
+                const tierIndex = bulkQuantityNumber >= 51 ? 2 : bulkQuantityNumber >= 11 ? 1 : 0;
+                const tier = bulkPricingTiers[tierIndex];
+                const total = Math.round(tier.price) * bulkQuantityNumber;
+                const savings = Math.max(0, Math.round((bulkUnitPriceNumber - tier.price) * bulkQuantityNumber));
+                Alert.alert('Bulk pricing', `${bulkQuantityNumber} units × ₹${Math.round(tier.price).toLocaleString('en-IN')} = ₹${total.toLocaleString('en-IN')}\nSavings: ₹${savings.toLocaleString('en-IN')} (${tier.margin})`);
+              }}>
                 <Text style={styles.bulkToolText}>📊 Bulk pricing calculator</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.bulkToolButton} onPress={() => Alert.alert('RFQ pitch', `Create a buyer pitch for ${bulkCategory}, ${bulkQuantity} units at ₹${bulkUnitPrice} each.`)}>

@@ -181,11 +181,16 @@ async function handleBusinessManagerTool(tool) {
     }
 
     if (tool === 'pricing') {
-      const dashboardRes = await fetch(`/api/users/${userId}/dashboard`);
-      if (!dashboardRes.ok) throw new Error('Dashboard unavailable');
-      const dashboard = await dashboardRes.json();
-      const total = dashboard.analytics?.estimated_order_value || 0;
-      showToast(`Bulk pricing calculator: ${dashboard.analytics?.export_readiness || 'Ready'} · value ₹${total}`);
+      const quantity = Math.max(0, Number(document.getElementById('institutionalQuantity')?.value || 0));
+      const basePrice = Math.max(0, Number(document.getElementById('institutionalUnitPrice')?.value || 0));
+      if (!quantity || !basePrice) {
+        showToast('Enter a quantity and unit price to calculate bulk pricing');
+        return;
+      }
+      const discount = quantity >= 51 ? 0.26 : quantity >= 11 ? 0.13 : 0;
+      const unitPrice = Math.round(basePrice * (1 - discount));
+      const total = unitPrice * quantity;
+      showToast(`Bulk pricing: ${quantity} units × ₹${unitPrice.toLocaleString('en-IN')} = ₹${total.toLocaleString('en-IN')} (${Math.round(discount * 100)}% savings)`);
       return;
     }
 
