@@ -103,6 +103,7 @@ export default function App() {
   const [speechError, setSpeechError] = useState('');
   const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const browserListeningRef = useRef(false);
+  const nativeListeningRef = useRef(false);
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
 
@@ -174,7 +175,20 @@ export default function App() {
   });
 
   useSpeechRecognitionEvent('end', () => {
-    setIsListening(false);
+    if (nativeListeningRef.current) {
+      window.setTimeout(() => {
+        if (nativeListeningRef.current) {
+          ExpoSpeechRecognitionModule.start({
+            lang: lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN',
+            interimResults: true,
+            continuous: true,
+            maxAlternatives: 1,
+          });
+        }
+      }, 300);
+    } else {
+      setIsListening(false);
+    }
   });
 
   useSpeechRecognitionEvent('result', (event) => {
@@ -185,8 +199,11 @@ export default function App() {
   });
 
   useSpeechRecognitionEvent('error', (event) => {
-    setIsListening(false);
-    setSpeechError(event.message || event.error);
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      nativeListeningRef.current = false;
+      setIsListening(false);
+      setSpeechError(event.message || event.error);
+    }
   });
 
   useEffect(() => {
@@ -613,6 +630,7 @@ export default function App() {
         browserListeningRef.current = false;
         browserRecognitionRef.current?.stop();
       } else {
+        nativeListeningRef.current = false;
         ExpoSpeechRecognitionModule.stop();
       }
       return;
@@ -641,9 +659,11 @@ export default function App() {
           if (transcript) setArtisanNotes(transcript);
         };
         recognition.onerror = event => {
-          browserListeningRef.current = false;
-          setIsListening(false);
-          setSpeechError(event.error || tx('voiceError'));
+          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            browserListeningRef.current = false;
+            setIsListening(false);
+            setSpeechError(event.error || tx('voiceError'));
+          }
         };
         recognition.onend = () => {
           if (browserListeningRef.current) {
@@ -652,8 +672,15 @@ export default function App() {
                 try {
                   recognition.start();
                 } catch {
-                  browserListeningRef.current = false;
-                  setIsListening(false);
+                  window.setTimeout(() => {
+                    if (browserListeningRef.current) {
+                      try {
+                        recognition.start();
+                      } catch {
+                        // The browser will retry from its next end event.
+                      }
+                    }
+                  }, 1000);
                 }
               }
             }, 250);
@@ -674,10 +701,11 @@ export default function App() {
         return;
       }
 
+      nativeListeningRef.current = true;
       ExpoSpeechRecognitionModule.start({
         lang: lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN',
         interimResults: true,
-        continuous: false,
+        continuous: true,
         maxAlternatives: 1,
       });
     } catch (error) {
