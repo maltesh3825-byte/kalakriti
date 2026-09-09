@@ -4,7 +4,7 @@
  * Ministry of Social Justice and Empowerment (MoSJE)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -54,6 +54,19 @@ import {
   ,loginAdmin, fetchAdminRequests, updateAdminRequest, AdminRequest
 } from './services/api';
 
+type BrowserSpeechRecognition = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: (event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
+  onerror: (event: { error?: string }) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+};
+
+type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
+
 export default function App() {
   const catalogDraftKey = 'kalasetu_catalog_drafts';
   const bulkDraftKey = 'kalasetu_bulk_drafts';
@@ -87,6 +100,7 @@ export default function App() {
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState('');
   const [isTranslatingNotes, setIsTranslatingNotes] = useState(false);
+  const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
 
@@ -593,12 +607,49 @@ export default function App() {
 
   const toggleVoiceInput = async () => {
     if (isListening) {
-      ExpoSpeechRecognitionModule.stop();
+      if (Platform.OS === 'web') {
+        browserRecognitionRef.current?.stop();
+      } else {
+        ExpoSpeechRecognitionModule.stop();
+      }
       return;
     }
 
     setSpeechError('');
     try {
+      if (Platform.OS === 'web') {
+        const browserSpeech = globalThis as typeof globalThis & {
+          SpeechRecognition?: BrowserSpeechRecognitionConstructor;
+          webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
+        };
+        const Recognition = browserSpeech.SpeechRecognition || browserSpeech.webkitSpeechRecognition;
+        if (!Recognition) {
+          setSpeechError(tx('voiceError'));
+          return;
+        }
+
+        const recognition = new Recognition();
+        browserRecognitionRef.current = recognition;
+        recognition.lang = 'kn-IN';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+        recognition.onresult = event => {
+          const transcript = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
+          if (transcript) setArtisanNotes(transcript);
+        };
+        recognition.onerror = event => {
+          setIsListening(false);
+          setSpeechError(event.error || tx('voiceError'));
+        };
+        recognition.onend = () => {
+          setIsListening(false);
+          browserRecognitionRef.current = null;
+        };
+        recognition.start();
+        setIsListening(true);
+        return;
+      }
+
       const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!permission.granted) {
         setSpeechError(tx('voicePermissionDenied'));
