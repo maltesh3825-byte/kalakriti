@@ -93,6 +93,7 @@ export interface CancelOrderResponse {
   order_id: number;
   restored_quantity: number;
   reason: string;
+  localOnly?: boolean;
 }
 
 // Fallback seed catalog for offline mobile demo
@@ -473,9 +474,9 @@ export async function cancelOrderApi(orderId: number, reason: string): Promise<C
     }
     return await res.json();
   } catch (err) {
-    if (err instanceof Error) {
-      throw err;
+    if (err instanceof TypeError) {
+      return { status: 'success', order_id: orderId, restored_quantity: 0, reason, localOnly: true };
     }
-    throw new Error('Order cancellation failed');
+    throw err instanceof Error ? err : new Error('Order cancellation failed');
   }
 }

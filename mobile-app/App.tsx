@@ -254,7 +254,12 @@ export default function App() {
         throw new Error('The order could not be cancelled.');
       }
       setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'Cancelled' } : order));
-      Alert.alert('Order cancelled', `The order quantity was restored by ${result.restored_quantity || 1} item(s).`);
+      Alert.alert(
+        'Order cancelled',
+        result.localOnly
+          ? 'The demo order was removed from this device. Connect the backend to persist cancellations.'
+          : `The order quantity was restored by ${result.restored_quantity || 1} item(s).`
+      );
     } catch (error) {
       Alert.alert('Order cancellation failed', error instanceof Error ? error.message : 'Please try again.');
     }
