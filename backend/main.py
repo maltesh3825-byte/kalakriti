@@ -339,6 +339,35 @@ def get_incoming_orders(user_id: int):
     return {"orders": [dict(row) for row in rows]}
 
 
+@app.get("/api/products/{user_id}/published")
+def get_published_products(user_id: int):
+    """Return marketplace listings published under the signed-in artisan's name."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT products.*
+        FROM products
+        JOIN users ON lower(products.artisan_name) = lower(users.name)
+        WHERE users.id = ?
+        ORDER BY products.id DESC
+        """,
+        (user_id,),
+    )
+    rows = cursor.fetchall()
+    conn.close()
+    products = []
+    for row in rows:
+        product = dict(row)
+        for field in ("tags", "image_gallery", "reviews"):
+            try:
+                product[field] = json.loads(product[field]) if isinstance(product[field], str) else (product[field] or [])
+            except (TypeError, ValueError):
+                product[field] = []
+        products.append(product)
+    return {"products": products}
+
+
 @app.get("/api/notifications/{user_id}")
 def get_notifications(user_id: int):
     conn = get_db_connection()

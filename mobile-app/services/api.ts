@@ -31,6 +31,7 @@ export interface CraftProduct {
   artisan_location: string;
   category: string;
   price: number;
+  quantity?: number;
   suggested_price_min?: number;
   suggested_price_max?: number;
   price_justification?: string;
@@ -407,6 +408,13 @@ export async function deleteProduct(productId: number, userId: number): Promise<
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.detail || 'Product could not be deleted');
+}
+
+export async function fetchPublishedProducts(userId: number): Promise<CraftProduct[]> {
+  const res = await fetch(`${BACKEND_URL}/api/products/${userId}/published`);
+  if (!res.ok) throw new Error('Published products could not be loaded');
+  const data = await res.json();
+  return data.products || [];
 }
 
 export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]> {

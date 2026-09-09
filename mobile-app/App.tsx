@@ -42,7 +42,8 @@ import {
   fetchOrdersForUser,
   cancelOrderApi,
   addProductReview,
-  deleteProduct
+  deleteProduct,
+  fetchPublishedProducts
 } from './services/api';
 
 export default function App() {
@@ -89,6 +90,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [publishedProducts, setPublishedProducts] = useState<CraftProduct[]>([]);
   const [cancelReason, setCancelReason] = useState('Changed requirement / buyer changed decision');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [reviewProductId, setReviewProductId] = useState<number | null>(null);
@@ -122,6 +124,11 @@ export default function App() {
     setActiveTab('market');
     const userOrders = await fetchOrdersForUser(user.id);
     setOrders(userOrders);
+    try {
+      setPublishedProducts(await fetchPublishedProducts(user.id));
+    } catch (error) {
+      console.warn('Published products unavailable:', error);
+    }
   };
 
   const handleLogout = () => {
@@ -925,13 +932,14 @@ export default function App() {
               <View style={styles.emptyStateCard}>
                 <Text style={styles.emptyStateText}>Sign in to track your purchase requests and delivery updates.</Text>
               </View>
-            ) : orders.length === 0 ? (
+            ) : orders.length === 0 && publishedProducts.length === 0 ? (
               <View style={styles.emptyStateCard}>
                 <Text style={styles.emptyStateText}>No orders yet. Your recent requests will appear here.</Text>
               </View>
             ) : (
               <View style={styles.productsFeed}>
-                {orders.map((order) => (
+                <Text style={styles.orderTitle}>Orders requested by me</Text>
+                {orders.length === 0 ? <Text style={styles.emptyStateText}>No purchase requests yet.</Text> : orders.map((order) => (
                   <View key={order.id} style={styles.orderCard}>
                     <Text style={styles.orderTitle}>{order.productName}</Text>
                     <Text style={styles.orderMeta}>₹{order.price} • {order.customerName}</Text>
@@ -945,6 +953,16 @@ export default function App() {
                     />
                     <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}>
                       <Text style={styles.secondaryActionText}>Cancel order</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <Text style={styles.orderTitle}>Orders published by me</Text>
+                {publishedProducts.length === 0 ? <Text style={styles.emptyStateText}>No products published by you yet.</Text> : publishedProducts.map(product => (
+                  <View key={`published-${product.id}`} style={styles.orderCard}>
+                    <Text style={styles.orderTitle}>{product.name}</Text>
+                    <Text style={styles.orderMeta}>₹{product.price} • {product.category} • Qty {product.quantity || 0}</Text>
+                    <TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}>
+                      <Text style={styles.deleteProductButtonText}>Remove published order</Text>
                     </TouchableOpacity>
                   </View>
                 ))}

@@ -22,6 +22,7 @@ const state = {
   orderView: 'mine',
   accountOrders: [],
   accountIncomingOrders: [],
+  accountPublishedProducts: [],
   accountRequests: [],
   accountNotifications: [],
   accountWishlist: [],
@@ -574,9 +575,10 @@ function logoutAccount() {
 async function loadAccountData() {
   if (!state.currentUser) return;
 
-  const [ordersResult, incomingResult, requestsResult, notificationsResult, wishlistResult] = await Promise.allSettled([
+  const [ordersResult, incomingResult, publishedResult, requestsResult, notificationsResult, wishlistResult] = await Promise.allSettled([
     fetch(`/api/orders/${state.currentUser.id}`),
     fetch(`/api/orders/${state.currentUser.id}/incoming`),
+    fetch(`/api/products/${state.currentUser.id}/published`),
     fetch(`/api/institutional-requests/${state.currentUser.id}`),
     fetch(`/api/notifications/${state.currentUser.id}`),
     fetch(`/api/wishlist/${state.currentUser.id}`)
@@ -593,9 +595,10 @@ async function loadAccountData() {
     }
   };
 
-  const [orders, incoming, requests, notifications, wishlist] = await Promise.all([
+  const [orders, incoming, published, requests, notifications, wishlist] = await Promise.all([
     parseCollection(ordersResult, 'orders'),
     parseCollection(incomingResult, 'orders'),
+    parseCollection(publishedResult, 'products'),
     parseCollection(requestsResult, 'requests'),
     parseCollection(notificationsResult, 'notifications'),
     parseCollection(wishlistResult, 'wishlist')
@@ -603,6 +606,7 @@ async function loadAccountData() {
 
   state.accountOrders = orders.orders || [];
   state.accountIncomingOrders = incoming.orders || [];
+  state.accountPublishedProducts = published.products || [];
   state.accountRequests = requests.requests || [];
   state.accountNotifications = notifications.notifications || [];
   state.accountWishlist = wishlist.wishlist || [];
@@ -672,8 +676,12 @@ function renderAccountView(view) {
 
 function renderOrdersView(content) {
   const isMine = state.orderView === 'mine';
+  const isPublished = state.orderView === 'published';
   const rows = isMine ? state.accountOrders : state.accountIncomingOrders;
   const emptyMessage = isMine ? 'No orders requested by you yet.' : 'No buyer requests for your products yet.';
+  const publishedMarkup = state.accountPublishedProducts.length
+    ? state.accountPublishedProducts.map(product => `<div class="account-row"><div class="flex flex-wrap items-center justify-between gap-3"><div><strong>${escapeHtml(product.name)}</strong><span class="block text-xs mt-1 text-slate-500">₹${escapeHtml(product.price)} · Qty ${escapeHtml(product.quantity || 0)} · ${escapeHtml(product.category)}</span></div><button type="button" class="account-small-action text-red-700" data-remove-published="${product.id}">Remove published order</button></div></div>`).join('')
+    : '<p class="account-muted">No products published by you yet.</p>';
   const rowsMarkup = rows.length
     ? rows.map(order => isMine
       ? `<div class="account-row">
@@ -694,7 +702,7 @@ function renderOrdersView(content) {
         </div>`
       : `<div class="account-row incoming-order"><strong>${escapeHtml(order.product_name)}</strong><span>${escapeHtml(order.buyer_name || 'Buyer')} · ${escapeHtml(order.quantity || 1)} unit(s) · ₹${escapeHtml(order.total)} · ${escapeHtml(order.status || 'Confirmed')}</span></div>`).join('')
     : `<p class="account-muted">${emptyMessage}</p>`;
-  content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><div class="order-switcher"><button class="order-switch ${isMine ? 'order-switch-active' : ''}" data-order-view="mine">Requested by me</button><button class="order-switch ${!isMine ? 'order-switch-active' : ''}" data-order-view="incoming">Requests from other buyers</button></div><div class="order-view-content">${rowsMarkup}</div></div>`;
+  content.innerHTML = `<div class="account-panel"><h3>${t('account_orders')}</h3><div class="order-switcher"><button class="order-switch ${isMine ? 'order-switch-active' : ''}" data-order-view="mine">Requested by me</button><button class="order-switch ${state.orderView === 'incoming' ? 'order-switch-active' : ''}" data-order-view="incoming">Requests from other buyers</button><button class="order-switch ${isPublished ? 'order-switch-active' : ''}" data-order-view="published">Orders published by me</button></div><div class="order-view-content">${isPublished ? publishedMarkup : rowsMarkup}</div></div>`;
   content.querySelectorAll('[data-order-view]').forEach(button => {
     button.addEventListener('click', () => {
       state.orderView = button.dataset.orderView;
@@ -704,6 +712,11 @@ function renderOrdersView(content) {
   if (isMine) {
     content.querySelectorAll('[data-cancel-order]').forEach(button => {
       button.addEventListener('click', () => cancelMarketplaceOrder(Number(button.dataset.cancelOrder), content));
+    });
+  }
+  if (isPublished) {
+    content.querySelectorAll('[data-remove-published]').forEach(button => {
+      button.addEventListener('click', () => deleteMarketplaceProduct(Number(button.dataset.removePublished)));
     });
   }
 }
@@ -1574,7 +1587,9 @@ async function deleteMarketplaceProduct(productId) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || 'Product could not be deleted');
     showToast('Product listing deleted');
+    await loadAccountData();
     await loadProducts();
+    if (state.currentUser && state.accountView === 'orders') renderAccountView('orders');
   } catch (error) {
     console.error('Product deletion error:', error);
     showToast(error.message || 'Product could not be deleted');
