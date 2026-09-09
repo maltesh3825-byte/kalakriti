@@ -674,7 +674,7 @@ export default function App() {
             <Text style={styles.logoBadgeText}>क</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={openHomeMarket}>
-            <Text style={styles.appName}>{t.appTitle}</Text>
+            <Text style={styles.appName}>KalaSetu</Text>
             <Text style={styles.appSub}>{t.appSubtitle}</Text>
           </TouchableOpacity>
         </View>
