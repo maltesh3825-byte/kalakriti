@@ -39,6 +39,7 @@
       "policy": "sdkVersion"
     },
     "extra": {
+      "backendUrl": "https://kalakriti-api-nmnz.onrender.com",
       "eas": {
         "projectId": "08d31522-4985-4efd-9bad-79aabd6bf908"
       }
