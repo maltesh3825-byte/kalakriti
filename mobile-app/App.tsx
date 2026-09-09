@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Modal,
   TextInput,
   Image,
   ActivityIndicator,
@@ -55,6 +56,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'account' | 'wishlist' | 'orders' | 'profile'>('home');
   const [accountView, setAccountView] = useState<'profile' | 'history' | 'orders' | 'requests' | 'wishlist' | 'notifications' | 'admin'>('profile');
   const [lang, setLang] = useState<Language>('en');
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
 
   // Unified user account state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -438,6 +440,7 @@ export default function App() {
 
   const selectLanguage = async (nextLanguage: Language) => {
     setLang(nextLanguage);
+    setIsLanguageMenuOpen(false);
     await AsyncStorage.setItem('kalasetu_language', nextLanguage);
   };
 
@@ -658,8 +661,8 @@ export default function App() {
           <Text style={styles.sihTag}>SIH 2026</Text>
           <Text style={styles.topStripText}>{t.sihBadge}</Text>
         </View>
-        <TouchableOpacity style={styles.langBtn} onPress={() => selectLanguage(lang === 'en' ? 'hi' : 'en')}>
-          <Text style={styles.langBtnText}>🌐 {languageOptions.find(([code]) => code === lang)?.[1]}</Text>
+        <TouchableOpacity style={styles.langBtn} onPress={() => setIsLanguageMenuOpen(true)}>
+          <Text style={styles.langBtnText}>🌐 {languageOptions.find(([code]) => code === lang)?.[1]} ▾</Text>
         </TouchableOpacity>
       </View>
 
@@ -680,17 +683,23 @@ export default function App() {
           <Text style={styles.helpBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}`}</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.languagePicker}>
-        {languageOptions.map(([code, label]) => (
-          <TouchableOpacity
-            key={code}
-            style={[styles.languageChip, lang === code && styles.languageChipActive]}
-            onPress={() => void selectLanguage(code)}
-          >
-            <Text style={[styles.languageChipText, lang === code && styles.languageChipTextActive]}>{label}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <Modal visible={isLanguageMenuOpen} transparent animationType="fade" onRequestClose={() => setIsLanguageMenuOpen(false)}>
+        <TouchableOpacity style={styles.languageModalBackdrop} activeOpacity={1} onPress={() => setIsLanguageMenuOpen(false)}>
+          <View style={styles.languageMenu}>
+            <Text style={styles.languageMenuTitle}>{t.selectLanguage}</Text>
+            {languageOptions.map(([code, label]) => (
+              <TouchableOpacity
+                key={code}
+                style={[styles.languageMenuOption, lang === code && styles.languageMenuOptionActive]}
+                onPress={() => void selectLanguage(code)}
+              >
+                <Text style={[styles.languageMenuOptionText, lang === code && styles.languageMenuOptionTextActive]}>{label}</Text>
+                {lang === code && <Text style={styles.languageCheck}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Main Body: Scrollable Screen */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -1684,31 +1693,55 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  languagePicker: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    gap: 6,
-    backgroundColor: Colors.background,
+  languageModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    alignItems: 'flex-end',
+    paddingTop: 38,
+    paddingRight: 12,
   },
-  languageChip: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  languageMenu: {
+    width: 220,
+    maxHeight: 520,
     backgroundColor: Colors.cardBackground,
+    borderRadius: 14,
+    padding: 10,
+    shadowColor: '#000000',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
   },
-  languageChipActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+  languageMenuTitle: {
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '900',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
-  languageChipText: {
-    color: Colors.textSecondary,
-    fontSize: 11,
+  languageMenuOption: {
+    minHeight: 40,
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  languageMenuOptionActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  languageMenuOptionText: {
+    color: Colors.textPrimary,
+    fontSize: 13,
     fontWeight: '700',
   },
-  languageChipTextActive: {
-    color: '#FFFFFF',
+  languageMenuOptionTextActive: {
+    color: Colors.primaryDark,
+  },
+  languageCheck: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: '900',
   },
   brandRow: {
     flexDirection: 'row',
