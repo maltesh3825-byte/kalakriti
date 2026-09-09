@@ -1236,7 +1236,7 @@ export default function App() {
             <Text style={styles.bulkHelpText}>{tx('bulkHelp')}</Text>
             <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder={t.fullName} editable={!isLoggedIn} />
             <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder={`${t.email} for follow-up`} keyboardType="email-address" editable={!isLoggedIn} />
-            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('forBuyers')} />
+            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('buyerType')} />
             <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder={t.category} />
             <View style={styles.bulkInputRow}>
               <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkQuantity} onChangeText={setBulkQuantity} placeholder="Quantity" keyboardType="numeric" />
@@ -1558,8 +1558,8 @@ export default function App() {
                 <Text style={styles.profileSectionTitle}>History & notifications</Text>
                 <View style={styles.notificationCard}>
                   <Text style={styles.notificationTitle}>Recent activity</Text>
-                  <Text style={styles.notificationText}>{orders.length} purchase request(s) in order history</Text>
-                  <Text style={styles.notificationText}>{publishedProducts.length} published listing(s) available to manage</Text>
+                  <Text style={styles.notificationText}>{orders.length} {tx('purchaseHistory')}</Text>
+                  <Text style={styles.notificationText}>{publishedProducts.length} {tx('publishedManage')}</Text>
                   {orders.slice(0, 3).map(order => (
                     <Text key={`notification-${order.id}`} style={styles.notificationText}>• {order.productName}: {order.status}</Text>
                   ))}
