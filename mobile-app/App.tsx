@@ -24,6 +24,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import * as Speech from 'expo-speech';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors } from './constants/Colors';
 import { i18n, Language } from './constants/i18n';
@@ -47,6 +48,8 @@ import {
 } from './services/api';
 
 export default function App() {
+  const catalogDraftKey = 'kalasetu_catalog_drafts';
+  const bulkDraftKey = 'kalasetu_bulk_drafts';
   // Navigation & Language State
   const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'account' | 'wishlist' | 'orders' | 'profile'>('home');
   const [accountView, setAccountView] = useState<'profile' | 'history' | 'orders' | 'requests' | 'wishlist' | 'notifications'>('profile');
@@ -109,12 +112,90 @@ export default function App() {
   const [deliveryDetails, setDeliveryDetails] = useState({
     recipientName: '', recipientPhone: '', addressLine: '', city: '', state: '', pincode: ''
   });
+  const [catalogDrafts, setCatalogDrafts] = useState<Array<{ id: string; title: string; savedAt: string; data: Record<string, unknown> }>>([]);
+  const [bulkDrafts, setBulkDrafts] = useState<Array<{ id: string; savedAt: string; data: Record<string, string> }>>([]);
 
   const t = i18n[lang];
 
   useEffect(() => {
     loadProducts();
+    void loadOfflineDrafts();
   }, []);
+
+  const loadOfflineDrafts = async () => {
+    const [catalogValue, bulkValue] = await Promise.all([
+      AsyncStorage.getItem(catalogDraftKey),
+      AsyncStorage.getItem(bulkDraftKey)
+    ]);
+    setCatalogDrafts(catalogValue ? JSON.parse(catalogValue) : []);
+    setBulkDrafts(bulkValue ? JSON.parse(bulkValue) : []);
+  };
+
+  const saveCatalogDraft = async () => {
+    const draft = {
+      id: String(Date.now()),
+      title: editTitle || 'Untitled catalog draft',
+      savedAt: new Date().toISOString(),
+      data: {
+        imageUri, artisanName, artisanLocation, artisanPhone, artisanNotes, priceIdea,
+        isEnhanced, editTitle, editCategory, editPrice, editDescEn, editDescHi,
+        tags, listingQuantity, newTag
+      }
+    };
+    const nextDrafts = [draft, ...catalogDrafts];
+    await AsyncStorage.setItem(catalogDraftKey, JSON.stringify(nextDrafts));
+    setCatalogDrafts(nextDrafts);
+    Alert.alert('Draft saved offline', 'Your catalog is saved on this device and can be restored without internet.');
+  };
+
+  const restoreCatalogDraft = (draft: typeof catalogDrafts[number]) => {
+    const data = draft.data;
+    setImageUri(typeof data.imageUri === 'string' ? data.imageUri : null);
+    setArtisanName(typeof data.artisanName === 'string' ? data.artisanName : '');
+    setArtisanLocation(typeof data.artisanLocation === 'string' ? data.artisanLocation : '');
+    setArtisanPhone(typeof data.artisanPhone === 'string' ? data.artisanPhone : '');
+    setArtisanNotes(typeof data.artisanNotes === 'string' ? data.artisanNotes : '');
+    setPriceIdea(typeof data.priceIdea === 'string' ? data.priceIdea : '');
+    setIsEnhanced(data.isEnhanced === true);
+    setEditTitle(typeof data.editTitle === 'string' ? data.editTitle : '');
+    setEditCategory(typeof data.editCategory === 'string' ? data.editCategory : 'Pottery & Terracotta');
+    setEditPrice(typeof data.editPrice === 'string' ? data.editPrice : '');
+    setEditDescEn(typeof data.editDescEn === 'string' ? data.editDescEn : '');
+    setEditDescHi(typeof data.editDescHi === 'string' ? data.editDescHi : '');
+    setTags(Array.isArray(data.tags) ? data.tags.filter((tag): tag is string => typeof tag === 'string') : []);
+    setListingQuantity(typeof data.listingQuantity === 'string' ? data.listingQuantity : '1');
+    setNewTag(typeof data.newTag === 'string' ? data.newTag : '');
+    setActiveTab('studio');
+    Alert.alert('Draft restored', 'Continue editing your saved catalog.');
+  };
+
+  const removeCatalogDraft = async (draftId: string) => {
+    const nextDrafts = catalogDrafts.filter(draft => draft.id !== draftId);
+    await AsyncStorage.setItem(catalogDraftKey, JSON.stringify(nextDrafts));
+    setCatalogDrafts(nextDrafts);
+  };
+
+  const saveBulkDraft = async () => {
+    const draft = {
+      id: String(Date.now()),
+      savedAt: new Date().toISOString(),
+      data: { bulkNeed, bulkBuyerType, bulkCategory, bulkQuantity, bulkUnitPrice, bulkLeadTime }
+    };
+    const nextDrafts = [draft, ...bulkDrafts];
+    await AsyncStorage.setItem(bulkDraftKey, JSON.stringify(nextDrafts));
+    setBulkDrafts(nextDrafts);
+    Alert.alert('Bulk draft saved offline', 'Your institutional request is saved on this device.');
+  };
+
+  const restoreBulkDraft = (draft: typeof bulkDrafts[number]) => {
+    setBulkNeed(draft.data.bulkNeed || '');
+    setBulkBuyerType(draft.data.bulkBuyerType || 'Retail / Institutional Buyer');
+    setBulkCategory(draft.data.bulkCategory || 'Handloom & Textiles');
+    setBulkQuantity(draft.data.bulkQuantity || '100');
+    setBulkUnitPrice(draft.data.bulkUnitPrice || '250');
+    setBulkLeadTime(draft.data.bulkLeadTime || '7-15 working days');
+    Alert.alert('Bulk draft restored', 'Continue editing your saved RFQ.');
+  };
 
   const loadProducts = async () => {
     const data = await fetchMarketplaceProducts();
@@ -577,6 +658,32 @@ export default function App() {
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
           <View style={styles.studioContainer}>
+            <View style={styles.offlineDraftBanner}>
+              <View style={styles.offlineDraftHeader}>
+                <Text style={styles.offlineDraftTitle}>Offline drafts</Text>
+                <Text style={styles.offlineDraftBadge}>{catalogDrafts.length} saved</Text>
+              </View>
+              <Text style={styles.offlineDraftText}>Save catalog work on this device when rural connectivity is unavailable.</Text>
+              <TouchableOpacity style={styles.offlineDraftSaveButton} onPress={saveCatalogDraft}>
+                <Text style={styles.offlineDraftSaveText}>Save current work offline</Text>
+              </TouchableOpacity>
+              {catalogDrafts.map(draft => (
+                <View key={draft.id} style={styles.offlineDraftRow}>
+                  <View style={styles.offlineDraftInfo}>
+                    <Text style={styles.offlineDraftName}>{draft.title}</Text>
+                    <Text style={styles.offlineDraftDate}>{new Date(draft.savedAt).toLocaleString()}</Text>
+                  </View>
+                  <View style={styles.offlineDraftActions}>
+                    <TouchableOpacity onPress={() => restoreCatalogDraft(draft)}>
+                      <Text style={styles.offlineDraftRestore}>Restore</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => removeCatalogDraft(draft.id)}>
+                      <Text style={styles.offlineDraftRemove}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
             
             {/* Step 1 Card: Photo Capture */}
             <View style={styles.card}>
@@ -842,6 +949,9 @@ export default function App() {
                     <Text style={styles.publishButtonText}>{t.btnPublish}</Text>
                   )}
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.secondaryButton} onPress={saveCatalogDraft}>
+                   <Text style={styles.secondaryButtonText}>Save as offline draft</Text>
+                </TouchableOpacity>
 
               </View>
             )}
@@ -1042,6 +1152,17 @@ export default function App() {
             <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
               <Text style={styles.primaryActionText}>Submit RFQ for follow-up</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryButton} onPress={saveBulkDraft}>
+              <Text style={styles.secondaryButtonText}>Save RFQ as offline draft</Text>
+            </TouchableOpacity>
+            {bulkDrafts.length > 0 && (
+              <View>
+                <Text style={styles.helperText}>{bulkDrafts.length} bulk draft(s) saved on this device.</Text>
+                <TouchableOpacity onPress={() => restoreBulkDraft(bulkDrafts[0])}>
+                  <Text style={styles.offlineDraftRestore}>Restore latest bulk draft</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
           <View style={styles.card}>
             <Text style={styles.stepLabel}>STEP 2</Text>
@@ -1460,6 +1581,83 @@ const styles = StyleSheet.create({
   },
   studioContainer: {
     padding: 16,
+  },
+  offlineDraftBanner: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 14,
+  },
+  offlineDraftHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  offlineDraftTitle: {
+    color: '#065F46',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  offlineDraftBadge: {
+    color: '#047857',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  offlineDraftText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    marginTop: 5,
+  },
+  offlineDraftSaveButton: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 10,
+    paddingVertical: 9,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  offlineDraftSaveText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  offlineDraftRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#A7F3D0',
+    marginTop: 10,
+    paddingTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  offlineDraftInfo: {
+    flex: 1,
+  },
+  offlineDraftName: {
+    color: Colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  offlineDraftDate: {
+    color: Colors.textSecondary,
+    fontSize: 10,
+    marginTop: 2,
+  },
+  offlineDraftActions: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+  },
+  offlineDraftRestore: {
+    color: Colors.primaryDark,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  offlineDraftRemove: {
+    color: Colors.error,
+    fontSize: 11,
+    fontWeight: '800',
   },
   homeContainer: {
     padding: 16,
