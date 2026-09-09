@@ -898,28 +898,6 @@ export default function App() {
               ))}
             </View>
             {!!orderActionMessage && <Text style={styles.orderActionMessage}>{orderActionMessage}</Text>}
-            <View style={styles.quantityRow}>
-              <Text style={styles.inputLabel}>Quantity to buy (1-10)</Text>
-              <TextInput
-                style={styles.quantityInput}
-                value={buyQuantity}
-                onChangeText={setBuyQuantity}
-                keyboardType="number-pad"
-                inputMode="numeric"
-                maxLength={2}
-              />
-            </View>
-            <View style={styles.quantityOptions}>
-              {Array.from({ length: 10 }, (_, index) => String(index + 1)).map(option => (
-                <TouchableOpacity
-                  key={option}
-                  style={[styles.quantityOption, buyQuantity === option && styles.quantityOptionActive]}
-                  onPress={() => setBuyQuantity(option)}
-                >
-                  <Text style={[styles.quantityOptionText, buyQuantity === option && styles.quantityOptionTextActive]}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
 
             {/* Category Filter Chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesBar}>
@@ -1003,6 +981,18 @@ export default function App() {
                       </View>
                     ) : null}
 
+                    <Text style={styles.quantityLabel}>Quantity for this order (1-10)</Text>
+                    <View style={styles.quantityOptions}>
+                      {Array.from({ length: 10 }, (_, index) => String(index + 1)).map(option => (
+                        <TouchableOpacity
+                          key={`${product.id}-${option}`}
+                          style={[styles.quantityOption, buyQuantity === option && styles.quantityOptionActive]}
+                          onPress={() => setBuyQuantity(option)}
+                        >
+                          <Text style={[styles.quantityOptionText, buyQuantity === option && styles.quantityOptionTextActive]}>{option}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                     <View style={styles.inlineActionRow}>
                       <TouchableOpacity style={styles.inlineActionButton} onPress={() => toggleWishlist(product.id)}>
                         <Text style={styles.inlineActionButtonText}>{wishlist.includes(product.id) ? t.removeFromWishlist : t.addToWishlist}</Text>
@@ -2021,21 +2011,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 4,
   },
-  quantityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  quantityInput: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    width: 72,
-    textAlign: 'center',
-    backgroundColor: '#FFFFFF',
+  quantityLabel: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 6,
   },
   quantityOptions: {
     flexDirection: 'row',
