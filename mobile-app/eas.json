@@ -9,7 +9,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR-BACKEND-DOMAIN.example.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://kalakriti-api-nmnz.onrender.com"
       }
     },
     "production": {
@@ -18,7 +18,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://YOUR-BACKEND-DOMAIN.example.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://kalakriti-api-nmnz.onrender.com"
       }
     }
   }

@@ -48,7 +48,7 @@ import {
 
 export default function App() {
   // Navigation & Language State
-  const [activeTab, setActiveTab] = useState<'studio' | 'market' | 'wishlist' | 'orders' | 'profile'>('market');
+  const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'wishlist' | 'orders' | 'profile'>('home');
   const [lang, setLang] = useState<Language>('en');
 
   // Unified user account state
@@ -121,7 +121,7 @@ export default function App() {
     setCurrentUser(user);
     setIsLoggedIn(true);
     setAuthMode('login');
-    setActiveTab('market');
+    setActiveTab('home');
     const userOrders = await fetchOrdersForUser(user.id);
     setOrders(userOrders);
     try {
@@ -134,11 +134,11 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setIsLoggedIn(false);
-    setActiveTab('market');
+    setActiveTab('home');
   };
 
   const openHomeMarket = () => {
-    setActiveTab('market');
+    setActiveTab('home');
   };
 
   const toggleWishlist = (productId: number) => {
@@ -464,7 +464,7 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.helpBtn} 
           onPress={() => toggleSpeech(lang === 'hi' ? 'नमस्ते! कलासेतु में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaSetu! Take a photo of your craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.', lang)}>
           <Text style={styles.helpBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}`}</Text>
@@ -474,7 +474,45 @@ export default function App() {
       {/* Main Body: Scrollable Screen */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        {activeTab === 'studio' ? (
+        {activeTab === 'home' ? (
+          <View style={styles.homeContainer}>
+            <View style={styles.homeHero}>
+              <Text style={styles.homeKicker}>KalaSetu x SIH26090</Text>
+              <Text style={styles.homeTitle}>Empowering Rural Artisans with AI-Driven Market Linkage</Text>
+              <Text style={styles.homeSubtitle}>Connect craftspeople directly to retail buyers, corporate procurement, and government institutions.</Text>
+              <View style={styles.homeActionRow}>
+                <TouchableOpacity style={styles.primaryAction} onPress={() => setActiveTab('studio')}>
+                  <Text style={styles.primaryActionText}>Start Cataloging</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.secondaryAction} onPress={() => setActiveTab('market')}>
+                  <Text style={styles.secondaryActionText}>Explore Crafts</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.homeImageCard}>
+              <Image source={{ uri: 'https://images.unsplash.com/photo-1577083288073-40892c0860a4?auto=format&fit=crop&w=1200&q=80' }} style={styles.homeImage} />
+              <Text style={styles.homeImageCaption}>Terracotta • Madhubani • Dhokra • Verified Origin</Text>
+            </View>
+            <Text style={styles.homeSectionTitle}>Two connected pathways</Text>
+            <View style={styles.homeFeatureGrid}>
+              <View style={styles.homeFeatureCard}>
+                <Text style={styles.homeFeatureIcon}>🪡</Text>
+                <Text style={styles.homeFeatureTitle}>For Artisans</Text>
+                <Text style={styles.homeFeatureText}>Snap a photo, generate a catalog with AI, and publish directly to buyers.</Text>
+              </View>
+              <View style={styles.homeFeatureCard}>
+                <Text style={styles.homeFeatureIcon}>🏛️</Text>
+                <Text style={styles.homeFeatureTitle}>For Buyers & Institutions</Text>
+                <Text style={styles.homeFeatureText}>Browse verified crafts or send bulk and institutional sourcing requests.</Text>
+              </View>
+            </View>
+            <Text style={styles.homeSectionTitle}>AI-powered cataloging</Text>
+            <View style={styles.homeFeatureCard}>
+              <Text style={styles.homeFeatureTitle}>Vision, voice, pricing and market linkage</Text>
+              <Text style={styles.homeFeatureText}>Gemini helps identify materials, write bilingual descriptions, suggest fair prices, and connect every listing to the marketplace.</Text>
+            </View>
+          </View>
+        ) : activeTab === 'studio' ? (
           /* ======================================================= */
           /* SCREEN 1: ARTISAN STUDIO                                */
           /* ======================================================= */
@@ -897,6 +935,25 @@ export default function App() {
 
             </View>
           </View>
+        ) : activeTab === 'institutional' ? (
+        <View style={styles.marketContainer}>
+          <Text style={styles.marketHeroTitle}>Bulk & Institutions</Text>
+          <Text style={styles.marketHeroSubtitle}>Connect with institutional buyers, corporate procurement teams, and government marketplace opportunities.</Text>
+          <View style={styles.card}>
+            <Text style={styles.profileSectionTitle}>Submit a bulk sourcing request</Text>
+            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Buyer type" />
+            <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Describe your craft, quantity, and sourcing requirement" />
+            <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
+              <Text style={styles.primaryActionText}>Email bulk request</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.profileSectionTitle}>Procurement pathways</Text>
+            <Text style={styles.bulkRequestItem}>• Retail chain and corporate gifting RFQs</Text>
+            <Text style={styles.bulkRequestItem}>• Government and institutional supply notices</Text>
+            <Text style={styles.bulkRequestItem}>• Direct artisan lots with transparent pricing</Text>
+          </View>
+        </View>
         ) : activeTab === 'wishlist' ? (
           <View style={styles.marketContainer}>
             <Text style={styles.marketHeroTitle}>{t.wishlistTitle}</Text>
@@ -1010,6 +1067,16 @@ export default function App() {
                   <Text style={styles.profileMeta}>Role: {currentUser?.role || 'both'} · Seller & Buyer</Text>
                 </View>
 
+                <Text style={styles.profileSectionTitle}>History & notifications</Text>
+                <View style={styles.notificationCard}>
+                  <Text style={styles.notificationTitle}>Recent activity</Text>
+                  <Text style={styles.notificationText}>{orders.length} purchase request(s) in order history</Text>
+                  <Text style={styles.notificationText}>{publishedProducts.length} published listing(s) available to manage</Text>
+                  {orders.slice(0, 3).map(order => (
+                    <Text key={`notification-${order.id}`} style={styles.notificationText}>• {order.productName}: {order.status}</Text>
+                  ))}
+                </View>
+
                 <Text style={styles.profileSectionTitle}>Bulk Requests</Text>
                 <View style={styles.bulkRequestGrid}>
                   <View style={styles.bulkRequestColumn}>
@@ -1046,7 +1113,14 @@ export default function App() {
       </ScrollView>
 
       {/* Bottom Tab Navigation Bar */}
-      <View style={styles.bottomTabBar}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bottomTabBar}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'home' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('home')}>
+          <Text style={styles.tabIcon}>🏠</Text>
+          <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>Home</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity 
           style={[styles.tabButton, activeTab === 'studio' && styles.tabButtonActive]}
           onPress={() => setActiveTab('studio')}>
@@ -1066,6 +1140,13 @@ export default function App() {
         </TouchableOpacity>
 
         <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 'institutional' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('institutional')}>
+          <Text style={styles.tabIcon}>🏛️</Text>
+          <Text style={[styles.tabText, activeTab === 'institutional' && styles.tabTextActive]}>Bulk</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.tabButton, activeTab === 'wishlist' && styles.tabButtonActive]}
           onPress={() => setActiveTab('wishlist')}>
           <Text style={styles.tabIcon}>❤️</Text>
@@ -1091,7 +1172,7 @@ export default function App() {
             {t.tabProfile}
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
     </SafeAreaView>
   );
@@ -1193,6 +1274,90 @@ const styles = StyleSheet.create({
   },
   studioContainer: {
     padding: 16,
+  },
+  homeContainer: {
+    padding: 16,
+  },
+  homeHero: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 14,
+  },
+  homeKicker: {
+    color: '#FDE68A',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  homeTitle: {
+    color: '#FFFFFF',
+    fontSize: 25,
+    lineHeight: 32,
+    fontWeight: '900',
+    marginBottom: 10,
+  },
+  homeSubtitle: {
+    color: '#CBD5E1',
+    fontSize: 13,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  homeActionRow: {
+    gap: 8,
+  },
+  homeImageCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginBottom: 18,
+  },
+  homeImage: {
+    width: '100%',
+    height: 190,
+    resizeMode: 'cover',
+  } as ImageStyle,
+  homeImageCaption: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+    padding: 12,
+  },
+  homeSectionTitle: {
+    color: Colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  homeFeatureGrid: {
+    gap: 10,
+    marginBottom: 18,
+  },
+  homeFeatureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: 14,
+    marginBottom: 10,
+  },
+  homeFeatureIcon: {
+    fontSize: 24,
+    marginBottom: 6,
+  },
+  homeFeatureTitle: {
+    color: Colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 5,
+  },
+  homeFeatureText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -1533,6 +1698,12 @@ const styles = StyleSheet.create({
     color: '#CBD5E1',
     fontSize: 11,
     marginTop: 4,
+  },
+  marketHeroSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 14,
   },
   guaranteeRow: {
     flexDirection: 'row',
@@ -1954,6 +2125,25 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: 8,
   },
+  notificationCard: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    padding: 12,
+    marginBottom: 16,
+  },
+  notificationTitle: {
+    color: '#1E3A8A',
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  notificationText: {
+    color: '#1E40AF',
+    fontSize: 11,
+    marginBottom: 4,
+  },
   bulkRequestGrid: {
     flexDirection: 'row',
     gap: 10,
@@ -2018,9 +2208,10 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
     flexDirection: 'row',
     paddingBottom: 8,
+    paddingHorizontal: 6,
   },
   tabButton: {
-    flex: 1,
+    width: 76,
     alignItems: 'center',
     justifyContent: 'center',
   },
