@@ -248,12 +248,15 @@ export default function App() {
       return;
     }
 
-    const result = await cancelOrderApi(orderId, reason);
-    if (result?.status === 'success') {
+    try {
+      const result = await cancelOrderApi(orderId, reason);
+      if (result?.status !== 'success') {
+        throw new Error('The order could not be cancelled.');
+      }
       setOrders(prev => prev.map(order => order.id === orderId ? { ...order, status: 'Cancelled' } : order));
       Alert.alert('Order cancelled', `The order quantity was restored by ${result.restored_quantity || 1} item(s).`);
-    } else {
-      Alert.alert('Order cancellation', 'Cancel route returned a fallback; the order stays active in the local app view.');
+    } catch (error) {
+      Alert.alert('Order cancellation failed', error instanceof Error ? error.message : 'Please try again.');
     }
   };
 

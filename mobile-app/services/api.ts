@@ -390,7 +390,8 @@ export async function createOrder(input: {
     });
 
     if (res.ok) {
-      return order;
+      const data = await res.json();
+      return { ...order, id: Number(data.order_id) || order.id };
     }
 
   } catch (err) {
@@ -467,11 +468,14 @@ export async function cancelOrderApi(orderId: number, reason: string): Promise<C
       body: JSON.stringify({ reason })
     });
     if (!res.ok) {
-      throw new Error('Cancel order failed');
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Cancel order failed');
     }
     return await res.json();
   } catch (err) {
-    console.warn('Order cancellation backend unavailable:', err);
-    return null;
+    if (err instanceof Error) {
+      throw err;
+    }
+    throw new Error('Order cancellation failed');
   }
 }
