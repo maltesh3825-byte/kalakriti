@@ -529,8 +529,8 @@ const englishAppText: Record<AppTextKey, string> = {
   houseStreet: 'House / street / locality', city: 'City', state: 'State', pincode: '6-digit pincode',
   reviews: 'review(s)', rateReview: '★ Rate & review (no purchase required)', writeExperience: 'Write your experience...',
   submitReview: 'Submit review', bulkLinkage: 'Bulk & Institutional Linkage', prepareRfq: 'Prepare bulk RFQ',
-  voiceInput: 'Speak in Kannada', voiceListening: 'Listening...', voicePermissionDenied: 'Microphone permission is required.',
-  voiceError: 'Could not start voice input.', voiceTranslationHint: 'Speak in Kannada, then translate the notes into English before cataloging.',
+  voiceInput: 'Speak in English / Kannada / Hindi', voiceListening: 'Listening...', voicePermissionDenied: 'Microphone permission is required.',
+  voiceError: 'Could not start voice input.', voiceTranslationHint: 'Speak in English, Kannada or Hindi. AI will create the English catalog description.',
   voiceNotesRequired: 'Add Kannada voice or text notes first.', voiceTranslationError: 'Could not translate the Kannada notes.'
 };
 

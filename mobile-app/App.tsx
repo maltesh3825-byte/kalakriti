@@ -50,8 +50,10 @@ import {
   addProductReview,
   deleteProduct,
   fetchPublishedProducts,
-  translateProductDescription
-  ,loginAdmin, fetchAdminRequests, updateAdminRequest, AdminRequest
+  loginAdmin,
+  fetchAdminRequests,
+  updateAdminRequest,
+  AdminRequest
 } from './services/api';
 
 type BrowserSpeechRecognition = {
@@ -99,7 +101,6 @@ export default function App() {
   const [artisanNotes, setArtisanNotes] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState('');
-  const [isTranslatingNotes, setIsTranslatingNotes] = useState(false);
   const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const browserListeningRef = useRef(false);
   const [priceIdea, setPriceIdea] = useState('');
@@ -632,7 +633,7 @@ export default function App() {
 
         const recognition = new Recognition();
         browserRecognitionRef.current = recognition;
-        recognition.lang = 'kn-IN';
+        recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN';
         recognition.interimResults = true;
         recognition.continuous = true;
         recognition.onresult = event => {
@@ -674,30 +675,13 @@ export default function App() {
       }
 
       ExpoSpeechRecognitionModule.start({
-        lang: 'kn-IN',
+        lang: lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN',
         interimResults: true,
         continuous: false,
         maxAlternatives: 1,
       });
     } catch (error) {
       setSpeechError(error instanceof Error ? error.message : tx('voiceError'));
-    }
-  };
-
-  const translateKannadaNotes = async () => {
-    const notes = artisanNotes.trim();
-    if (!notes) {
-      setSpeechError(tx('voiceNotesRequired'));
-      return;
-    }
-    setIsTranslatingNotes(true);
-    setSpeechError('');
-    try {
-      setArtisanNotes(await translateProductDescription(notes));
-    } catch (error) {
-      setSpeechError(error instanceof Error ? error.message : tx('voiceTranslationError'));
-    } finally {
-      setIsTranslatingNotes(false);
     }
   };
 
@@ -1059,16 +1043,7 @@ export default function App() {
                       onPress={toggleVoiceInput}
                     >
                       <Text style={styles.voiceButtonText}>
-                        {isListening ? `⏹️ ${tx('voiceListening')}` : `🎙️ ${tx('voiceInput')}`}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.translateButton, isTranslatingNotes && styles.disabledButton]}
-                      onPress={translateKannadaNotes}
-                      disabled={isTranslatingNotes}
-                    >
-                      <Text style={styles.translateButtonText}>
-                        {isTranslatingNotes ? 'Translating...' : 'ಕನ್ನಡ → English'}
+                        {isListening ? `⏹️ ${tx('voiceListening')}` : '🎙️ Speak in English / Kannada / Hindi'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1088,7 +1063,7 @@ export default function App() {
                       <Text style={styles.descriptionMicText}>{isListening ? '⏹️' : '🎙️'}</Text>
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.voiceHint}>{tx('voiceTranslationHint')}</Text>
+                  <Text style={styles.voiceHint}>Speak in English, Kannada or Hindi. AI will create the English catalog description.</Text>
                   {speechError ? <Text style={styles.errorText}>{speechError}</Text> : null}
                 </View>
               </View>
