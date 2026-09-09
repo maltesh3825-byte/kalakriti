@@ -401,6 +401,7 @@ export default function App() {
         try {
           await deleteProduct(product.id, currentUser.id);
           setProducts(prev => prev.filter(item => item.id !== product.id));
+          setPublishedProducts(prev => prev.filter(item => item.id !== product.id));
           Alert.alert('Deleted', 'Your product listing was deleted.');
         } catch (error) {
           Alert.alert('Delete failed', error instanceof Error ? error.message : 'Could not delete listing.');
