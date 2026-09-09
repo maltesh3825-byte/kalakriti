@@ -258,6 +258,15 @@ export default function App() {
     setProducts(data);
   };
 
+  const refreshAccountData = async (user: AppUser) => {
+    const [userOrders, userListings] = await Promise.all([
+      fetchOrdersForUser(user.id),
+      fetchPublishedProducts(user.id)
+    ]);
+    setOrders(userOrders);
+    setPublishedProducts(userListings);
+  };
+
   const handleGuestLogin = async () => {
     const user = await loginUser(authEmail, authPassword, authRole);
     if (!user) {
@@ -268,12 +277,10 @@ export default function App() {
     setIsLoggedIn(true);
     setAuthMode('login');
     setActiveTab('home');
-    const userOrders = await fetchOrdersForUser(user.id);
-    setOrders(userOrders);
     try {
-      setPublishedProducts(await fetchPublishedProducts(user.id));
+      await refreshAccountData(user);
     } catch (error) {
-      console.warn('Published products unavailable:', error);
+      console.warn('Account activity unavailable:', error);
     }
   };
 
@@ -559,7 +566,7 @@ export default function App() {
     const imageUrl = imageUri || "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80";
     const newProduct: Omit<CraftProduct, 'id'> = {
       name: editTitle,
-      artisan_name: artisanName || "Artisan Beneficiary",
+      artisan_name: currentUser?.name || artisanName || "Artisan Beneficiary",
       artisan_location: artisanLocation || "Rural Cluster",
       artisan_phone: artisanPhone,
       category: editCategory,
@@ -588,9 +595,16 @@ export default function App() {
     }
     setIsPublishing(false);
 
-    // Refresh products list and prepend
-    const fullProduct: CraftProduct = { ...newProduct, id: Date.now() };
-    setProducts([fullProduct, ...products]);
+    try {
+      const [marketplaceProducts] = await Promise.all([
+        fetchMarketplaceProducts(),
+        currentUser ? refreshAccountData(currentUser) : Promise.resolve()
+      ]);
+      setProducts(marketplaceProducts);
+    } catch (error) {
+      console.warn('Published listing refresh unavailable:', error);
+      setProducts(prev => [{ ...newProduct, id: Date.now() }, ...prev]);
+    }
 
     Alert.alert(
       lang === 'hi' ? "सफलता!" : "Success!",
@@ -1335,6 +1349,7 @@ export default function App() {
                     <Text style={styles.notificationText}>{orders.length} purchase order(s)</Text>
                     <Text style={styles.notificationText}>{publishedProducts.length} published listing(s)</Text>
                     {orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>• {order.productName} — {order.status}</Text>)}
+                    {publishedProducts.slice(0, 5).map(product => <Text key={`published-${product.id}`} style={styles.notificationText}>• Published: {product.name} — ₹{product.price}</Text>)}
                   </View>
                 )}
                 {accountView === 'orders' && (
