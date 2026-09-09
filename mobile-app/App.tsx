@@ -125,6 +125,7 @@ export default function App() {
 
   const t = { ...i18n, ...additionalTranslations }[lang];
   const tx = (key: Parameters<typeof getAppText>[1]) => getAppText(lang, key);
+  const speechLocale = ({ en: 'en-IN', hi: 'hi-IN', ta: 'ta-IN', kn: 'kn-IN', te: 'te-IN', ml: 'ml-IN', mr: 'mr-IN', bh: 'hi-IN', bho: 'hi-IN' } as const)[lang];
   const roleLabel = currentUser?.role === 'buyer'
     ? (lang === 'hi' ? 'खरीदार' : lang === 'ta' ? 'வாங்குபவர்' : lang === 'kn' ? 'ಖರೀದಿದಾರ' : lang === 'te' ? 'కొనుగోలుదారు' : lang === 'ml' ? 'വാങ്ങുന്നയാൾ' : lang === 'mr' ? 'खरेदीदार' : 'Buyer')
     : currentUser?.role === 'artisan'
@@ -537,7 +538,7 @@ export default function App() {
     } else {
       setIsSpeaking(true);
       Speech.speak(text, {
-        language: speechLang === 'hi' ? 'hi-IN' : 'en-IN',
+        language: speechLang.includes('-') ? speechLang : speechLocale,
         rate: 0.9,
         onDone: () => setIsSpeaking(false),
         onError: () => setIsSpeaking(false),
@@ -1061,6 +1062,12 @@ export default function App() {
             <View style={styles.marketHero}>
               <Text style={styles.marketHeroTitle}>{t.marketTitle}</Text>
               <Text style={styles.marketHeroSub}>{t.marketSub}</Text>
+              <TouchableOpacity
+                style={styles.marketSpeakButton}
+                onPress={() => toggleSpeech(`${t.marketTitle}. ${t.marketSub}. ${t.directToArtisan}. ${t.mosjeVerified}`, speechLocale)}
+              >
+                <Text style={styles.marketSpeakButtonText}>{isSpeaking ? '⏹ Stop' : `🔊 ${tx('tapToSpeak')}`}</Text>
+              </TouchableOpacity>
               <View style={styles.guaranteeRow}>
                 <Text style={styles.guaranteeText}>✓ {t.directToArtisan}</Text>
                 <Text style={styles.guaranteeText}>✓ {t.mosjeVerified}</Text>
@@ -2436,6 +2443,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     marginBottom: 14,
+  },
+  marketSpeakButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginBottom: 12,
+  },
+  marketSpeakButtonText: {
+    color: Colors.primaryDark,
+    fontSize: 11,
+    fontWeight: '800',
   },
   guaranteeRow: {
     flexDirection: 'row',
