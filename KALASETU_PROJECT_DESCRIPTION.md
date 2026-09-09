@@ -27,18 +27,23 @@ Customers can discover handmade products, save crafts, submit ratings and review
 
 1. **Sign in** - Select an artisan, seller or buyer account.
 2. **Capture** - Take a product photograph or select one from the gallery.
-3. **Add voice or text notes** - Describe the product in Kannada or another supported language.
-4. **Analyze** - Gemini Vision analyzes the image and artisan notes.
-5. **Generate catalog** - Create the title, category, tags, descriptions and price guidance.
-6. **Review and edit** - The artisan verifies and edits the AI-generated content.
-7. **Publish** - Publish the approved product with quantity and pricing details.
-8. **Sell** - Customers discover products, review them and submit orders.
-9. **Manage** - Artisans manage listings, orders and customer requests.
+3. **Open the Description Module** - Use the voice-to-text control inside Artisan Studio.
+4. **Speak product details** - Describe the materials, technique, cultural background and intended use in Kannada or another supported language.
+5. **Convert voice to text** - Speech recognition displays the live transcript directly in the product description field, where it can be corrected.
+6. **Analyze** - Gemini Vision analyzes the image and artisan notes.
+7. **Generate catalog** - Create the title, category, tags, descriptions and price guidance.
+8. **Review and edit** - The artisan verifies and edits the AI-generated content.
+9. **Publish** - Publish the approved product with quantity and pricing details.
+10. **Sell** - Customers discover products, review them and submit orders.
+11. **Manage** - Artisans manage listings, orders and customer requests.
 
 ## Key Features
 
 - AI-powered product catalog generation
+- Voice-to-text description module inside Artisan Studio
 - Kannada voice-to-text input for artisan descriptions
+- Live transcript shown directly in the product description field
+- Editable voice transcript before AI catalog generation
 - English catalog generation from regional-language notes
 - Support for English, Hindi, Kannada, Telugu, Malayalam, Marathi, Tamil, Bihari and Bhojpuri
 - Offline catalog and bulk-request drafts
@@ -127,6 +132,12 @@ The platform is designed for low-literacy, regional-language and rural artisan c
 - Expo Speech Recognition for voice-to-text input
 - AsyncStorage for offline drafts and local preferences
 
+#### Artisan Studio Description Module
+
+The Artisan Studio includes a dedicated description input module with a microphone control. The artisan can tap the voice-to-text button, speak product information, and see the recognized text appear directly in the description field. The transcript can be edited before it is sent with the product image to the AI cataloging service.
+
+For Kannada input, speech recognition uses the `kn-IN` locale. The Kannada transcript is passed to the cataloging workflow, where Gemini Vision interprets the notes and generates a natural English product title and description. Microphone and speech-recognition permissions are requested before recording begins.
+
 #### Backend
 
 - Python
@@ -162,6 +173,7 @@ The platform is designed for low-literacy, regional-language and rural artisan c
 
 - Product photograph
 - Artisan voice notes
+- Live voice-to-text transcript from the Artisan Studio description module
 - Artisan text notes
 - Optional artisan price idea
 
