@@ -45,6 +45,7 @@ import {
   addProductReview,
   deleteProduct,
   fetchPublishedProducts
+  ,loginAdmin, fetchAdminRequests, updateAdminRequest, AdminRequest
 } from './services/api';
 
 export default function App() {
@@ -52,7 +53,7 @@ export default function App() {
   const bulkDraftKey = 'kalasetu_bulk_drafts';
   // Navigation & Language State
   const [activeTab, setActiveTab] = useState<'home' | 'studio' | 'market' | 'institutional' | 'account' | 'wishlist' | 'orders' | 'profile'>('home');
-  const [accountView, setAccountView] = useState<'profile' | 'history' | 'orders' | 'requests' | 'wishlist' | 'notifications'>('profile');
+  const [accountView, setAccountView] = useState<'profile' | 'history' | 'orders' | 'requests' | 'wishlist' | 'notifications' | 'admin'>('profile');
   const [lang, setLang] = useState<Language>('en');
 
   // Unified user account state
@@ -114,13 +115,52 @@ export default function App() {
   });
   const [catalogDrafts, setCatalogDrafts] = useState<Array<{ id: string; title: string; savedAt: string; data: Record<string, unknown> }>>([]);
   const [bulkDrafts, setBulkDrafts] = useState<Array<{ id: string; savedAt: string; data: Record<string, string> }>>([]);
+  const [adminToken, setAdminToken] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
+  const [adminStatus, setAdminStatus] = useState('');
 
   const t = i18n[lang];
 
   useEffect(() => {
     loadProducts();
     void loadOfflineDrafts();
+    AsyncStorage.getItem('kalasetu_admin_token').then(token => {
+      if (token) {
+        setAdminToken(token);
+        fetchAdminRequests(token).then(setAdminRequests).catch(() => AsyncStorage.removeItem('kalasetu_admin_token'));
+      }
+    });
   }, []);
+
+  const handleAdminLogin = async () => {
+    try {
+      const token = await loginAdmin(adminEmail.trim(), adminPassword);
+      await AsyncStorage.setItem('kalasetu_admin_token', token);
+      setAdminToken(token);
+      setAdminStatus('');
+      setAdminRequests(await fetchAdminRequests(token));
+    } catch (error) {
+      setAdminStatus(error instanceof Error ? error.message : 'Admin sign-in failed.');
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    await AsyncStorage.removeItem('kalasetu_admin_token');
+    setAdminToken('');
+    setAdminRequests([]);
+  };
+
+  const handleAdminUpdate = async (requestId: number, status: string) => {
+    if (!adminToken) return;
+    try {
+      await updateAdminRequest(adminToken, requestId, status, '');
+      setAdminRequests(await fetchAdminRequests(adminToken));
+    } catch (error) {
+      setAdminStatus(error instanceof Error ? error.message : 'Review could not be saved.');
+    }
+  };
 
   const loadOfflineDrafts = async () => {
     const [catalogValue, bulkValue] = await Promise.all([
@@ -1219,7 +1259,7 @@ export default function App() {
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.accountSubnav}>
                   {([
                     ['profile', 'Profile'], ['history', 'History'], ['orders', 'Orders'],
-                    ['requests', 'Requests'], ['wishlist', 'Wishlist'], ['notifications', 'Notifications']
+                    ['requests', 'Requests'], ['wishlist', 'Wishlist'], ['notifications', 'Notifications'], ['admin', 'Admin']
                   ] as const).map(([key, label]) => (
                     <TouchableOpacity key={key} style={[styles.accountSubnavButton, accountView === key && styles.accountSubnavButtonActive]} onPress={() => setAccountView(key)}>
                       <Text style={[styles.accountSubnavText, accountView === key && styles.accountSubnavTextActive]}>{label}</Text>
@@ -1276,6 +1316,43 @@ export default function App() {
                   <View style={styles.notificationCard}>
                     <Text style={styles.notificationTitle}>Notifications</Text>
                     {orders.length ? orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>Order update: {order.productName} is {order.status}.</Text>) : <Text style={styles.notificationText}>No notifications yet.</Text>}
+                  </View>
+                )}
+                {accountView === 'admin' && (
+                  <View>
+                    <Text style={styles.profileSectionTitle}>Admin Review</Text>
+                    {!adminToken ? (
+                      <View>
+                        <Text style={styles.bulkHelpText}>Review and moderate institutional buyer requests.</Text>
+                        <TextInput style={styles.textInput} value={adminEmail} onChangeText={setAdminEmail} placeholder="Admin email" keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput style={styles.textInput} value={adminPassword} onChangeText={setAdminPassword} placeholder="Admin password" secureTextEntry />
+                        {!!adminStatus && <Text style={styles.orderActionMessage}>{adminStatus}</Text>}
+                        <TouchableOpacity style={styles.primaryAction} onPress={handleAdminLogin}>
+                          <Text style={styles.primaryActionText}>Sign in as admin</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View>
+                        <View style={styles.adminHeaderRow}>
+                          <Text style={styles.bulkHelpText}>Institutional request review queue</Text>
+                          <TouchableOpacity onPress={handleAdminLogout}><Text style={styles.offlineDraftRemove}>Logout</Text></TouchableOpacity>
+                        </View>
+                        {adminRequests.length === 0 ? <Text style={styles.emptyStateText}>No institutional requests yet.</Text> : adminRequests.map(request => (
+                          <View key={request.id} style={styles.orderCard}>
+                            <Text style={styles.orderTitle}>{request.artisan_name} · {request.product_category || 'Craft request'}</Text>
+                            <Text style={styles.orderMeta}>{request.email} · Qty {request.quantity || 1} · {request.target_market || 'Bulk'}</Text>
+                            <Text style={styles.orderMeta}>{request.requirements || 'No requirements'}</Text>
+                            <View style={styles.adminStatusRow}>
+                              {['New', 'In Review', 'Approved', 'Rejected'].map(status => (
+                                <TouchableOpacity key={status} style={[styles.adminStatusButton, request.status === status && styles.adminStatusButtonActive]} onPress={() => handleAdminUpdate(request.id, status)}>
+                                  <Text style={[styles.adminStatusText, request.status === status && styles.adminStatusTextActive]}>{status}</Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    )}
                   </View>
                 )}
               </View>
@@ -2674,6 +2751,38 @@ const styles = StyleSheet.create({
     color: '#1E40AF',
     fontSize: 11,
     marginBottom: 4,
+  },
+  adminHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  adminStatusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 10,
+  },
+  adminStatusButton: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  adminStatusButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  adminStatusText: {
+    color: Colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  adminStatusTextActive: {
+    color: '#FFFFFF',
   },
   bulkRequestGrid: {
     flexDirection: 'row',

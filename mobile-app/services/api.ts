@@ -94,6 +94,18 @@ export interface CancelOrderResponse {
   localOnly?: boolean;
 }
 
+export interface AdminRequest {
+  id: number;
+  artisan_name: string;
+  email: string;
+  product_category?: string;
+  quantity?: number;
+  target_market?: string;
+  status?: string;
+  requirements?: string;
+  admin_notes?: string;
+}
+
 // Fallback seed catalog for offline mobile demo
 export const SEED_PRODUCTS: CraftProduct[] = [
   {
@@ -323,6 +335,7 @@ export async function loginUser(email: string, password: string, role: UserRole 
       if (data && data.user) {
         return data.user as AppUser;
       }
+
     }
   } catch (err) {
     console.warn('Auth backend unavailable, using local fallback demo login:', err);
@@ -349,6 +362,36 @@ export async function loginUser(email: string, password: string, role: UserRole 
     city: 'Bhopal, Madhya Pradesh',
     language: 'en'
   };
+}
+
+export async function loginAdmin(email: string, password: string): Promise<string> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.admin_token) throw new Error(data.detail || 'Invalid admin credentials');
+  return data.admin_token;
+}
+
+export async function fetchAdminRequests(token: string): Promise<AdminRequest[]> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/institutional-requests`, {
+    headers: { 'X-Admin-Token': token }
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || 'Admin review queue could not be loaded');
+  return data.requests || [];
+}
+
+export async function updateAdminRequest(token: string, requestId: number, status: string, adminNotes: string): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/admin/institutional-requests/${requestId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({ status, admin_notes: adminNotes })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || 'Admin review could not be saved');
 }
 
 export async function createOrder(input: {
