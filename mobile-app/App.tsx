@@ -88,6 +88,7 @@ export default function App() {
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [listingQuantity, setListingQuantity] = useState('1');
 
   // Marketplace State
   const [products, setProducts] = useState<CraftProduct[]>(SEED_PRODUCTS);
@@ -103,6 +104,7 @@ export default function App() {
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [buyQuantity, setBuyQuantity] = useState('1');
   const [orderActionMessage, setOrderActionMessage] = useState('');
   const [deliveryDetails, setDeliveryDetails] = useState({
     recipientName: '', recipientPhone: '', addressLine: '', city: '', state: '', pincode: ''
@@ -154,7 +156,6 @@ export default function App() {
       setActiveTab('account');
       return;
     }
-
     setWishlist(prev => prev.includes(productId)
       ? prev.filter(id => id !== productId)
       : [...prev, productId]);
@@ -174,6 +175,18 @@ export default function App() {
       Alert.alert('Delivery details required', 'Enter your name, phone, address, city, state, and 6-digit pincode before ordering.');
       return;
     }
+    const quantity = Number(buyQuantity);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+      setOrderActionMessage('Choose a quantity from 1 to 10.');
+      Alert.alert('Invalid quantity', 'You can buy between 1 and 10 products per order.');
+      return;
+    }
+    const availableQuantity = product.quantity ?? 10;
+    if (quantity > availableQuantity) {
+      setOrderActionMessage(`Only ${availableQuantity} item(s) are currently available.`);
+      Alert.alert('Quantity unavailable', `Only ${availableQuantity} item(s) are currently available.`);
+      return;
+    }
 
     setIsPlacingOrder(true);
     setOrderActionMessage('');
@@ -183,6 +196,7 @@ export default function App() {
         productId: product.id,
         productName: product.name,
         price: product.price,
+        quantity,
         customerName: currentUser.name,
         ...deliveryDetails
       });
@@ -398,6 +412,11 @@ export default function App() {
       Alert.alert("Incomplete Listing", "Please provide a title and price.");
       return;
     }
+    const listingQuantityValue = Number(listingQuantity);
+    if (!Number.isInteger(listingQuantityValue) || listingQuantityValue < 1 || listingQuantityValue > 10) {
+      Alert.alert('Invalid quantity', 'Each listing must contain between 1 and 10 products.');
+      return;
+    }
 
     setIsPublishing(true);
     const imageUrl = imageUri || "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=800&q=80";
@@ -408,6 +427,7 @@ export default function App() {
       artisan_phone: artisanPhone,
       category: editCategory,
       price: Number(editPrice),
+      quantity: listingQuantityValue,
       suggested_price_min: aiResult?.pricing.fair_min,
       suggested_price_max: aiResult?.pricing.fair_max,
       price_justification: aiResult?.pricing.justification,
@@ -422,7 +442,13 @@ export default function App() {
       mosje_verified: true
     };
 
-    await publishProductToApi(newProduct);
+    try {
+      await publishProductToApi(newProduct);
+    } catch (error) {
+      setIsPublishing(false);
+      Alert.alert('Publishing failed', error instanceof Error ? error.message : 'Could not publish this listing.');
+      return;
+    }
     setIsPublishing(false);
 
     // Refresh products list and prepend
@@ -437,6 +463,7 @@ export default function App() {
 
     // Reset Studio
     setImageUri(null);
+    setListingQuantity('1');
     setAiResult(null);
     setArtisanNotes('');
     setPriceIdea('');
@@ -601,6 +628,17 @@ export default function App() {
                   trackColor={{ false: Colors.border, true: Colors.primary }}
                   thumbColor="#FFFFFF"
                 />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Quantity to sell (1-10)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={listingQuantity}
+                  onChangeText={setListingQuantity}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+                <Text style={styles.helperText}>Maximum 3 marketplace listings per artisan each calendar month.</Text>
               </View>
 
               {/* Action Buttons: Camera & Gallery */}
@@ -860,6 +898,16 @@ export default function App() {
               ))}
             </View>
             {!!orderActionMessage && <Text style={styles.orderActionMessage}>{orderActionMessage}</Text>}
+            <View style={styles.quantityRow}>
+              <Text style={styles.inputLabel}>Quantity to buy (1-10)</Text>
+              <TextInput
+                style={styles.quantityInput}
+                value={buyQuantity}
+                onChangeText={setBuyQuantity}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+            </View>
 
             {/* Category Filter Chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesBar}>
@@ -1955,6 +2003,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     padding: 10,
     marginBottom: 12,
+  },
+  helperText: {
+    color: Colors.textMuted,
+    fontSize: 11,
+    marginTop: 4,
+  },
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  quantityInput: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    width: 72,
+    textAlign: 'center',
+    backgroundColor: '#FFFFFF',
   },
   deliveryTitle: {
     color: Colors.textPrimary,

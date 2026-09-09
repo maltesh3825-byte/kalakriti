@@ -402,7 +402,10 @@ def create_order(payload: OrderCreate):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    requested_quantity = max(1, payload.quantity)
+    if payload.quantity < 1 or payload.quantity > 10:
+        conn.close()
+        raise HTTPException(status_code=422, detail="You can buy between 1 and 10 items per order")
+    requested_quantity = payload.quantity
     cursor.execute("SELECT quantity, artisan_name, name, price FROM products WHERE id = ?", (payload.product_id,))
     product_row = cursor.fetchone()
     if not product_row:

@@ -79,6 +79,7 @@ export interface OrderRecord {
   productId: number;
   productName: string;
   price: number;
+  quantity: number;
   status: 'Confirmed' | 'Packed' | 'In Transit' | 'Delivered' | 'Cancelled';
   eta: string;
   customerName: string;
@@ -294,10 +295,17 @@ export async function publishProductToApi(product: Omit<CraftProduct, 'id'>): Pr
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(product)
     });
-    return res.ok;
-  } catch (err) {
-    console.warn("Could not publish to backend, saved locally:", err);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || 'Product could not be published');
+    }
     return true;
+  } catch (err) {
+    if (err instanceof TypeError) {
+      console.warn("Could not publish to backend, saved locally:", err);
+      return true;
+    }
+    throw err instanceof Error ? err : new Error('Product could not be published');
   }
 }
 
@@ -348,6 +356,7 @@ export async function createOrder(input: {
   productId: number;
   productName: string;
   price: number;
+  quantity: number;
   customerName: string;
   recipientName: string;
   recipientPhone: string;
@@ -361,6 +370,7 @@ export async function createOrder(input: {
     productId: input.productId,
     productName: input.productName,
     price: input.price,
+    quantity: input.quantity,
     status: 'Confirmed',
     eta: '2-4 working days',
     customerName: input.customerName
@@ -374,8 +384,8 @@ export async function createOrder(input: {
         user_id: input.userId,
         product_id: input.productId,
         product_name: input.productName,
-        quantity: 1,
-        total: input.price,
+        quantity: input.quantity,
+        total: input.price * input.quantity,
         status: order.status,
         eta: order.eta,
         recipient_name: input.recipientName,
@@ -389,7 +399,7 @@ export async function createOrder(input: {
 
     if (res.ok) {
       const data = await res.json();
-      return { ...order, id: Number(data.order_id) || order.id };
+      return { ...order, id: Number(data.order_id) || order.id, quantity: input.quantity };
     }
     const data = await res.json().catch(() => ({}));
     throw new Error(data.detail || 'Could not place the order request.');
@@ -402,7 +412,7 @@ export async function createOrder(input: {
     }
   }
 
-  return order;
+  return { ...order, quantity: input.quantity };
 }
 
 export async function deleteProduct(productId: number, userId: number): Promise<void> {
@@ -436,7 +446,8 @@ export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]>
       price: Number(row.total || row.price || 0),
       status: String(row.status || 'Confirmed'),
       eta: row.eta || '2-4 working days',
-      customerName: row.buyer_name || 'Verified Buyer'
+      customerName: row.buyer_name || 'Verified Buyer',
+      quantity: Number(row.quantity || 1)
     }));
   } catch (err) {
     console.warn('Falling back to mobile demo orders:', err);
@@ -450,7 +461,8 @@ export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]>
       price: 650,
       status: 'In Transit',
       eta: 'Tomorrow',
-      customerName: 'Aarav Sharma'
+      customerName: 'Aarav Sharma',
+      quantity: 1
     },
     {
       id: 102,
@@ -459,7 +471,8 @@ export async function fetchOrdersForUser(userId: number): Promise<OrderRecord[]>
       price: 1400,
       status: 'Packed',
       eta: '2 days',
-      customerName: 'Aarav Sharma'
+      customerName: 'Aarav Sharma',
+      quantity: 1
     }
   ];
 }
