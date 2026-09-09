@@ -1452,7 +1452,12 @@ function renderProducts(products) {
     return `
       <div class="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 hover:border-terracotta-300 hover:shadow-xl transition-all duration-300 flex flex-col">
         <!-- Image Container -->
-        <div class="relative aspect-square overflow-hidden bg-slate-100">
+        <div class="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer"
+             onclick="openProductModal(${p.id})"
+             role="button"
+             tabindex="0"
+             aria-label="View ${p.name} details"
+             onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openProductModal(${p.id}); }">
           <img src="${resolveImageUrl(p.image_url)}" alt="${p.name}"
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${imageClass}">
           
