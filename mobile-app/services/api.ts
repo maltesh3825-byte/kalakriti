@@ -394,9 +394,15 @@ export async function createOrder(input: {
       const data = await res.json();
       return { ...order, id: Number(data.order_id) || order.id };
     }
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || 'Could not place the order request.');
 
   } catch (err) {
-    console.warn('Order API unavailable, saved in app state only:', err);
+    if (!(err instanceof Error) || err.message === 'Failed to fetch') {
+      console.warn('Order API unavailable, saved in app state only:', err);
+    } else {
+      throw err;
+    }
   }
 
   return order;

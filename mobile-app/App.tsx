@@ -102,6 +102,8 @@ export default function App() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderActionMessage, setOrderActionMessage] = useState('');
   const [deliveryDetails, setDeliveryDetails] = useState({
     recipientName: '', recipientPhone: '', addressLine: '', city: '', state: '', pincode: ''
   });
@@ -160,6 +162,7 @@ export default function App() {
 
   const requestOrder = async (product: CraftProduct) => {
     if (!isLoggedIn || !currentUser) {
+      setOrderActionMessage('Sign in from Account before placing an order.');
       Alert.alert('Sign in required', 'Please sign in to request an order.');
       setActiveTab('account');
       return;
@@ -167,23 +170,33 @@ export default function App() {
 
     if (!deliveryDetails.recipientName || !deliveryDetails.recipientPhone || !deliveryDetails.addressLine ||
       !deliveryDetails.city || !deliveryDetails.state || !/^\d{6}$/.test(deliveryDetails.pincode)) {
+      setOrderActionMessage('Complete the delivery details above, including a valid 6-digit pincode.');
       Alert.alert('Delivery details required', 'Enter your name, phone, address, city, state, and 6-digit pincode before ordering.');
       return;
     }
 
-    const order = await createOrder({
-      userId: currentUser.id,
-      productId: product.id,
-      productName: product.name,
-      price: product.price,
-      customerName: currentUser.name,
-      ...deliveryDetails
-    });
+    setIsPlacingOrder(true);
+    setOrderActionMessage('');
+    try {
+      const order = await createOrder({
+        userId: currentUser.id,
+        productId: product.id,
+        productName: product.name,
+        price: product.price,
+        customerName: currentUser.name,
+        ...deliveryDetails
+      });
 
-    setOrders(prev => [order, ...prev]);
-    Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
-    setActiveTab('account');
-    setAccountView('orders');
+      setOrders(prev => [order, ...prev]);
+      Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
+      setActiveTab('account');
+      setAccountView('orders');
+    } catch (error) {
+      setOrderActionMessage(error instanceof Error ? error.message : 'Could not place the order request.');
+      Alert.alert('Order request failed', error instanceof Error ? error.message : 'Could not place the order request.');
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   const removeOwnProduct = async (product: CraftProduct) => {
@@ -846,6 +859,7 @@ export default function App() {
                 />
               ))}
             </View>
+            {!!orderActionMessage && <Text style={styles.orderActionMessage}>{orderActionMessage}</Text>}
 
             {/* Category Filter Chips */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesBar}>
@@ -933,8 +947,8 @@ export default function App() {
                       <TouchableOpacity style={styles.inlineActionButton} onPress={() => toggleWishlist(product.id)}>
                         <Text style={styles.inlineActionButtonText}>{wishlist.includes(product.id) ? t.removeFromWishlist : t.addToWishlist}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.inlineActionButtonPrimary} onPress={() => requestOrder(product)}>
-                        <Text style={styles.inlineActionButtonText}>{t.buyNow}</Text>
+                      <TouchableOpacity style={[styles.inlineActionButtonPrimary, isPlacingOrder && styles.disabledButton]} onPress={() => requestOrder(product)} disabled={isPlacingOrder}>
+                        <Text style={styles.inlineActionButtonText}>{isPlacingOrder ? 'Placing...' : t.buyNow}</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -1929,6 +1943,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     padding: 12,
+    marginBottom: 12,
+  },
+  orderActionMessage: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 10,
+    color: '#991B1B',
+    fontSize: 12,
+    fontWeight: '700',
+    padding: 10,
     marginBottom: 12,
   },
   deliveryTitle: {
