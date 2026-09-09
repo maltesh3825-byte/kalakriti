@@ -4,6 +4,7 @@ Smart India Hackathon 2026 - SIH26090
 Powered by Google Gemini Vision with Fallback Heuristic Engine
 """
 import base64
+import hashlib
 import json
 import logging
 import re
@@ -187,13 +188,31 @@ def generate_heuristic_craft_catalog(
     Derives category, tags, pricing, and descriptions using keyword recognition and visual aspect analysis.
     """
     notes = (artisan_notes or "").lower()
+    # Keep offline/fallback listings distinct even when no artisan notes or
+    # Gemini key are available. The image itself is part of the catalog input.
+    image_digest = hashlib.sha256(image_bytes).hexdigest()[:6].upper()
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        width, height = image.size
+        sample = image.resize((1, 1)).getpixel((0, 0))
+        if sample[0] >= sample[1] + 25 and sample[0] >= sample[2] + 25:
+            palette = "warm red and earthy"
+        elif sample[1] >= sample[0] + 20 and sample[1] >= sample[2] + 10:
+            palette = "natural green"
+        elif max(sample) - min(sample) < 22:
+            palette = "neutral-toned"
+        else:
+            palette = "multi-coloured"
+        visual_note = f"Photograph profile {image_digest}: {palette} palette, {width}x{height} framing."
+    except Exception:
+        visual_note = f"Photograph profile {image_digest}: individually captured artisan piece."
     
     # Heuristic keyword matching
     if any(k in notes for k in ["sari", "saree", "kurta", "cloth", "textile", "weave", "thread", "cotton", "silk", "dupatta", "embroidery", "कपड़ा", "साड़ी"]):
         category = "Handloom & Textiles"
-        title = "Artisan Handwoven Heritage Textile"
+        title = f"Artisan Handwoven Heritage Textile {image_digest}"
         tags = ["Handloom", "Organic Cotton", "Traditional Weave", "Ethnic", "Artisan Made"]
-        desc_en = "Masterfully woven on traditional pit looms by heritage artisans. Made with pure natural fibers that offer exceptional comfort and longevity."
+        desc_en = f"Masterfully woven on traditional pit looms by heritage artisans. Made with pure natural fibers that offer exceptional comfort and longevity. {visual_note}"
         desc_hi = "पारंपरिक करघे पर हस्तनिर्मित शुद्ध प्राकृतिक धागों से बुना गया वस्त्र। यह आरामदायक, पर्यावरण-अनुकूल और टिकाऊ है।"
         suggested = artisan_input_price if artisan_input_price else 1250
         min_p = round(suggested * 0.85)
@@ -204,9 +223,9 @@ def generate_heuristic_craft_catalog(
 
     elif any(k in notes for k in ["clay", "pot", "terracotta", "surahi", "diya", "pitcher", "ceramic", "मिट्टी", "बर्तन", "घड़ा"]):
         category = "Pottery & Terracotta"
-        title = "Handcrafted Terracotta Clay Artefact"
+        title = f"Handcrafted Terracotta Clay Artefact {image_digest}"
         tags = ["Terracotta", "Natural Clay", "Eco-Friendly", "Handmade", "Home Decor"]
-        desc_en = "Handcrafted on a traditional potter's wheel using natural riverbed clay and baked in open wood kilns. Naturally porous and chemical-free."
+        desc_en = f"Handcrafted on a traditional potter's wheel using natural riverbed clay and baked in open wood kilns. Naturally porous and chemical-free. {visual_note}"
         desc_hi = "पारंपरिक कुम्हार के चाक पर शुद्ध नदी की मिट्टी से बना हस्तनिर्मित उत्पाद। पूरी तरह प्राकृतिक, रसायन मुक्त और पर्यावरण अनुकूल।"
         suggested = artisan_input_price if artisan_input_price else 550
         min_p = round(suggested * 0.80)
@@ -217,9 +236,9 @@ def generate_heuristic_craft_catalog(
 
     elif any(k in notes for k in ["brass", "metal", "dhokra", "bronze", "copper", "पीतल", "धातु"]):
         category = "Brass & Metalcraft"
-        title = "Tribal Bell-Metal Heritage Figurine"
+        title = f"Tribal Bell-Metal Heritage Figurine {image_digest}"
         tags = ["Dhokra", "Brass Craft", "Tribal Art", "Heritage", "Lost Wax"]
-        desc_en = "Created using the ancient 4,000-year-old lost-wax casting technique. Every piece is unique, featuring rustic geometric tribal engravings."
+        desc_en = f"Created using the ancient 4,000-year-old lost-wax casting technique. Every piece is unique, featuring rustic geometric tribal engravings. {visual_note}"
         desc_hi = "प्राचीन लॉस्ट-वैक्स धातु ढलाई तकनीक से जनजातीय कारीगरों द्वारा हस्तनिर्मित अनूठी कृति। प्रत्येक वस्तु अपने आप में विशिष्ट है।"
         suggested = artisan_input_price if artisan_input_price else 1650
         min_p = round(suggested * 0.85)
@@ -230,9 +249,9 @@ def generate_heuristic_craft_catalog(
 
     elif any(k in notes for k in ["bamboo", "cane", "basket", "tokri", "बांस", "टोकरी"]):
         category = "Cane & Bamboo"
-        title = "Artisanal Woven Bamboo Utility Ware"
+        title = f"Artisanal Woven Bamboo Utility Ware {image_digest}"
         tags = ["Bamboo Craft", "Zero Plastic", "Sustainable", "Handwoven", "Eco Storage"]
-        desc_en = "Splinted and hand-woven from seasoned natural bamboo. Lightweight, high tensile strength, and 100% biodegradable."
+        desc_en = f"Splinted and hand-woven from seasoned natural bamboo. Lightweight, high tensile strength, and 100% biodegradable. {visual_note}"
         desc_hi = "प्राकृतिक बांस की तीलियों से हाथ से बुनी गई टिकाऊ टोकरी। हल्की, मजबूत और प्लास्टिक मुक्त जीवनशैली के लिए उत्तम।"
         suggested = artisan_input_price if artisan_input_price else 680
         min_p = round(suggested * 0.80)
@@ -243,9 +262,9 @@ def generate_heuristic_craft_catalog(
 
     elif any(k in notes for k in ["wood", "toy", "carving", "sheesham", "teak", "लकड़ी", "खिलौना"]):
         category = "Woodcraft"
-        title = "Hand-Carved Artisan Wooden Craft"
+        title = f"Hand-Carved Artisan Wooden Craft {image_digest}"
         tags = ["Woodcraft", "Natural Polish", "Hand Carved", "Traditional", "GI Craft"]
-        desc_en = "Handcrafted from sustainably sourced seasoned timber with smooth lacquer finish and child-safe organic tints."
+        desc_en = f"Handcrafted from sustainably sourced seasoned timber with smooth lacquer finish and child-safe organic tints. {visual_note}"
         desc_hi = "प्राकृतिक लकड़ी पर नक्काशी कर सुरक्षित वनस्पति रंगों और लाख की पॉलिश से तैयार किया गया सुंदर हस्तशिल्प।"
         suggested = artisan_input_price if artisan_input_price else 750
         min_p = round(suggested * 0.80)
@@ -257,9 +276,9 @@ def generate_heuristic_craft_catalog(
     else:
         # Default smart handicraft preset
         category = "Folk Art & Painting"
-        title = "Authentic Handcrafted Folk Art Creation"
+        title = f"Authentic Handcrafted Folk Art Creation {image_digest}"
         tags = ["Folk Art", "Handmade", "Cultural Heritage", "Indigenous", "Artisan Direct"]
-        desc_en = "Exquisitely hand-crafted by indigenous artisans using traditional techniques and natural pigments. Celebrates rich cultural folklore."
+        desc_en = f"Exquisitely hand-crafted by indigenous artisans using traditional techniques and natural pigments. Celebrates rich cultural folklore. {visual_note}"
         desc_hi = "पारंपरिक तकनीकों और प्राकृतिक रंगों का उपयोग करके स्थानीय कारीगरों द्वारा हाथ से बनाई गई अनूठी कलाकृति।"
         suggested = artisan_input_price if artisan_input_price else 850
         min_p = round(suggested * 0.80)
@@ -267,6 +286,8 @@ def generate_heuristic_craft_catalog(
         justification = "Estimated 8 to 12 hours of specialized manual craftsmanship, locally sourced raw materials, and fair living wage."
         story = "Represents indigenous craft traditions promoted by the Ministry of Social Justice and Empowerment."
         care = "Handle with care, keep away from dampness and direct harsh sunlight."
+
+    desc_hi = f"{desc_hi} चित्र पहचान: {image_digest}।"
 
     return {
         "category": category,

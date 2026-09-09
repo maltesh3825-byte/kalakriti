@@ -1379,6 +1379,12 @@ function resetArtisanForm() {
   document.getElementById('reviewSection').classList.add('hidden');
   document.getElementById('artisanNotes').value = '';
   document.getElementById('artisanEstimatedPrice').value = '';
+  document.getElementById('editProductTitle').value = '';
+  document.getElementById('editProductPrice').value = '';
+  document.getElementById('editDescEn').value = '';
+  document.getElementById('editDescHi').value = '';
+  currentTags = [];
+  document.getElementById('tagsContainer').innerHTML = '';
   state.selectedFile = null;
   state.uploadedImageUrl = null;
   state.aiResult = null;
@@ -1736,6 +1742,26 @@ async function placeMarketplaceOrder() {
     return;
   }
 
+  const deliveryFields = {
+    recipient_name: document.getElementById('orderRecipientName')?.value.trim() || '',
+    recipient_phone: document.getElementById('orderRecipientPhone')?.value.trim() || '',
+    address_line: document.getElementById('orderAddressLine')?.value.trim() || '',
+    city: document.getElementById('orderCity')?.value.trim() || '',
+    state: document.getElementById('orderState')?.value.trim() || '',
+    pincode: document.getElementById('orderPincode')?.value.trim() || ''
+  };
+  const missingDeliveryField = Object.values(deliveryFields).some(value => !value);
+  if (missingDeliveryField) {
+    showToast('Enter all delivery details before placing the order');
+    document.getElementById('deliveryDetailsForm')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (!/^\d{6}$/.test(deliveryFields.pincode)) {
+    showToast('Enter a valid 6-digit pincode');
+    document.getElementById('orderPincode')?.focus();
+    return;
+  }
+
   const button = document.getElementById('modalPlaceOrderBtn');
   if (button) {
     button.disabled = true;
@@ -1754,15 +1780,19 @@ async function placeMarketplaceOrder() {
         total: product.price,
         status: 'Requested',
         eta: 'Artisan will confirm delivery',
-        recipient_name: document.getElementById('orderRecipientName')?.value.trim(),
-        recipient_phone: document.getElementById('orderRecipientPhone')?.value.trim(),
-        address_line: document.getElementById('orderAddressLine')?.value.trim(),
-        city: document.getElementById('orderCity')?.value.trim(),
-        state: document.getElementById('orderState')?.value.trim(),
-        pincode: document.getElementById('orderPincode')?.value.trim()
+        ...deliveryFields
       })
     });
-    if (!response.ok) throw new Error('Order request failed');
+    if (!response.ok) {
+      let detail = 'Order request failed';
+      try {
+        const errorData = await response.json();
+        detail = errorData.detail || detail;
+      } catch (parseError) {
+        console.warn('Could not parse order error response:', parseError);
+      }
+      throw new Error(detail);
+    }
     await loadAccountData();
     await loadProducts();
     document.getElementById('productDetailModal')?.classList.add('hidden');
@@ -1771,7 +1801,7 @@ async function placeMarketplaceOrder() {
     renderAccountView('orders');
   } catch (error) {
     console.error('Order request error:', error);
-    showToast('Could not place the order request');
+    showToast(error instanceof Error ? error.message : 'Could not place the order request');
   } finally {
     if (button) {
       button.disabled = false;
