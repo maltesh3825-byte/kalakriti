@@ -27,7 +27,7 @@ import * as Speech from 'expo-speech';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors } from './constants/Colors';
-import { i18n, Language } from './constants/i18n';
+import { i18n, additionalTranslations, Language } from './constants/i18n';
 import {
   CraftProduct,
   AiAnalysisResult,
@@ -121,7 +121,11 @@ export default function App() {
   const [adminRequests, setAdminRequests] = useState<AdminRequest[]>([]);
   const [adminStatus, setAdminStatus] = useState('');
 
-  const t = i18n[lang];
+  const t = { ...i18n, ...additionalTranslations }[lang];
+  const languageOptions: Array<[Language, string]> = [
+    ['en', 'English'], ['hi', 'हिंदी'], ['kn', 'ಕನ್ನಡ'], ['te', 'తెలుగు'],
+    ['ml', 'മലയാളം'], ['mr', 'मराठी'], ['ta', 'தமிழ்'], ['bh', 'बिहारी'], ['bho', 'भोजपुरी']
+  ];
   const bulkQuantityNumber = Math.max(0, Number(bulkQuantity) || 0);
   const bulkUnitPriceNumber = Math.max(0, Number(bulkUnitPrice) || 0);
   const bulkPricingTiers = [
@@ -133,6 +137,11 @@ export default function App() {
   useEffect(() => {
     loadProducts();
     void loadOfflineDrafts();
+    AsyncStorage.getItem('kalasetu_language').then(savedLanguage => {
+      if (savedLanguage && ['en', 'hi', 'ta', 'kn', 'te', 'ml', 'mr', 'bh', 'bho'].includes(savedLanguage)) {
+        setLang(savedLanguage as Language);
+      }
+    });
     AsyncStorage.getItem('kalasetu_admin_token').then(token => {
       if (token) {
         setAdminToken(token);
@@ -420,9 +429,9 @@ export default function App() {
     }
   };
 
-  // Toggle Language
-  const toggleLanguage = () => {
-    setLang(prev => (prev === 'en' ? 'hi' : 'en'));
+  const selectLanguage = async (nextLanguage: Language) => {
+    setLang(nextLanguage);
+    await AsyncStorage.setItem('kalasetu_language', nextLanguage);
   };
 
   // Pick Image from Camera
@@ -635,8 +644,8 @@ export default function App() {
           <Text style={styles.sihTag}>SIH 2026</Text>
           <Text style={styles.topStripText}>{t.sihBadge}</Text>
         </View>
-        <TouchableOpacity style={styles.langBtn} onPress={toggleLanguage}>
-          <Text style={styles.langBtnText}>{lang === 'en' ? '🌐 हिंदी' : '🌐 English'}</Text>
+        <TouchableOpacity style={styles.langBtn} onPress={() => selectLanguage(lang === 'en' ? 'hi' : 'en')}>
+          <Text style={styles.langBtnText}>🌐 {languageOptions.find(([code]) => code === lang)?.[1]}</Text>
         </TouchableOpacity>
       </View>
 
@@ -651,13 +660,23 @@ export default function App() {
             <Text style={styles.appSub}>{t.appSubtitle}</Text>
           </TouchableOpacity>
         </View>
-
         <TouchableOpacity
           style={styles.helpBtn} 
           onPress={() => toggleSpeech(lang === 'hi' ? 'नमस्ते! कलासेतु में आपका स्वागत है। यहां आप अपने हस्तशिल्प की फोटो अपलोड करें। हमारा एआई आपके उत्पाद का नाम, कीमत और विवरण खुद तैयार करेगा।' : 'Welcome to KalaSetu! Take a photo of your craft. Our AI will automatically identify the craft category, suggest fair pricing, and write SEO descriptions.', lang)}>
           <Text style={styles.helpBtnText}>{isSpeaking ? '⏹ Stop' : `🔊 ${lang === 'hi' ? 'मदद सुनें' : 'Audio Help'}`}</Text>
         </TouchableOpacity>
       </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.languagePicker}>
+        {languageOptions.map(([code, label]) => (
+          <TouchableOpacity
+            key={code}
+            style={[styles.languageChip, lang === code && styles.languageChipActive]}
+            onPress={() => void selectLanguage(code)}
+          >
+            <Text style={[styles.languageChipText, lang === code && styles.languageChipTextActive]}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       {/* Main Body: Scrollable Screen */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -1649,6 +1668,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  languagePicker: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    gap: 6,
+    backgroundColor: Colors.background,
+  },
+  languageChip: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: Colors.cardBackground,
+  },
+  languageChipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  languageChipText: {
+    color: Colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  languageChipTextActive: {
+    color: '#FFFFFF',
   },
   brandRow: {
     flexDirection: 'row',
