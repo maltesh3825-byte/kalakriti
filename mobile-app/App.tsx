@@ -101,6 +101,7 @@ export default function App() {
   const [speechError, setSpeechError] = useState('');
   const [isTranslatingNotes, setIsTranslatingNotes] = useState(false);
   const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
+  const browserListeningRef = useRef(false);
   const [priceIdea, setPriceIdea] = useState('');
   const [isEnhanced, setIsEnhanced] = useState(false);
 
@@ -608,6 +609,7 @@ export default function App() {
   const toggleVoiceInput = async () => {
     if (isListening) {
       if (Platform.OS === 'web') {
+        browserListeningRef.current = false;
         browserRecognitionRef.current?.stop();
       } else {
         ExpoSpeechRecognitionModule.stop();
@@ -632,19 +634,34 @@ export default function App() {
         browserRecognitionRef.current = recognition;
         recognition.lang = 'kn-IN';
         recognition.interimResults = true;
-        recognition.continuous = false;
+        recognition.continuous = true;
         recognition.onresult = event => {
           const transcript = event.results[event.results.length - 1]?.[0]?.transcript?.trim();
           if (transcript) setArtisanNotes(transcript);
         };
         recognition.onerror = event => {
+          browserListeningRef.current = false;
           setIsListening(false);
           setSpeechError(event.error || tx('voiceError'));
         };
         recognition.onend = () => {
-          setIsListening(false);
-          browserRecognitionRef.current = null;
+          if (browserListeningRef.current) {
+            window.setTimeout(() => {
+              if (browserListeningRef.current) {
+                try {
+                  recognition.start();
+                } catch {
+                  browserListeningRef.current = false;
+                  setIsListening(false);
+                }
+              }
+            }, 250);
+          } else {
+            setIsListening(false);
+            browserRecognitionRef.current = null;
+          }
         };
+        browserListeningRef.current = true;
         recognition.start();
         setIsListening(true);
         return;
@@ -1055,13 +1072,22 @@ export default function App() {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  <TextInput 
-                    style={[styles.textInput, styles.textArea]} 
-                    value={artisanNotes} 
-                    onChangeText={setArtisanNotes} 
-                    multiline 
-                    placeholder={t.artisanNotesPlaceholder} 
-                  />
+                  <View style={styles.descriptionInputWrap}>
+                    <TextInput
+                      style={[styles.textInput, styles.textArea, styles.descriptionInput]}
+                      value={artisanNotes}
+                      onChangeText={setArtisanNotes}
+                      multiline
+                      placeholder={t.artisanNotesPlaceholder}
+                    />
+                    <TouchableOpacity
+                      style={[styles.descriptionMicButton, isListening && styles.voiceButtonActive]}
+                      onPress={toggleVoiceInput}
+                      accessibilityLabel={isListening ? tx('voiceListening') : tx('voiceInput')}
+                    >
+                      <Text style={styles.descriptionMicText}>{isListening ? '⏹️' : '🎙️'}</Text>
+                    </TouchableOpacity>
+                  </View>
                   <Text style={styles.voiceHint}>{tx('voiceTranslationHint')}</Text>
                   {speechError ? <Text style={styles.errorText}>{speechError}</Text> : null}
                 </View>
@@ -2304,6 +2330,28 @@ const styles = StyleSheet.create({
     color: '#1D4ED8',
     fontSize: 10,
     fontWeight: '700',
+  },
+  descriptionInputWrap: {
+    position: 'relative',
+  },
+  descriptionInput: {
+    paddingRight: 48,
+  },
+  descriptionMicButton: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FDBA74',
+  },
+  descriptionMicText: {
+    fontSize: 16,
   },
   voiceHint: {
     color: Colors.textSecondary,
