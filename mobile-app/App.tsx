@@ -1061,7 +1061,7 @@ export default function App() {
                 {accountView === 'orders' && (
                   <View>
                     <Text style={styles.profileSectionTitle}>Orders requested by me</Text>
-                    {orders.length === 0 ? <Text style={styles.emptyStateText}>No purchase requests yet.</Text> : orders.map(order => (
+                    {orders.filter(order => order.status.toLowerCase() !== 'cancelled').length === 0 ? <Text style={styles.emptyStateText}>No active purchase requests.</Text> : orders.filter(order => order.status.toLowerCase() !== 'cancelled').map(order => (
                       <View key={order.id} style={styles.orderCard}>
                         <Text style={styles.orderTitle}>{order.productName}</Text>
                         <Text style={styles.orderMeta}>₹{order.price} · {order.status}</Text>
