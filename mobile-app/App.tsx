@@ -116,6 +116,7 @@ export default function App() {
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
   const [buyQuantity, setBuyQuantity] = useState('1');
   const [orderActionMessage, setOrderActionMessage] = useState('');
   const [deliveryDetails, setDeliveryDetails] = useState({
@@ -398,19 +399,30 @@ export default function App() {
       Alert.alert('Sign in required', 'Please sign in to manage marketplace listings.');
       return;
     }
-    Alert.alert('Delete listing', 'Delete this product listing?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => {
-        try {
-          await deleteProduct(product.id, currentUser.id);
-          setProducts(prev => prev.filter(item => item.id !== product.id));
-          setPublishedProducts(prev => prev.filter(item => item.id !== product.id));
-          Alert.alert('Deleted', 'Your product listing was deleted.');
-        } catch (error) {
-          Alert.alert('Delete failed', error instanceof Error ? error.message : 'Could not delete listing.');
-        }
-      }}
-    ]);
+    if (deletingProductId === product.id) return;
+    if (Platform.OS === 'web' && !globalThis.confirm('Delete this product listing?')) return;
+
+    if (Platform.OS !== 'web') {
+      const shouldDelete = await new Promise<boolean>(resolve => {
+        Alert.alert('Delete listing', 'Delete this product listing?', [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+          { text: 'Delete', style: 'destructive', onPress: () => resolve(true) }
+        ], { cancelable: true, onDismiss: () => resolve(false) });
+      });
+      if (!shouldDelete) return;
+    }
+
+    setDeletingProductId(product.id);
+    try {
+      await deleteProduct(product.id, currentUser.id);
+      setProducts(prev => prev.filter(item => item.id !== product.id));
+      setPublishedProducts(prev => prev.filter(item => item.id !== product.id));
+      Alert.alert('Deleted', 'Your product listing was deleted.');
+    } catch (error) {
+      Alert.alert('Delete failed', error instanceof Error ? error.message : 'Could not delete listing.');
+    } finally {
+      setDeletingProductId(null);
+    }
   };
 
   const submitReview = async (product: CraftProduct) => {
@@ -1453,7 +1465,7 @@ export default function App() {
                       </View>
                     ))}
                     <Text style={styles.profileSectionTitle}>{tx('ordersPublishedByMe')}</Text>
-                    {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}><Text style={styles.deleteProductButtonText}>{tx('removePublished')}</Text></TouchableOpacity></View>)}
+                    {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={[styles.deleteProductButton, deletingProductId === product.id && styles.disabledButton]} onPress={() => removeOwnProduct(product)} disabled={deletingProductId === product.id}><Text style={styles.deleteProductButtonText}>{deletingProductId === product.id ? 'Removing...' : tx('removePublished')}</Text></TouchableOpacity></View>)}
                   </View>
                 )}
                 {accountView === 'requests' && (
