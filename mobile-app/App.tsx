@@ -394,7 +394,10 @@ export default function App() {
   };
 
   const removeOwnProduct = async (product: CraftProduct) => {
-    if (!currentUser || currentUser.name.trim().toLowerCase() !== product.artisan_name.trim().toLowerCase()) return;
+    if (!currentUser) {
+      Alert.alert('Sign in required', 'Please sign in to manage marketplace listings.');
+      return;
+    }
     Alert.alert('Delete listing', 'Delete this product listing?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
@@ -1284,7 +1287,7 @@ export default function App() {
                       onPress={() => openWhatsApp(product.artisan_phone || '+919876543210', product.name, product.price)}>
                       <Text style={styles.whatsAppButtonText}>💬 {t.btnWhatsApp}</Text>
                     </TouchableOpacity>
-                    {isLoggedIn && currentUser?.name.trim().toLowerCase() === product.artisan_name.trim().toLowerCase() && (
+                    {isLoggedIn && (
                       <TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}>
                         <Text style={styles.deleteProductButtonText}>Delete my listing</Text>
                       </TouchableOpacity>
