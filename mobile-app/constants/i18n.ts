@@ -483,7 +483,12 @@ export type AppTextKey =
   | 'connectChannels' | 'connectHelp' | 'emailSupport' | 'account' | 'profile' | 'history'
   | 'requests' | 'notifications' | 'admin' | 'publishedListings' | 'savedCrafts' | 'logout'
   | 'activityHistory' | 'purchaseOrders' | 'publishedListing' | 'ordersByMe' | 'noActiveOrders'
-  | 'cancelOrder' | 'ordersPublishedByMe' | 'noPublishedProducts' | 'recentActivity';
+  | 'cancelOrder' | 'ordersPublishedByMe' | 'noPublishedProducts' | 'recentActivity'
+  | 'role' | 'sellerBuyer' | 'removePublished' | 'bulkRequests' | 'sendRequest' | 'savedCraftsTitle'
+  | 'noSavedCrafts' | 'orderUpdate' | 'noNotifications' | 'adminReview' | 'reviewRequests'
+  | 'adminEmail' | 'adminPassword' | 'signInAdmin' | 'requestQueue' | 'noRequests'
+  | 'homeTab' | 'deliveryDetails' | 'mobileNumber' | 'houseStreet' | 'city' | 'state' | 'pincode'
+  | 'reviews' | 'rateReview' | 'writeExperience' | 'submitReview' | 'bulkLinkage' | 'prepareRfq';
 
 const englishAppText: Record<AppTextKey, string> = {
   homeTitle: 'Empowering Rural Artisans with AI-Driven Market Linkage',
@@ -509,10 +514,20 @@ const englishAppText: Record<AppTextKey, string> = {
   noActiveOrders: 'No active purchase requests.', cancelOrder: 'Cancel order',
   ordersPublishedByMe: 'Orders published by me', noPublishedProducts: 'No products published by you yet.',
   recentActivity: 'Recent activity'
+  ,role: 'Role', sellerBuyer: 'Seller & Buyer', removePublished: 'Remove published order',
+  bulkRequests: 'Bulk and institutional requests', sendRequest: 'Send request', savedCraftsTitle: 'Saved crafts',
+  noSavedCrafts: 'No saved crafts yet.', orderUpdate: 'Order update', noNotifications: 'No notifications yet.',
+  adminReview: 'Admin Review', reviewRequests: 'Review and moderate institutional buyer requests.',
+  adminEmail: 'Admin email', adminPassword: 'Admin password', signInAdmin: 'Sign in as admin',
+  requestQueue: 'Institutional request review queue', noRequests: 'No institutional requests yet.',
+  homeTab: 'Home', deliveryDetails: 'Delivery details for orders', mobileNumber: 'Mobile number',
+  houseStreet: 'House / street / locality', city: 'City', state: 'State', pincode: '6-digit pincode',
+  reviews: 'review(s)', rateReview: '★ Rate & review (no purchase required)', writeExperience: 'Write your experience...',
+  submitReview: 'Submit review', bulkLinkage: 'Bulk & Institutional Linkage', prepareRfq: 'Prepare bulk RFQ'
 };
 
 const regionalAppText: Record<Exclude<Language, 'en'>, Partial<Record<AppTextKey, string>>> = {
-  hi: { homeTitle: 'एआई से ग्रामीण कारीगरों को बाजार से जोड़ना', homeSubtitle: 'कारीगरों को खरीदारों, कंपनियों और सरकारी संस्थानों से सीधे जोड़ें।', startCataloging: 'कैटलॉग शुरू करें', exploreCrafts: 'शिल्प देखें', connectedPaths: 'दो जुड़े हुए रास्ते', forArtisans: 'कारीगरों के लिए', forBuyers: 'खरीदारों और संस्थानों के लिए', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'अपने शिल्प भंडार को थोक अवसरों में बदलें।', submitRfq: 'RFQ भेजें', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजें', pricingTiers: 'गतिशील मूल्य और मात्रा स्तर', account: 'मेरा कलासेतु खाता', profile: 'प्रोफ़ाइल', history: 'इतिहास', requests: 'अनुरोध', notifications: 'सूचनाएं', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास', ordersByMe: 'मेरे ऑर्डर', ordersPublishedByMe: 'मेरे प्रकाशित ऑर्डर' },
+  hi: { homeTitle: 'एआई से ग्रामीण कारीगरों को बाजार से जोड़ना', homeSubtitle: 'कारीगरों को खरीदारों, कंपनियों और सरकारी संस्थानों से सीधे जोड़ें।', startCataloging: 'कैटलॉग शुरू करें', exploreCrafts: 'शिल्प देखें', connectedPaths: 'दो जुड़े हुए रास्ते', forArtisans: 'कारीगरों के लिए', forBuyers: 'खरीदारों और संस्थानों के लिए', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'अपने शिल्प भंडार को थोक अवसरों में बदलें।', submitRfq: 'RFQ भेजें', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजें', pricingTiers: 'गतिशील मूल्य और मात्रा स्तर', account: 'मेरा कलासेतु खाता', profile: 'प्रोफ़ाइल', history: 'इतिहास', requests: 'अनुरोध', notifications: 'सूचनाएं', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास', ordersByMe: 'मेरे ऑर्डर', ordersPublishedByMe: 'मेरे प्रकाशित ऑर्डर', role: 'भूमिका', sellerBuyer: 'विक्रेता और खरीदार', removePublished: 'प्रकाशित ऑर्डर हटाएं', bulkRequests: 'थोक और संस्थागत अनुरोध', sendRequest: 'अनुरोध भेजें', savedCraftsTitle: 'सहेजे गए शिल्प', noSavedCrafts: 'अभी कोई सहेजा हुआ शिल्प नहीं।', orderUpdate: 'ऑर्डर अपडेट', noNotifications: 'अभी कोई सूचना नहीं।', adminReview: 'एडमिन समीक्षा', reviewRequests: 'संस्थागत खरीदार अनुरोधों की समीक्षा करें।', adminEmail: 'एडमिन ईमेल', adminPassword: 'एडमिन पासवर्ड', signInAdmin: 'एडमिन के रूप में साइन इन', requestQueue: 'संस्थागत अनुरोध समीक्षा कतार', noRequests: 'अभी कोई संस्थागत अनुरोध नहीं।', homeTab: 'होम', deliveryDetails: 'ऑर्डर के लिए डिलीवरी विवरण', mobileNumber: 'मोबाइल नंबर', houseStreet: 'घर / सड़क / स्थानीय क्षेत्र', city: 'शहर', state: 'राज्य', pincode: '6 अंकों का पिनकोड', reviews: 'समीक्षा', rateReview: '★ रेटिंग और समीक्षा (खरीद आवश्यक नहीं)', writeExperience: 'अपना अनुभव लिखें...', submitReview: 'समीक्षा भेजें', bulkLinkage: 'थोक और संस्थागत संपर्क', prepareRfq: 'थोक RFQ तैयार करें' },
   ta: { homeTitle: 'AI மூலம் கிராமப்புற கைவினைஞர்களை சந்தையுடன் இணைத்தல்', startCataloging: 'பட்டியல் தொடங்கு', exploreCrafts: 'கைவினைகளை காண்க', connectedPaths: 'இரண்டு இணைந்த பாதைகள்', forArtisans: 'கைவினைஞர்களுக்கு', forBuyers: 'வாங்குபவர்கள் மற்றும் நிறுவனங்களுக்கு', bulkTab: 'மொத்தம்', accountTab: 'கணக்கு', bulkTitle: 'உங்கள் கைவினைப் பொருட்களை மொத்த வாய்ப்புகளாக மாற்றுங்கள்.', submitRfq: 'RFQ சமர்ப்பிக்கவும்', saveDraft: 'ஆஃப்லைன் வரைவை சேமிக்கவும்', pricingTiers: 'மாறும் விலை மற்றும் அளவு நிலைகள்', account: 'என் கலாசேது கணக்கு', profile: 'சுயவிவரம்', history: 'வரலாறு', requests: 'கோரிக்கைகள்', notifications: 'அறிவிப்புகள்', admin: 'நிர்வாகம்', logout: 'வெளியேறு', activityHistory: 'செயல் வரலாறு' },
   kn: { homeTitle: 'AI ಮೂಲಕ ಗ್ರಾಮೀಣ ಕಲಾವಿದರನ್ನು ಮಾರುಕಟ್ಟೆಗೆ ಸಂಪರ್ಕಿಸುವುದು', startCataloging: 'ಕ್ಯಾಟಲಾಗ್ ಪ್ರಾರಂಭಿಸಿ', exploreCrafts: 'ಕಲೆಗಳನ್ನು ನೋಡಿ', connectedPaths: 'ಎರಡು ಸಂಪರ್ಕಿತ ಮಾರ್ಗಗಳು', forArtisans: 'ಕಲಾವಿದರಿಗೆ', forBuyers: 'ಖರೀದಿದಾರರು ಮತ್ತು ಸಂಸ್ಥೆಗಳಿಗೆ', bulkTab: 'ಸಗಟು', accountTab: 'ಖಾತೆ', bulkTitle: 'ನಿಮ್ಮ ಕಲೆ ಸಂಗ್ರಹವನ್ನು ಸಗಟು ಅವಕಾಶಗಳಾಗಿ ಬದಲಿಸಿ.', submitRfq: 'RFQ ಸಲ್ಲಿಸಿ', saveDraft: 'ಆಫ್‌ಲೈನ್ ಕರಡು ಉಳಿಸಿ', pricingTiers: 'ಚಲನಶೀಲ ಬೆಲೆ ಮತ್ತು ಪ್ರಮಾಣ ಹಂತಗಳು', account: 'ನನ್ನ ಕಲಾಸೇತು ಖಾತೆ', profile: 'ಪ್ರೊಫೈಲ್', history: 'ಇತಿಹಾಸ', requests: 'ವಿನಂತಿಗಳು', notifications: 'ಅಧಿಸೂಚನೆಗಳು', admin: 'ನಿರ್ವಾಹಕ', logout: 'ಲಾಗ್ ಔಟ್', activityHistory: 'ಚಟುವಟಿಕೆ ಇತಿಹಾಸ' },
   te: { homeTitle: 'AIతో గ్రామీణ కళాకారులను మార్కెట్‌కు అనుసంధానం చేయడం', startCataloging: 'కేటలాగ్ ప్రారంభించండి', exploreCrafts: 'కళలను చూడండి', connectedPaths: 'రెండు అనుసంధాన మార్గాలు', forArtisans: 'కళాకారుల కోసం', forBuyers: 'కొనుగోలుదారులు మరియు సంస్థల కోసం', bulkTab: 'బల్క్', accountTab: 'ఖాతా', bulkTitle: 'మీ కళా నిల్వను బల్క్ అవకాశాలుగా మార్చండి.', submitRfq: 'RFQ పంపండి', saveDraft: 'ఆఫ్‌లైన్ డ్రాఫ్ట్ సేవ్ చేయండి', pricingTiers: 'డైనమిక్ ధరలు మరియు పరిమాణ స్థాయిలు', account: 'నా కలాసేతు ఖాతా', profile: 'ప్రొఫైల్', history: 'చరిత్ర', requests: 'అభ్యర్థనలు', notifications: 'నోటిఫికేషన్లు', admin: 'అడ్మిన్', logout: 'లాగ్ అవుట్', activityHistory: 'చర్యల చరిత్ర' },
@@ -522,5 +537,15 @@ const regionalAppText: Record<Exclude<Language, 'en'>, Partial<Record<AppTextKey
   bho: { homeTitle: 'AI से गाँव के कारीगरन के बाजार से जोड़े के काम', startCataloging: 'कैटलॉग शुरू करीं', exploreCrafts: 'शिल्प देखीं', connectedPaths: 'दू गो जुड़ल रास्ता', forArtisans: 'कारीगर खातिर', forBuyers: 'खरीदार आ संस्था खातिर', bulkTab: 'थोक', accountTab: 'खाता', bulkTitle: 'आपन कारीगरी के थोक मौका में बदलीं.', submitRfq: 'RFQ भेजीं', saveDraft: 'ऑफलाइन ड्राफ्ट सहेजीं', pricingTiers: 'बदलत दाम आ मात्रा स्तर', account: 'हमार कलासेतु खाता', profile: 'प्रोफाइल', history: 'इतिहास', requests: 'निवेदन', notifications: 'सूचना', admin: 'एडमिन', logout: 'लॉग आउट', activityHistory: 'गतिविधि इतिहास' }
 };
 
+const extraRegionalText: Partial<Record<Exclude<Language, 'en'>, Partial<Record<AppTextKey, string>>>> = {
+  ta: { role: 'பங்கு', sellerBuyer: 'விற்பவர் & வாங்குபவர்', deliveryDetails: 'ஆர்டர் விநியோக விவரங்கள்', reviews: 'மதிப்புரைகள்', rateReview: '★ மதிப்பிடவும் (வாங்குதல் தேவையில்லை)', submitReview: 'மதிப்புரையை சமர்ப்பிக்கவும்', adminReview: 'நிர்வாக மதிப்பாய்வு', logout: 'வெளியேறு', homeTab: 'முகப்பு' },
+  kn: { role: 'ಪಾತ್ರ', sellerBuyer: 'ಮಾರಾಟಗಾರ & ಖರೀದಿದಾರ', deliveryDetails: 'ಆರ್ಡರ್ ವಿತರಣಾ ವಿವರಗಳು', reviews: 'ವಿಮರ್ಶೆಗಳು', rateReview: '★ ರೇಟ್ ಮಾಡಿ (ಖರೀದಿ ಅಗತ್ಯವಿಲ್ಲ)', submitReview: 'ವಿಮರ್ಶೆ ಸಲ್ಲಿಸಿ', adminReview: 'ನಿರ್ವಾಹಕ ಪರಿಶೀಲನೆ', logout: 'ಲಾಗ್ ಔಟ್', homeTab: 'ಮುಖಪುಟ' },
+  te: { role: 'పాత్ర', sellerBuyer: 'విక్రేత & కొనుగోలుదారు', deliveryDetails: 'ఆర్డర్ డెలివరీ వివరాలు', reviews: 'సమీక్షలు', rateReview: '★ రేట్ చేయండి (కొనుగోలు అవసరం లేదు)', submitReview: 'సమీక్ష పంపండి', adminReview: 'అడ్మిన్ సమీక్ష', logout: 'లాగ్ అవుట్', homeTab: 'హోమ్' },
+  ml: { role: 'പങ്ക്', sellerBuyer: 'വിൽപ്പനക്കാരൻ & വാങ്ങുന്നയാൾ', deliveryDetails: 'ഓർഡർ ഡെലിവറി വിവരങ്ങൾ', reviews: 'അവലോകനങ്ങൾ', rateReview: '★ റേറ്റ് ചെയ്യുക (വാങ്ങൽ ആവശ്യമില്ല)', submitReview: 'അവലോകനം സമർപ്പിക്കുക', adminReview: 'അഡ്മിൻ അവലോകനം', logout: 'പുറത്തുകടക്കുക', homeTab: 'ഹോം' },
+  mr: { role: 'भूमिका', sellerBuyer: 'विक्रेता आणि खरेदीदार', deliveryDetails: 'ऑर्डरसाठी डिलिव्हरी तपशील', reviews: 'परीक्षणे', rateReview: '★ रेट करा (खरेदी आवश्यक नाही)', submitReview: 'परीक्षण पाठवा', adminReview: 'अॅडमिन पुनरावलोकन', logout: 'लॉग आउट', homeTab: 'मुख्यपृष्ठ' },
+  bh: { role: 'भूमिका', sellerBuyer: 'बेचइया आ खरीदार', deliveryDetails: 'ऑर्डर डिलीवरी के जानकारी', reviews: 'समीक्षा', rateReview: '★ रेटिंग करीं (खरीदी जरूरी नइखे)', submitReview: 'समीक्षा भेजीं', adminReview: 'एडमिन समीक्षा', logout: 'लॉग आउट', homeTab: 'होम' },
+  bho: { role: 'भूमिका', sellerBuyer: 'बेचे वाला आ खरीदार', deliveryDetails: 'ऑर्डर डिलीवरी के जानकारी', reviews: 'रिव्यू', rateReview: '★ रेट करीं (खरीद जरूरी नइखे)', submitReview: 'रिव्यू भेजीं', adminReview: 'एडमिन रिव्यू', logout: 'लॉग आउट', homeTab: 'होम' }
+};
+
 export const getAppText = (language: Language, key: AppTextKey): string =>
-  (language === 'en' ? undefined : regionalAppText[language]?.[key]) || englishAppText[key];
+  (language === 'en' ? undefined : extraRegionalText[language]?.[key] || regionalAppText[language]?.[key]) || englishAppText[key];

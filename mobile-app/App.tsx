@@ -125,6 +125,11 @@ export default function App() {
 
   const t = { ...i18n, ...additionalTranslations }[lang];
   const tx = (key: Parameters<typeof getAppText>[1]) => getAppText(lang, key);
+  const roleLabel = currentUser?.role === 'buyer'
+    ? (lang === 'hi' ? 'खरीदार' : lang === 'ta' ? 'வாங்குபவர்' : lang === 'kn' ? 'ಖರೀದಿದಾರ' : lang === 'te' ? 'కొనుగోలుదారు' : lang === 'ml' ? 'വാങ്ങുന്നയാൾ' : lang === 'mr' ? 'खरेदीदार' : 'Buyer')
+    : currentUser?.role === 'artisan'
+      ? (lang === 'hi' ? 'कारीगर' : lang === 'ta' ? 'கைவினைஞர்' : lang === 'kn' ? 'ಕಲಾವಿದ' : lang === 'te' ? 'కళాకారుడు' : lang === 'ml' ? 'കലാകാരൻ' : lang === 'mr' ? 'कारागीर' : 'Seller')
+      : tx('sellerBuyer');
   const languageOptions: Array<[Language, string]> = [
     ['en', 'English'], ['hi', 'हिंदी'], ['kn', 'ಕನ್ನಡ'], ['te', 'తెలుగు'],
     ['ml', 'മലയാളം'], ['mr', 'मराठी'], ['ta', 'தமிழ்'], ['bh', 'बिहारी'], ['bho', 'भोजपुरी']
@@ -722,7 +727,7 @@ export default function App() {
             </View>
             <View style={styles.homeImageCard}>
               <Image source={{ uri: 'https://images.unsplash.com/photo-1577083288073-40892c0860a4?auto=format&fit=crop&w=1200&q=80' }} style={styles.homeImage} />
-              <Text style={styles.homeImageCaption}>Terracotta • Madhubani • Dhokra • Verified Origin</Text>
+              <Text style={styles.homeImageCaption}>Terracotta • Madhubani • Dhokra • {t.mosjeVerified}</Text>
             </View>
             <Text style={styles.homeSectionTitle}>{tx('connectedPaths')}</Text>
             <View style={styles.homeFeatureGrid}>
@@ -750,12 +755,12 @@ export default function App() {
           <View style={styles.studioContainer}>
             <View style={styles.offlineDraftBanner}>
               <View style={styles.offlineDraftHeader}>
-                <Text style={styles.offlineDraftTitle}>Offline drafts</Text>
+                <Text style={styles.offlineDraftTitle}>{tx('saveDraft')}</Text>
                 <Text style={styles.offlineDraftBadge}>{catalogDrafts.length} saved</Text>
               </View>
-              <Text style={styles.offlineDraftText}>Save catalog work on this device when rural connectivity is unavailable.</Text>
+              <Text style={styles.offlineDraftText}>{tx('bulkHelp')}</Text>
               <TouchableOpacity style={styles.offlineDraftSaveButton} onPress={saveCatalogDraft}>
-                <Text style={styles.offlineDraftSaveText}>Save current work offline</Text>
+                <Text style={styles.offlineDraftSaveText}>{tx('saveDraft')}</Text>
               </TouchableOpacity>
               {catalogDrafts.map(draft => (
                 <View key={draft.id} style={styles.offlineDraftRow}>
@@ -765,10 +770,10 @@ export default function App() {
                   </View>
                   <View style={styles.offlineDraftActions}>
                     <TouchableOpacity onPress={() => restoreCatalogDraft(draft)}>
-                      <Text style={styles.offlineDraftRestore}>Restore</Text>
+                      <Text style={styles.offlineDraftRestore}>{tx('restoreDraft')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => removeCatalogDraft(draft.id)}>
-                      <Text style={styles.offlineDraftRemove}>Remove</Text>
+                      <Text style={styles.offlineDraftRemove}>{tx('removePublished')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1040,7 +1045,7 @@ export default function App() {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.secondaryButton} onPress={saveCatalogDraft}>
-                   <Text style={styles.secondaryButtonText}>Save as offline draft</Text>
+                   <Text style={styles.secondaryButtonText}>{tx('saveDraft')}</Text>
                 </TouchableOpacity>
 
               </View>
@@ -1063,10 +1068,10 @@ export default function App() {
             </View>
 
             <View style={styles.bulkLeadCard}>
-              <Text style={styles.bulkLeadTitle}>Bulk & Institutional Linkage</Text>
-              <Text style={styles.bulkLeadText}>Connect with institutional buyers, bulk procurement teams, and government e-marketplace opportunities.</Text>
+              <Text style={styles.bulkLeadTitle}>{tx('bulkLinkage')}</Text>
+              <Text style={styles.bulkLeadText}>{tx('bulkSubtitle')}</Text>
               <TouchableOpacity style={styles.bulkLeadButton} onPress={() => setActiveTab('institutional')}>
-                <Text style={styles.bulkLeadButtonText}>Prepare bulk RFQ</Text>
+                <Text style={styles.bulkLeadButtonText}>{tx('prepareRfq')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -1078,14 +1083,14 @@ export default function App() {
               onChangeText={setSearchQuery} 
             />
             <View style={styles.deliveryCard}>
-              <Text style={styles.deliveryTitle}>Delivery details for orders</Text>
+              <Text style={styles.deliveryTitle}>{tx('deliveryDetails')}</Text>
               {([
                 ['recipientName', 'Full name'],
-                ['recipientPhone', 'Mobile number'],
-                ['addressLine', 'House / street / locality'],
-                ['city', 'City'],
-                ['state', 'State'],
-                ['pincode', '6-digit pincode']
+                ['recipientPhone', tx('mobileNumber')],
+                ['addressLine', tx('houseStreet')],
+                ['city', tx('city')],
+                ['state', tx('state')],
+                ['pincode', tx('pincode')]
               ] as const).map(([key, placeholder]) => (
                 <TextInput
                   key={key}
@@ -1145,11 +1150,11 @@ export default function App() {
 
                     <View style={styles.ratingRow}>
                       <Text style={styles.ratingText}>★ {Number(product.rating || 4.5).toFixed(1)}</Text>
-                      <Text style={styles.reviewText}>{product.reviews?.length || 0} review(s)</Text>
+                      <Text style={styles.reviewText}>{product.reviews?.length || 0} {tx('reviews')}</Text>
                     </View>
 
                     <TouchableOpacity style={styles.reviewButton} onPress={() => setReviewProductId(reviewProductId === product.id ? null : product.id)}>
-                      <Text style={styles.reviewButtonText}>★ Rate & review (no purchase required)</Text>
+                      <Text style={styles.reviewButtonText}>{tx('rateReview')}</Text>
                     </TouchableOpacity>
                     {reviewProductId === product.id && (
                       <View style={styles.reviewEditor}>
@@ -1164,11 +1169,11 @@ export default function App() {
                           style={styles.reviewInput}
                           value={reviewComment}
                           onChangeText={setReviewComment}
-                          placeholder="Write your experience..."
+                          placeholder={tx('writeExperience')}
                           multiline
                         />
                         <TouchableOpacity style={styles.submitReviewButton} onPress={() => submitReview(product)} disabled={isSubmittingReview}>
-                          {isSubmittingReview ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitReviewButtonText}>Submit review</Text>}
+                          {isSubmittingReview ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitReviewButtonText}>{tx('submitReview')}</Text>}
                         </TouchableOpacity>
                       </View>
                     )}
@@ -1347,7 +1352,7 @@ export default function App() {
                 {accountView === 'profile' && (
                   <View>
                     <Text style={styles.profileSectionTitle}>{tx('profile')}</Text>
-                    <Text style={styles.notificationText}>Role: {currentUser?.role || 'both'} · Seller & Buyer</Text>
+                    <Text style={styles.notificationText}>{tx('role')}: {roleLabel}</Text>
                     <Text style={styles.notificationText}>{tx('publishedListings')}: {publishedProducts.length}</Text>
                     <Text style={styles.notificationText}>{tx('savedCrafts')}: {wishlist.length}</Text>
                     <TouchableOpacity style={styles.secondaryAction} onPress={handleLogout}><Text style={styles.secondaryActionText}>{tx('logout')}</Text></TouchableOpacity>
@@ -1373,47 +1378,47 @@ export default function App() {
                       </View>
                     ))}
                     <Text style={styles.profileSectionTitle}>{tx('ordersPublishedByMe')}</Text>
-                    {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}><Text style={styles.deleteProductButtonText}>Remove published order</Text></TouchableOpacity></View>)}
+                    {publishedProducts.map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.category}</Text><TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}><Text style={styles.deleteProductButtonText}>{tx('removePublished')}</Text></TouchableOpacity></View>)}
                   </View>
                 )}
                 {accountView === 'requests' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Bulk and institutional requests</Text>
-                    <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder="Buyer type" />
-                    <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Describe your quantity and craft requirement" />
-                    <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}><Text style={styles.primaryActionText}>Send request</Text></TouchableOpacity>
+                    <Text style={styles.profileSectionTitle}>{tx('bulkRequests')}</Text>
+                    <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('forBuyers')} />
+                    <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder={tx('bulkHelp')} />
+                    <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}><Text style={styles.primaryActionText}>{tx('sendRequest')}</Text></TouchableOpacity>
                   </View>
                 )}
                 {accountView === 'wishlist' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Saved crafts</Text>
+                    <Text style={styles.profileSectionTitle}>{tx('savedCraftsTitle')}</Text>
                     {products.filter(product => wishlist.includes(product.id)).map(product => <View key={product.id} style={styles.orderCard}><Text style={styles.orderTitle}>{product.name}</Text><Text style={styles.orderMeta}>₹{product.price} · {product.artisan_name}</Text></View>)}
-                    {wishlist.length === 0 && <Text style={styles.emptyStateText}>No saved crafts yet.</Text>}
+                    {wishlist.length === 0 && <Text style={styles.emptyStateText}>{tx('noSavedCrafts')}</Text>}
                   </View>
                 )}
                 {accountView === 'notifications' && (
                   <View style={styles.notificationCard}>
-                    <Text style={styles.notificationTitle}>Notifications</Text>
-                    {orders.length ? orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>Order update: {order.productName} is {order.status}.</Text>) : <Text style={styles.notificationText}>No notifications yet.</Text>}
+                    <Text style={styles.notificationTitle}>{tx('notifications')}</Text>
+                    {orders.length ? orders.slice(0, 5).map(order => <Text key={order.id} style={styles.notificationText}>{tx('orderUpdate')}: {order.productName} is {order.status}.</Text>) : <Text style={styles.notificationText}>{tx('noNotifications')}</Text>}
                   </View>
                 )}
                 {accountView === 'admin' && (
                   <View>
-                    <Text style={styles.profileSectionTitle}>Admin Review</Text>
+                    <Text style={styles.profileSectionTitle}>{tx('adminReview')}</Text>
                     {!adminToken ? (
                       <View>
-                        <Text style={styles.bulkHelpText}>Review and moderate institutional buyer requests.</Text>
-                        <TextInput style={styles.textInput} value={adminEmail} onChangeText={setAdminEmail} placeholder="Admin email" keyboardType="email-address" autoCapitalize="none" />
-                        <TextInput style={styles.textInput} value={adminPassword} onChangeText={setAdminPassword} placeholder="Admin password" secureTextEntry />
+                        <Text style={styles.bulkHelpText}>{tx('reviewRequests')}</Text>
+                        <TextInput style={styles.textInput} value={adminEmail} onChangeText={setAdminEmail} placeholder={tx('adminEmail')} keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput style={styles.textInput} value={adminPassword} onChangeText={setAdminPassword} placeholder={tx('adminPassword')} secureTextEntry />
                         {!!adminStatus && <Text style={styles.orderActionMessage}>{adminStatus}</Text>}
                         <TouchableOpacity style={styles.primaryAction} onPress={handleAdminLogin}>
-                          <Text style={styles.primaryActionText}>Sign in as admin</Text>
+                          <Text style={styles.primaryActionText}>{tx('signInAdmin')}</Text>
                         </TouchableOpacity>
                       </View>
                     ) : (
                       <View>
                         <View style={styles.adminHeaderRow}>
-                          <Text style={styles.bulkHelpText}>Institutional request review queue</Text>
+                          <Text style={styles.bulkHelpText}>{tx('requestQueue')}</Text>
                           <TouchableOpacity onPress={handleAdminLogout}><Text style={styles.offlineDraftRemove}>Logout</Text></TouchableOpacity>
                         </View>
                         {adminRequests.length === 0 ? <Text style={styles.emptyStateText}>No institutional requests yet.</Text> : adminRequests.map(request => (
@@ -1478,8 +1483,8 @@ export default function App() {
               </View>
             ) : (
               <View style={styles.productsFeed}>
-                <Text style={styles.orderTitle}>Orders requested by me</Text>
-                {orders.length === 0 ? <Text style={styles.emptyStateText}>No purchase requests yet.</Text> : orders.map((order) => (
+                <Text style={styles.orderTitle}>{tx('ordersByMe')}</Text>
+                {orders.length === 0 ? <Text style={styles.emptyStateText}>{tx('noActiveOrders')}</Text> : orders.map((order) => (
                   <View key={order.id} style={styles.orderCard}>
                     <Text style={styles.orderTitle}>{order.productName}</Text>
                     <Text style={styles.orderMeta}>₹{order.price} • {order.customerName}</Text>
@@ -1492,17 +1497,17 @@ export default function App() {
                       placeholder="Why cancel this order?"
                     />
                     <TouchableOpacity style={styles.secondaryAction} onPress={() => handleCancelOrder(order.id)}>
-                      <Text style={styles.secondaryActionText}>Cancel order</Text>
+                      <Text style={styles.secondaryActionText}>{tx('cancelOrder')}</Text>
                     </TouchableOpacity>
                   </View>
                 ))}
-                <Text style={styles.orderTitle}>Orders published by me</Text>
-                {publishedProducts.length === 0 ? <Text style={styles.emptyStateText}>No products published by you yet.</Text> : publishedProducts.map(product => (
+                <Text style={styles.orderTitle}>{tx('ordersPublishedByMe')}</Text>
+                {publishedProducts.length === 0 ? <Text style={styles.emptyStateText}>{tx('noPublishedProducts')}</Text> : publishedProducts.map(product => (
                   <View key={`published-${product.id}`} style={styles.orderCard}>
                     <Text style={styles.orderTitle}>{product.name}</Text>
                     <Text style={styles.orderMeta}>₹{product.price} • {product.category} • Qty {product.quantity || 0}</Text>
                     <TouchableOpacity style={styles.deleteProductButton} onPress={() => removeOwnProduct(product)}>
-                      <Text style={styles.deleteProductButtonText}>Remove published order</Text>
+                      <Text style={styles.deleteProductButtonText}>{tx('removePublished')}</Text>
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -1601,7 +1606,7 @@ export default function App() {
           style={[styles.tabButton, activeTab === 'home' && styles.tabButtonActive]}
           onPress={() => setActiveTab('home')}>
           <Text style={styles.tabIcon}>🏠</Text>
-          <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>Home</Text>
+          <Text style={[styles.tabText, activeTab === 'home' && styles.tabTextActive]}>{tx('homeTab')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
