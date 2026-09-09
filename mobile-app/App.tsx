@@ -60,7 +60,7 @@ type BrowserSpeechRecognition = {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
-  onresult: (event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
+  onresult: (event: { resultIndex?: number; results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
   onerror: (event: { error?: string }) => void;
   onend: () => void;
   start: () => void;
@@ -102,6 +102,7 @@ export default function App() {
   const [artisanNotes, setArtisanNotes] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [speechError, setSpeechError] = useState('');
+  const [voiceLanguage, setVoiceLanguage] = useState<'en-IN' | 'kn-IN' | 'hi-IN'>('kn-IN');
   const browserRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const browserListeningRef = useRef(false);
   const browserTranscriptRef = useRef('');
@@ -181,7 +182,7 @@ export default function App() {
       window.setTimeout(() => {
         if (nativeListeningRef.current) {
           ExpoSpeechRecognitionModule.start({
-            lang: lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN',
+            lang: voiceLanguage,
             interimResults: true,
             continuous: true,
             maxAlternatives: 1,
@@ -201,11 +202,9 @@ export default function App() {
   });
 
   useSpeechRecognitionEvent('error', (event) => {
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      nativeListeningRef.current = false;
-      setIsListening(false);
-      setSpeechError(event.message || event.error);
-    }
+    nativeListeningRef.current = false;
+    setIsListening(false);
+    setSpeechError(`Speech recognition error: ${event.message || event.error}`);
   });
 
   useEffect(() => {
@@ -658,12 +657,13 @@ export default function App() {
         const recognition = new Recognition();
         browserRecognitionRef.current = recognition;
         browserTranscriptRef.current = artisanNotes.trim();
-        recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN';
+        recognition.lang = voiceLanguage;
         recognition.interimResults = true;
-        recognition.continuous = true;
+        recognition.continuous = false;
         recognition.onresult = event => {
           let transcript = '';
-          for (let index = 0; index < event.results.length; index += 1) {
+          const startIndex = event.resultIndex || 0;
+          for (let index = startIndex; index < event.results.length; index += 1) {
             transcript += `${event.results[index]?.[0]?.transcript || ''} `;
           }
           const cleanTranscript = transcript.trim();
@@ -679,11 +679,9 @@ export default function App() {
           }
         };
         recognition.onerror = event => {
-          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-            browserListeningRef.current = false;
-            setIsListening(false);
-            setSpeechError(event.error || tx('voiceError'));
-          }
+          browserListeningRef.current = false;
+          setIsListening(false);
+          setSpeechError(`Speech recognition error: ${event.error || 'unknown error'}`);
         };
         recognition.onend = () => {
           if (browserListeningRef.current) {
@@ -730,7 +728,7 @@ export default function App() {
 
       nativeListeningRef.current = true;
       ExpoSpeechRecognitionModule.start({
-        lang: lang === 'hi' ? 'hi-IN' : lang === 'en' ? 'en-IN' : 'kn-IN',
+        lang: voiceLanguage,
         interimResults: true,
         continuous: true,
         maxAlternatives: 1,
@@ -1101,6 +1099,17 @@ export default function App() {
                         {isListening ? `⏹️ ${tx('voiceListening')}` : '🎙️ Speak in English / Kannada / Hindi'}
                       </Text>
                     </TouchableOpacity>
+                  </View>
+                  <View style={styles.voiceLanguageRow}>
+                    {([['en-IN', 'English'], ['kn-IN', 'ಕನ್ನಡ'], ['hi-IN', 'हिन्दी']] as const).map(([code, label]) => (
+                      <TouchableOpacity
+                        key={code}
+                        style={[styles.voiceLanguageChip, voiceLanguage === code && styles.voiceLanguageChipActive]}
+                        onPress={() => setVoiceLanguage(code)}
+                      >
+                        <Text style={[styles.voiceLanguageChipText, voiceLanguage === code && styles.voiceLanguageChipTextActive]}>{label}</Text>
+                      </TouchableOpacity>
+                    ))}
                   </View>
                   <View style={styles.descriptionInputWrap}>
                     <TextInput
@@ -2382,6 +2391,31 @@ const styles = StyleSheet.create({
   },
   descriptionMicText: {
     fontSize: 16,
+  },
+  voiceLanguageRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 6,
+  },
+  voiceLanguageChip: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  voiceLanguageChipActive: {
+    backgroundColor: '#FFF7ED',
+    borderColor: Colors.primary,
+  },
+  voiceLanguageChipText: {
+    color: Colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  voiceLanguageChipTextActive: {
+    color: Colors.primary,
   },
   voiceHint: {
     color: Colors.textSecondary,
