@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">KalaSetu</string>
+  <string name="expo_runtime_version">exposdk:57.0.0</string>
+</resources>

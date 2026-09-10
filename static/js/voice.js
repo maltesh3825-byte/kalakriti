@@ -9,11 +9,30 @@ let isRecognizing = false;
 let currentUtterance = null;
 let isSpeaking = false;
 
+function showSpeechRecognitionWarning(message) {
+  console.warn(message);
+  if (typeof showCustomAlert === 'function') {
+    showCustomAlert(message, 'Voice Input Unavailable');
+    return;
+  }
+  alert(message);
+}
+
+function isEmbeddedSpeechIncompatibleBrowser() {
+  return /Electron|Code/.test(window.navigator?.userAgent || '') || !!window.process?.versions?.electron;
+}
+
 // Initialize Speech Recognition
 function initSpeechRecognition() {
+  if (isEmbeddedSpeechIncompatibleBrowser()) {
+    showSpeechRecognitionWarning('Speech recognition is not available in this embedded browser. Open the app in Chrome or Edge and allow microphone access to use the mic.');
+    return null;
+  }
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     console.warn("Speech Recognition API is not supported in this browser.");
+    showSpeechRecognitionWarning('Voice input is not supported in this browser. Please use Chrome, Edge, or a modern mobile browser with microphone permissions enabled.');
     return null;
   }
 
@@ -40,9 +59,17 @@ function initSpeechRecognition() {
   };
 
   recognizer.onerror = (event) => {
-    console.warn("Speech recognition error:", event.error);
+    const error = event?.error || 'unknown';
+    console.warn("Speech recognition error:", error);
     isRecognizing = false;
     updateMicButtonState(false);
+
+    if (error === 'network' || error === 'audio-capture' || error === 'not-allowed') {
+      const message = error === 'not-allowed'
+        ? 'Microphone permission was denied. Please allow access and tap the mic again.'
+        : 'Speech recognition could not connect to the microphone service. Please reopen the app in Chrome or Edge and try again.';
+      showSpeechRecognitionWarning(message);
+    }
   };
 
   recognizer.onend = () => {

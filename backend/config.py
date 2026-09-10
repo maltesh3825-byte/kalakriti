@@ -44,9 +44,9 @@ DEFAULT_HARDCODED_KEY = ""
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", DEFAULT_HARDCODED_KEY).strip()
 
-# Gemini Model endpoint: gemini-1.5-flash or gemini-2.0-flash
-# Google Generative Language API endpoint
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+# Gemini Model endpoint: use a currently supported model for new users.
+# Example: gemini-3.6-flash
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 
 # Application Settings

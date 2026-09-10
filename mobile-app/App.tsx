@@ -33,6 +33,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Colors } from './constants/Colors';
 import { i18n, additionalTranslations, getAppText, Language } from './constants/i18n';
+
+TextInput.defaultProps = {
+  placeholderTextColor: Colors.textSecondary,
+};
+
 import {
   CraftProduct,
   AiAnalysisResult,
@@ -155,6 +160,7 @@ export default function App() {
   const t = { ...i18n, ...additionalTranslations }[lang];
   const tx = (key: Parameters<typeof getAppText>[1]) => getAppText(lang, key);
   const speechLocale = ({ en: 'en-IN', hi: 'hi-IN', ta: 'ta-IN', kn: 'kn-IN', te: 'te-IN', ml: 'ml-IN', mr: 'mr-IN', bh: 'hi-IN', bho: 'hi-IN' } as const)[lang];
+  const topSafeInset = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0;
   const roleLabel = currentUser?.role === 'buyer'
     ? (lang === 'hi' ? 'खरीदार' : lang === 'ta' ? 'வாங்குபவர்' : lang === 'kn' ? 'ಖರೀದಿದಾರ' : lang === 'te' ? 'కొనుగోలుదారు' : lang === 'ml' ? 'വാങ്ങുന്നയാൾ' : lang === 'mr' ? 'खरेदीदार' : 'Buyer')
     : currentUser?.role === 'artisan'
@@ -644,6 +650,12 @@ export default function App() {
     setSpeechError('');
     try {
       if (Platform.OS === 'web') {
+        const isEmbeddedBrowser = /Electron|Code/.test(navigator.userAgent || '') || !!(globalThis as typeof globalThis & { process?: { versions?: { electron?: unknown } } }).process?.versions?.electron;
+        if (isEmbeddedBrowser) {
+          setSpeechError('Speech recognition is not available in this embedded browser. Open the app in Chrome or Edge and allow microphone access.');
+          return;
+        }
+
         const browserSpeech = globalThis as typeof globalThis & {
           SpeechRecognition?: BrowserSpeechRecognitionConstructor;
           webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
@@ -854,6 +866,10 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
 
+      {Platform.OS === 'android' && (
+        <View style={[styles.statusBarSpacer, { height: topSafeInset, backgroundColor: Colors.secondary }]} />
+      )}
+
       {/* Top MoSJE Banner Strip */}
       <View style={styles.topStrip}>
         <View style={styles.topStripLeft}>
@@ -1032,6 +1048,7 @@ export default function App() {
                   onChangeText={setListingQuantity}
                   keyboardType="number-pad"
                   maxLength={2}
+                  placeholderTextColor={Colors.textSecondary}
                 />
                 <Text style={styles.helperText}>Maximum 3 marketplace listings per artisan each calendar month.</Text>
               </View>
@@ -1084,7 +1101,8 @@ export default function App() {
                     value={priceIdea} 
                     onChangeText={setPriceIdea} 
                     keyboardType="numeric" 
-                    placeholder="e.g. 500" 
+                    placeholder="e.g. 500"
+                    placeholderTextColor={Colors.textSecondary}
                   />
                 </View>
 
@@ -1118,6 +1136,7 @@ export default function App() {
                       onChangeText={setArtisanNotes}
                       multiline
                       placeholder={t.artisanNotesPlaceholder}
+                      placeholderTextColor={Colors.textSecondary}
                     />
                     <TouchableOpacity
                       style={[styles.descriptionMicButton, isListening && styles.voiceButtonActive]}
@@ -1311,7 +1330,8 @@ export default function App() {
               style={styles.searchBar} 
               placeholder={t.searchPlaceholder} 
               value={searchQuery} 
-              onChangeText={setSearchQuery} 
+              onChangeText={setSearchQuery}
+              placeholderTextColor={Colors.textSecondary}
             />
             <View style={styles.deliveryCard}>
               <Text style={styles.deliveryTitle}>{tx('deliveryDetails')}</Text>
@@ -1330,6 +1350,7 @@ export default function App() {
                   value={deliveryDetails[key]}
                   onChangeText={value => setDeliveryDetails(prev => ({ ...prev, [key]: value }))}
                   keyboardType={key === 'pincode' || key === 'recipientPhone' ? 'phone-pad' : 'default'}
+                  placeholderTextColor={Colors.textSecondary}
                 />
               ))}
             </View>
@@ -1402,6 +1423,7 @@ export default function App() {
                           onChangeText={setReviewComment}
                           placeholder={tx('writeExperience')}
                           multiline
+                          placeholderTextColor={Colors.textSecondary}
                         />
                         <TouchableOpacity style={styles.submitReviewButton} onPress={() => submitReview(product)} disabled={isSubmittingReview}>
                           {isSubmittingReview ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.submitReviewButtonText}>{tx('submitReview')}</Text>}
@@ -1465,16 +1487,16 @@ export default function App() {
             <Text style={styles.stepLabel}>{tx('step')} 1</Text>
             <Text style={styles.profileSectionTitle}>{tx('createBulkRequest')}</Text>
             <Text style={styles.bulkHelpText}>{tx('bulkHelp')}</Text>
-            <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder={t.fullName} editable={!isLoggedIn} />
-            <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder={`${t.email} for follow-up`} keyboardType="email-address" editable={!isLoggedIn} />
-            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('buyerType')} />
-            <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder={t.category} />
+            <TextInput style={styles.textInput} value={currentUser?.name || authName} placeholder={t.fullName} editable={!isLoggedIn} placeholderTextColor={Colors.textSecondary} />
+            <TextInput style={styles.textInput} value={currentUser?.email || authEmail} placeholder={`${t.email} for follow-up`} keyboardType="email-address" editable={!isLoggedIn} placeholderTextColor={Colors.textSecondary} />
+            <TextInput style={styles.textInput} value={bulkBuyerType} onChangeText={setBulkBuyerType} placeholder={tx('buyerType')} placeholderTextColor={Colors.textSecondary} />
+            <TextInput style={styles.textInput} value={bulkCategory} onChangeText={setBulkCategory} placeholder={t.category} placeholderTextColor={Colors.textSecondary} />
             <View style={styles.bulkInputRow}>
-              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkQuantity} onChangeText={setBulkQuantity} placeholder="Quantity" keyboardType="numeric" />
-              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkUnitPrice} onChangeText={setBulkUnitPrice} placeholder="Unit price (₹)" keyboardType="numeric" />
+              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkQuantity} onChangeText={setBulkQuantity} placeholder="Quantity" keyboardType="numeric" placeholderTextColor={Colors.textSecondary} />
+              <TextInput style={[styles.textInput, styles.bulkHalfInput]} value={bulkUnitPrice} onChangeText={setBulkUnitPrice} placeholder="Unit price (₹)" keyboardType="numeric" placeholderTextColor={Colors.textSecondary} />
             </View>
-            <TextInput style={styles.textInput} value={bulkLeadTime} onChangeText={setBulkLeadTime} placeholder="Production / dispatch lead time" />
-            <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Packaging, customization, certifications, quality sample notes..." />
+            <TextInput style={styles.textInput} value={bulkLeadTime} onChangeText={setBulkLeadTime} placeholder="Production / dispatch lead time" placeholderTextColor={Colors.textSecondary} />
+            <TextInput style={[styles.textInput, styles.textArea]} value={bulkNeed} onChangeText={setBulkNeed} multiline placeholder="Packaging, customization, certifications, quality sample notes..." placeholderTextColor={Colors.textSecondary} />
             <TouchableOpacity style={styles.primaryAction} onPress={handleBulkSupport}>
               <Text style={styles.primaryActionText}>{tx('submitRfq')}</Text>
             </TouchableOpacity>
@@ -1639,8 +1661,8 @@ export default function App() {
                     {!adminToken ? (
                       <View>
                         <Text style={styles.bulkHelpText}>{tx('reviewRequests')}</Text>
-                        <TextInput style={styles.textInput} value={adminEmail} onChangeText={setAdminEmail} placeholder={tx('adminEmail')} keyboardType="email-address" autoCapitalize="none" />
-                        <TextInput style={styles.textInput} value={adminPassword} onChangeText={setAdminPassword} placeholder={tx('adminPassword')} secureTextEntry />
+                        <TextInput style={styles.textInput} value={adminEmail} onChangeText={setAdminEmail} placeholder={tx('adminEmail')} keyboardType="email-address" autoCapitalize="none" placeholderTextColor={Colors.textSecondary} />
+                        <TextInput style={styles.textInput} value={adminPassword} onChangeText={setAdminPassword} placeholder={tx('adminPassword')} secureTextEntry placeholderTextColor={Colors.textSecondary} />
                         {!!adminStatus && <Text style={styles.orderActionMessage}>{adminStatus}</Text>}
                         <TouchableOpacity style={styles.primaryAction} onPress={handleAdminLogin}>
                           <Text style={styles.primaryActionText}>{tx('signInAdmin')}</Text>
@@ -1759,10 +1781,10 @@ export default function App() {
                     <Text style={[styles.authToggleText, authMode === 'register' && styles.authToggleTextActive]}>{t.register}</Text>
                   </TouchableOpacity>
                 </View>
-                <TextInput style={styles.searchBar} value={authName} onChangeText={setAuthName} placeholder={t.fullName} />
-                <TextInput style={styles.searchBar} value={authEmail} onChangeText={setAuthEmail} placeholder={t.email} keyboardType="email-address" autoCapitalize="none" />
-                <TextInput style={styles.searchBar} value={authPassword} onChangeText={setAuthPassword} placeholder={t.password} secureTextEntry />
-                <TextInput style={styles.searchBar} value={artisanLocation} onChangeText={setArtisanLocation} placeholder={t.artisanLocation} />
+                <TextInput style={styles.searchBar} value={authName} onChangeText={setAuthName} placeholder={t.fullName} placeholderTextColor={Colors.textSecondary} />
+                <TextInput style={styles.searchBar} value={authEmail} onChangeText={setAuthEmail} placeholder={t.email} keyboardType="email-address" autoCapitalize="none" placeholderTextColor={Colors.textSecondary} />
+                <TextInput style={styles.searchBar} value={authPassword} onChangeText={setAuthPassword} placeholder={t.password} secureTextEntry placeholderTextColor={Colors.textSecondary} />
+                <TextInput style={styles.searchBar} value={artisanLocation} onChangeText={setArtisanLocation} placeholder={t.artisanLocation} placeholderTextColor={Colors.textSecondary} />
                 <View style={styles.roleRow}>
                   <TouchableOpacity style={[styles.roleChip, authRole === 'buyer' && styles.roleChipActive]} onPress={() => setAuthRole('buyer')}>
                     <Text style={[styles.roleChipText, authRole === 'buyer' && styles.roleChipTextActive]}>{t.continueAsBuyer}</Text>
@@ -1882,6 +1904,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  statusBarSpacer: {
+    width: '100%',
+  },
   topStrip: {
     backgroundColor: Colors.secondary,
     paddingVertical: 6,
@@ -1934,7 +1959,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.35)',
     alignItems: 'flex-end',
-    paddingTop: 38,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 52 : 42,
     paddingRight: 12,
   },
   languageMenu: {
