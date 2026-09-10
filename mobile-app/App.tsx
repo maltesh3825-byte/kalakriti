@@ -392,6 +392,13 @@ export default function App() {
       return;
     }
 
+    const availableQuantity = Math.max(0, Number(product.quantity ?? 10));
+    if (availableQuantity <= 0) {
+      setOrderActionMessage('This product is sold out.');
+      Alert.alert('Sold out', 'This product has no remaining stock.');
+      return;
+    }
+
     if (!deliveryDetails.recipientName || !deliveryDetails.recipientPhone || !deliveryDetails.addressLine ||
       !deliveryDetails.city || !deliveryDetails.state || !/^\d{6}$/.test(deliveryDetails.pincode)) {
       setOrderActionMessage('Complete the delivery details above, including a valid 6-digit pincode.');
@@ -399,15 +406,9 @@ export default function App() {
       return;
     }
     const quantity = Number(buyQuantity);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
-      setOrderActionMessage('Choose a quantity from 1 to 10.');
-      Alert.alert('Invalid quantity', 'You can buy between 1 and 10 products per order.');
-      return;
-    }
-    const availableQuantity = product.quantity ?? 10;
-    if (quantity > availableQuantity) {
-      setOrderActionMessage(`Only ${availableQuantity} item(s) are currently available.`);
-      Alert.alert('Quantity unavailable', `Only ${availableQuantity} item(s) are currently available.`);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > availableQuantity) {
+      setOrderActionMessage(`Choose a quantity from 1 to ${availableQuantity}.`);
+      Alert.alert('Invalid quantity', `You can buy between 1 and ${availableQuantity} products for this item.`);
       return;
     }
 
@@ -425,6 +426,11 @@ export default function App() {
       });
 
       setOrders(prev => [order, ...prev]);
+      setProducts(prev => prev.map(item => item.id === product.id
+        ? { ...item, quantity: Math.max(0, (Number(item.quantity ?? 10)) - quantity) }
+        : item
+      ));
+      setBuyQuantity('1');
       Alert.alert('Order requested', `Your request for ${product.name} has been sent to the artisan.`);
       setActiveTab('account');
       setAccountView('orders');
@@ -1439,9 +1445,9 @@ export default function App() {
                       </View>
                     ) : null}
 
-                    <Text style={styles.quantityLabel}>Quantity for this order (1-10)</Text>
+                    <Text style={styles.quantityLabel}>Quantity for this order ({Math.max(1, Number(product.quantity ?? 10))} available)</Text>
                     <View style={styles.quantityOptions}>
-                      {Array.from({ length: 10 }, (_, index) => String(index + 1)).map(option => (
+                      {Array.from({ length: Math.max(0, Number(product.quantity ?? 10)) }, (_, index) => String(index + 1)).map(option => (
                         <TouchableOpacity
                           key={`${product.id}-${option}`}
                           style={[styles.quantityOption, buyQuantity === option && styles.quantityOptionActive]}
@@ -1455,8 +1461,8 @@ export default function App() {
                       <TouchableOpacity style={styles.inlineActionButton} onPress={() => toggleWishlist(product.id)}>
                         <Text style={styles.inlineActionButtonText}>{wishlist.includes(product.id) ? t.removeFromWishlist : t.addToWishlist}</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity style={[styles.inlineActionButtonPrimary, isPlacingOrder && styles.disabledButton]} onPress={() => requestOrder(product)} disabled={isPlacingOrder}>
-                        <Text style={styles.inlineActionButtonText}>{isPlacingOrder ? 'Placing...' : t.buyNow}</Text>
+                      <TouchableOpacity style={[styles.inlineActionButtonPrimary, isPlacingOrder && styles.disabledButton]} onPress={() => requestOrder(product)} disabled={isPlacingOrder || (Number(product.quantity ?? 10) <= 0)}>
+                        <Text style={styles.inlineActionButtonText}>{isPlacingOrder ? 'Placing...' : Number(product.quantity ?? 10) <= 0 ? 'Sold Out' : t.buyNow}</Text>
                       </TouchableOpacity>
                     </View>
 
